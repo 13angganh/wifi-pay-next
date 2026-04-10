@@ -246,20 +246,23 @@ export default function MembersView() {
                 const info      = getInfo(name);
                 const isFreeNow = isFree(appData, zone, name, selYear, selMonth);
                 return (
-                  <div key={name} className="mem-row" style={{ flexDirection:'column', alignItems:'stretch', gap:5 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                      <span className="mem-num">{i+1}.</span>
-                      <span className="mem-id-badge" style={!info.id ? { color:'var(--txt4)', borderColor:'var(--border)' } : {}}>{String(info.id||'—')}</span>
-                      <span className="mem-name-txt" style={{ cursor:'pointer' }} onClick={() => openRiwayat(zone, name)}>{name}</span>
-                      {isFreeNow && <span style={{ background:'#0a2a18', border:'1px solid #4CAF5033', color:'#4CAF50', fontSize:9, padding:'2px 6px', borderRadius:4, flexShrink:0 }}>🆓 Free</span>}
-                      {info.tarif && <span style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', fontSize:9, padding:'2px 6px', borderRadius:4, flexShrink:0 }}>{rp(info.tarif as number)}</span>}
-                      {info.ip && <a href={String(info.ip).startsWith('http')?String(info.ip):'http://'+String(info.ip)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ color:'#2196F3', fontSize:10, textDecoration:'none', border:'1px solid #1e3a5f', padding:'2px 6px', borderRadius:4, flexShrink:0 }}>🔗 {String(info.ip)}</a>}
-                    </div>
+                  <div key={name} className="mem-row" style={{ flexWrap:'wrap' }}>
+                    {/* Nomor */}
+                    <span style={{ fontSize:10, color:'var(--txt4)', width:18, flexShrink:0 }}>{i+1}</span>
+                    {/* ID Badge */}
+                    <span className="mem-id-badge" style={!info.id ? { color:'var(--txt4)', borderColor:'var(--border)' } : {}}>{String(info.id||'—')}</span>
+                    {/* Nama — klik buka riwayat */}
+                    <span style={{ fontSize:12, flex:1, cursor:'pointer', color:'var(--txt)' }} onClick={() => openRiwayat(zone, name)}>{name}</span>
+                    {/* Tags */}
+                    {isFreeNow && <span style={{ background:'#0a2a18', border:'1px solid #4CAF5033', color:'#4CAF50', fontSize:9, padding:'2px 5px', borderRadius:4, flexShrink:0 }}>🆓</span>}
+                    {info.tarif && <span style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', fontSize:9, padding:'2px 5px', borderRadius:4, flexShrink:0 }}>{rp(info.tarif as number)}</span>}
+                    {info.ip && <a href={String(info.ip).startsWith('http')?String(info.ip):'http://'+String(info.ip)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ color:'#2196F3', fontSize:9, textDecoration:'none', border:'1px solid #1e3a5f', padding:'2px 5px', borderRadius:4, flexShrink:0, fontFamily:"'DM Mono',monospace" }}>🔗</a>}
+                    {/* Action buttons rata kanan */}
                     {!membersLocked && (
-                      <div style={{ display:'flex', gap:5, justifyContent:'flex-end' }}>
-                        <button onClick={() => openFree(zone, name)} style={{ background:isFreeNow?'#0a2a18':'none', border:`1px solid ${isFreeNow?'#4CAF50':'#1e3a5f'}`, color:isFreeNow?'#4CAF50':'var(--txt3)', padding:'4px 8px', borderRadius:5, cursor:'pointer', fontSize:10, flexShrink:0 }}>🆓</button>
-                        <button onClick={() => openEdit(name)} style={{ background:'none', border:'1px solid #1e3a5f', color:'#2196F3', padding:'4px 8px', borderRadius:5, cursor:'pointer', fontSize:10, flexShrink:0 }}>✏️</button>
-                        <button className="delbtn" onClick={() => deleteMember(name)} style={{ flexShrink:0 }}>✕</button>
+                      <div style={{ display:'flex', gap:4, marginLeft:'auto' }}>
+                        <button onClick={() => openFree(zone, name)} style={{ background:isFreeNow?'#0a2a18':'none', border:`1px solid ${isFreeNow?'#4CAF50':'var(--border)'}`, color:isFreeNow?'#4CAF50':'var(--txt4)', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>🆓</button>
+                        <button onClick={() => openEdit(name)} style={{ background:'none', border:'1px solid var(--border)', color:'#2196F3', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>✏️</button>
+                        <button onClick={() => deleteMember(name)} style={{ background:'none', border:'1px solid #2a1a1a', color:'#4a2a2a', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>✕</button>
                       </div>
                     )}
                   </div>

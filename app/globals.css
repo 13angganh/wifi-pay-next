@@ -132,7 +132,7 @@ img{pointer-events:none}
 .add-form{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:14px}
 .af-input{background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:8px 12px;border-radius:7px;font-size:12px;width:100%}
 .af-input:focus{border-color:var(--zc)}
-.mem-row{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:9px 12px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.mem-row{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:8px 12px;margin-bottom:4px;display:flex;align-items:center;gap:6px;font-size:12px}
 .mem-id-badge{font-size:9px;color:#2196F3;background:#1e2a4022;border:1px solid #2196F322;padding:2px 6px;border-radius:4px;min-width:45px;text-align:center}
 .del-card{background:var(--bg2);border:1px solid #e05c5c22;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .restore-btn{background:#0a2a18;border:1px solid #4CAF5055;color:#4CAF50;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;flex-shrink:0}
@@ -187,7 +187,7 @@ img{pointer-events:none}
 .gsr-detail{font-size:10px;color:var(--txt4);text-align:right}
 /* BANNERS */
 .update-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#1a3a1a,#0d2b0d);border-bottom:1px solid #4CAF5055;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.lock-banner{display:none;position:fixed;bottom:56px;left:0;right:0;z-index:90;background:#1f0d0d;border-top:1px solid #F4433633;padding:7px 14px;align-items:center;gap:8px}
+.lock-banner{display:none;background:#1f0d0d;border-bottom:1px solid #F4433633;padding:7px 14px;align-items:center;gap:8px;flex-shrink:0}
 .lock-banner.show{display:flex}
 .inst-banner{background:#0d2b1f;border:1px solid #4CAF5033;border-radius:9px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
 .inst-txt{flex:1;font-size:11px;color:#4CAF50;line-height:1.5}

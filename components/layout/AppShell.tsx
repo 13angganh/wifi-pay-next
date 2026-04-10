@@ -1,7 +1,7 @@
-// components/layout/AppShell.tsx — compose layout + global modals + CDN scripts
+// components/layout/AppShell.tsx
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Script from 'next/script';
 import { useAppStore } from '@/store/useAppStore';
@@ -12,24 +12,23 @@ import BottomNav  from './BottomNav';
 import LockBanner from './LockBanner';
 import Toast      from '@/components/ui/Toast';
 import Confirm    from '@/components/ui/Confirm';
-import RiwayatModal from '@/components/modals/RiwayatModal';
 import type { ViewName } from '@/types';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const { sidebarOpen, setSidebar, setView, darkMode, appData,
-          setDeferredPrompt, setUpdateBanner, showUpdateBanner } = useAppStore();
+  const {
+    sidebarOpen, setSidebar, setView, darkMode, appData,
+    setDeferredPrompt, setUpdateBanner, showUpdateBanner,
+  } = useAppStore();
 
-  const [riwayatOpen, setRiwayatOpen] = useState(false);
-
-  // Sync currentView dengan pathname
+  // Sync view dengan pathname
   useEffect(() => {
     const seg = pathname.split('/')[1] as ViewName;
     if (seg) setView(seg);
   }, [pathname]);
 
-  // Apply dark/light mode ke body
+  // Dark/light mode
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
   }, [darkMode]);
@@ -73,7 +72,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {/* CDN scripts untuk PDF/Excel/Chart */}
+      {/* CDN scripts */}
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" strategy="lazyOnload" />
@@ -83,33 +82,47 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {showUpdateBanner && (
         <div className="update-banner">
           <span style={{ fontSize:12, color:'#4CAF50' }}>🆕 Ada versi terbaru WiFi Pay!</span>
-          <button onClick={() => { navigator.serviceWorker.getRegistration().then(r => { r?.waiting?.postMessage({ type:'SKIP_WAITING' }); window.location.reload(); }); }}
-            style={{ background:'#4CAF50', color:'#0a0c12', border:'none', padding:'6px 14px', borderRadius:6, fontSize:11, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
+          <button
+            onClick={() => navigator.serviceWorker.getRegistration().then(r => {
+              r?.waiting?.postMessage({ type:'SKIP_WAITING' });
+              window.location.reload();
+            })}
+            style={{ background:'#4CAF50',color:'#0a0c12',border:'none',padding:'6px 14px',borderRadius:6,fontSize:11,fontWeight:700,cursor:'pointer',flexShrink:0 }}>
             Update Sekarang
           </button>
         </div>
       )}
 
+      {/* App container */}
       <div style={{ display:'flex', position:'fixed', inset:0, top: showUpdateBanner ? 44 : 0 }}>
-        {/* Overlay (mobile sidebar) */}
-        <div className={`sidebar-overlay ${sidebarOpen?'show':''}`} onClick={() => setSidebar(false)} />
 
-        {/* Sidebar */}
-        <Sidebar onNavigate={navigate} />
+        {/* Sidebar overlay (mobile) */}
+        <div
+          className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
+          onClick={() => setSidebar(false)}
+        />
 
-        {/* Main */}
+        {/* Sidebar — fixed di kiri desktop, slide dari kiri mobile */}
+        <div id="sidebar" className={sidebarOpen ? 'open' : ''}>
+          <Sidebar onNavigate={navigate} />
+        </div>
+
+        {/* Main area */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, overflow:'hidden' }}>
           <Header onToggleSidebar={() => setSidebar(!sidebarOpen)} />
+          {/* Lock banner tepat di bawah header */}
           <LockBanner />
-          <div id="content">{children}</div>
+          {/* Content */}
+          <div id="content" style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' as any, padding:'12px 12px 80px', background:'var(--bg)' }}>
+            {children}
+          </div>
+          {/* Bottom nav */}
           <BottomNav onNavigate={navigate} />
         </div>
       </div>
 
-      {/* Global UI */}
       <Toast />
       <Confirm />
-      <RiwayatModal open={riwayatOpen} onClose={() => setRiwayatOpen(false)} />
     </>
   );
 }

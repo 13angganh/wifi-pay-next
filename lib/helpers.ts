@@ -93,16 +93,22 @@ export function cleanOldEditLogs(data: AppData): AppData {
 // ── Auth error messages ──
 export function friendlyAuthError(code: string): string {
   const map: Record<string, string> = {
-    'auth/invalid-email'          : 'Email tidak valid',
-    'auth/user-not-found'         : 'Akun tidak ditemukan',
-    'auth/wrong-password'         : 'Password salah',
-    'auth/email-already-in-use'   : 'Email sudah terdaftar',
-    'auth/weak-password'          : 'Password terlalu lemah',
-    'auth/invalid-credential'     : 'Email atau password salah',
-    'auth/network-request-failed' : 'Gagal terhubung ke jaringan',
-    'auth/too-many-requests'      : 'Terlalu banyak percobaan, coba lagi nanti',
+    'auth/invalid-email'             : 'Email tidak valid',
+    'auth/user-not-found'            : 'Akun tidak ditemukan',
+    'auth/wrong-password'            : 'Password salah',
+    'auth/email-already-in-use'      : 'Email sudah terdaftar',
+    'auth/weak-password'             : 'Password terlalu lemah',
+    'auth/invalid-credential'        : 'Email atau password salah',
+    'auth/invalid-login-credentials' : 'Email atau password salah',
+    'auth/network-request-failed'    : 'Gagal terhubung ke jaringan',
+    'auth/too-many-requests'         : 'Terlalu banyak percobaan, coba lagi nanti',
+    'auth/user-disabled'             : 'Akun telah dinonaktifkan',
+    'auth/operation-not-allowed'     : 'Login email/password belum diaktifkan di Firebase',
+    'auth/internal-error'            : 'Terjadi kesalahan server, coba lagi',
+    'auth/unauthorized-domain'       : 'Domain belum diizinkan di Firebase Console',
   };
-  return map[code] || 'Terjadi kesalahan, coba lagi';
+  if (!map[code]) console.error('[Auth Error Code]:', code);
+  return map[code] || `Terjadi kesalahan (${code})`;
 }
 
 // ── Saved credential helpers (localStorage) ──

@@ -1,4 +1,4 @@
-// components/layout/Sidebar.tsx
+// components/layout/Sidebar.tsx - FIXED: removed wrapper div (AppShell handles it)
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -18,28 +18,24 @@ const NAV_ITEMS: { v: ViewName; icon: string }[] = [
   { v:'operasional', icon:'💼' },
 ];
 
-interface SidebarProps {
-  onNavigate: (v: ViewName) => void;
-}
+interface Props { onNavigate: (v: ViewName) => void; }
 
-export default function Sidebar({ onNavigate }: SidebarProps) {
-  const router      = useRouter();
+export default function Sidebar({ onNavigate }: Props) {
+  const router = useRouter();
   const { activeZone, currentView, userName, userEmail } = useAppStore();
-
   const zc = activeZone === 'KRS' ? '#2196F3' : '#e05c3a';
 
   async function handleLogout() {
     await doLogout();
     router.replace('/login');
   }
-
   async function handleSwitchAccount() {
     await switchAccount();
     router.replace('/login');
   }
 
   return (
-    <div id="sidebar">
+    <>
       {/* Header */}
       <div className="sb-header">
         <div className="sb-logo" style={{ background:`linear-gradient(135deg,${zc},${zc}bb)` }}>📶</div>
@@ -51,7 +47,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         </div>
       </div>
 
-      {/* Nav items */}
+      {/* Navigation */}
       <nav className="sb-nav">
         {NAV_ITEMS.map(item => (
           <button
@@ -63,9 +59,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             {PAGE_TITLES[item.v]}
           </button>
         ))}
-
         <div className="sb-divider" />
-
         <button className="sb-item" onClick={handleSwitchAccount}>
           <span className="si">↔</span> Ganti Akun
         </button>
@@ -78,6 +72,6 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
       <div style={{ padding:'12px 16px', borderTop:'1px solid var(--border)', fontSize:9, color:'var(--txt5)' }}>
         WiFi Pay v10.1 Next
       </div>
-    </div>
+    </>
   );
 }

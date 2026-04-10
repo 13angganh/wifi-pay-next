@@ -1,6 +1,5 @@
-// components/layout/LockBanner.tsx
+// components/layout/LockBanner.tsx - FIXED: inline flow bukan fixed
 'use client';
-
 import { useAppStore } from '@/store/useAppStore';
 
 export default function LockBanner() {
