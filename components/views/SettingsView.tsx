@@ -229,14 +229,14 @@ export default function SettingsView() {
 
       {/* ── QUICK PAY AMOUNTS ── */}
       <div style={cardStyle}>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, marginBottom:4 }}>⚡ Nominal Quick Pay</div>
+        <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13, marginBottom:4 }}>⚡ Nominal Quick Pay Default</div>
         <div style={{ fontSize:11, color:'var(--txt3)', marginBottom:12 }}>
-          Sesuaikan tombol quick pay — pisahkan dengan koma. Satuan ×1000.
+          Nominal quick pay yang tampil untuk member yang belum punya tarif khusus.
         </div>
-        <div style={labelStyle}>NOMINAL (×1000) — contoh: 50, 80, 100, 150</div>
+        <div style={labelStyle}>NOMINAL (×1000) — pisahkan dengan koma</div>
         <input
           className="lf-input"
-          style={{ marginBottom:0, textAlign:'left', letterSpacing:'normal' }}
+          style={{ marginBottom:0, textAlign:'left', letterSpacing:'normal', fontFamily:"'DM Mono',monospace" }}
           value={newAmounts}
           onChange={e => setNewAmounts(e.target.value)}
           placeholder="50, 80, 90, 100, 150, 200"
@@ -246,7 +246,10 @@ export default function SettingsView() {
             <span key={a} style={{ background:'var(--bg3)', border:'1px solid var(--zc)', color:'var(--zc)', padding:'3px 10px', borderRadius:5, fontSize:11 }}>{a}</span>
           ))}
         </div>
-        <Btn label="Simpan Nominal" onClick={saveAmounts} />
+        <Btn label="Simpan Nominal Default" onClick={saveAmounts} />
+        <div style={{ fontSize:10, color:'var(--txt4)', marginTop:8, lineHeight:1.6, padding:'8px', background:'var(--bg3)', borderRadius:6 }}>
+          💡 <b>Tarif per member</b> (tombol ★ biru) diatur di menu <b>Member → ✏️ Edit → Tarif</b>. Tarif member akan tampil sebagai tombol quick pay khusus yang berbeda untuk tiap member.
+        </div>
       </div>
 
       {/* ── APP INFO ── */}

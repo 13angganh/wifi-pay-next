@@ -1,4 +1,4 @@
-// components/views/MembersView.tsx
+// components/views/MembersView.tsx — FIXED: IP tampil, layout 2 baris rapi
 'use client';
 
 import { useState, useRef } from 'react';
@@ -29,14 +29,13 @@ export default function MembersView() {
   const [sortMode, setSortMode] = useState<SortMode>('name-asc');
   const [editOpen, setEditOpen] = useState(false);
   const [editData, setEditData] = useState({ zone:'KRS' as Zone, origName:'', name:'', id:'', ip:'', tarif:'' });
-  const [freeOpen, setFreeOpen]   = useState(false);
-  const [freeName, setFreeName]   = useState('');
-  const [freeZone, setFreeZone]   = useState<Zone>('KRS');
-  const [riwOpen,  setRiwOpen]    = useState(false);
+  const [freeOpen, setFreeOpen] = useState(false);
+  const [freeName, setFreeName] = useState('');
+  const [freeZone, setFreeZone] = useState<Zone>('KRS');
+  const [riwOpen,  setRiwOpen]  = useState(false);
 
   const zone = newMemberZone;
   const zc   = zone === 'KRS' ? '#2196F3' : '#e05c3a';
-  const now  = new Date();
 
   const addRef = {
     name:  useRef<HTMLInputElement>(null),
@@ -53,12 +52,9 @@ export default function MembersView() {
     catch { setSyncStatus('err'); }
   }
 
-  function openFree(z: Zone, n: string) {
-    setFreeZone(z); setFreeName(n); setFreeOpen(true);
-  }
-
+  function openFree(z: Zone, n: string) { setFreeZone(z); setFreeName(n); setFreeOpen(true); }
   function openRiwayat(z: Zone, n: string) {
-    setRiwayatZone(z); setRiwayatName(n); setRiwayatYear(now.getFullYear());
+    setRiwayatZone(z); setRiwayatName(n); setRiwayatYear(new Date().getFullYear());
     setRiwOpen(true);
   }
 
@@ -93,8 +89,8 @@ export default function MembersView() {
     const idx  = list.indexOf(origName);
     if (idx === -1) { showToast('Member tidak ditemukan','err'); return; }
     if (newName !== origName && list.includes(newName)) { showToast('Nama sudah ada!','err'); return; }
-    let newPayments    = { ...appData.payments };
-    let newMemberInfo  = { ...(appData.memberInfo||{}) };
+    let newPayments   = { ...appData.payments };
+    let newMemberInfo = { ...(appData.memberInfo||{}) };
     if (newName !== origName) {
       list[idx] = newName; list.sort();
       Object.keys(newPayments).filter(k => k.startsWith(`${zone}__${origName}__`)).forEach(k => {
@@ -111,21 +107,20 @@ export default function MembersView() {
     }
     const newData = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']:list, payments:newPayments, memberInfo:newMemberInfo };
     await persist(newData, `✏️ Edit member ${zone}`, `${origName} → ${newName}`);
-    showToast(`${newName} berhasil diupdate!`);
-    setEditOpen(false);
+    showToast(`${newName} berhasil diupdate!`); setEditOpen(false);
   }
 
   async function deleteMember(name: string) {
-    showConfirm('🗑️',`Hapus member <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">Data bayar akan disimpan di recycle bin</span>`,'Ya, Hapus',async()=>{
+    showConfirm('🗑️',`Hapus member <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">Data bayar disimpan di recycle bin</span>`,'Ya, Hapus',async()=>{
       const list     = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
       const filtered = list.filter(m => m !== name);
-      const memberKey= `${zone}__${name}`;
-      const memberPayments: Record<string,number> = {};
-      Object.keys(appData.payments||{}).filter(k=>k.startsWith(memberKey+'__')).forEach(k=>{ memberPayments[k]=appData.payments[k]; });
-      const newDeleted = { ...(appData.deletedMembers||{}), [memberKey]:{ zone,name,deletedAt:Date.now(),payments:memberPayments } };
-      const newPayments = Object.fromEntries(Object.entries(appData.payments||{}).filter(([k])=>!k.startsWith(memberKey+'__')));
-      const newData = { ...appData,[zone==='KRS'?'krsMembers':'slkMembers']:filtered,payments:newPayments,deletedMembers:newDeleted };
-      await persist(newData, `🗑️ Hapus member ${zone} - ${name}`);
+      const mk       = `${zone}__${name}`;
+      const mp: Record<string,number> = {};
+      Object.keys(appData.payments||{}).filter(k=>k.startsWith(mk+'__')).forEach(k=>{mp[k]=appData.payments[k];});
+      const nd = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']:filtered,
+        payments:Object.fromEntries(Object.entries(appData.payments||{}).filter(([k])=>!k.startsWith(mk+'__'))),
+        deletedMembers:{ ...(appData.deletedMembers||{}), [mk]:{ zone,name,deletedAt:Date.now(),payments:mp } } };
+      await persist(nd, `🗑️ Hapus member ${zone} - ${name}`);
       showToast(`${name} dihapus`,'err');
     });
   }
@@ -134,25 +129,25 @@ export default function MembersView() {
     const d = appData.deletedMembers?.[key]; if(!d) return;
     const list = d.zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
     if (!list.includes(d.name)) { list.push(d.name); list.sort(); }
-    const newPayments = { ...(appData.payments||{}), ...(d.payments||{}) };
-    const newDeleted  = { ...(appData.deletedMembers||{}) }; delete newDeleted[key];
-    const newData = { ...appData,[d.zone==='KRS'?'krsMembers':'slkMembers']:list,payments:newPayments,deletedMembers:newDeleted };
-    await persist(newData, `♻️ Restore member ${d.zone} - ${d.name}`);
+    const nd = { ...appData, [d.zone==='KRS'?'krsMembers':'slkMembers']:list,
+      payments:{ ...(appData.payments||{}), ...(d.payments||{}) },
+      deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
+    await persist(nd, `♻️ Restore member ${d.zone} - ${d.name}`);
     showToast(`✅ ${d.name} berhasil dikembalikan!`);
   }
 
   async function permanentDelete(key: string) {
     const d = appData.deletedMembers?.[key]; if(!d) return;
-    showConfirm('💀',`Hapus permanen <b>${d.name}</b>?<br><span style="font-size:11px;color:#e05c5c">Data tidak bisa dikembalikan!</span>`,'Ya, Hapus Permanen',async()=>{
-      const newDeleted = { ...(appData.deletedMembers||{}) }; delete newDeleted[key];
-      await persist({ ...appData,deletedMembers:newDeleted },`💀 Hapus permanen ${d.zone} - ${d.name}`);
+    showConfirm('💀',`Hapus permanen <b>${d.name}</b>?<br><span style="font-size:11px;color:#e05c5c">Tidak bisa dikembalikan!</span>`,'Ya, Hapus Permanen',async()=>{
+      const nd = { ...appData, deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
+      await persist(nd, `💀 Hapus permanen ${d.zone} - ${d.name}`);
       showToast(`${d.name} dihapus permanen`,'err');
     });
   }
 
   // Sort
-  let mems = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
   const getInfo = (n: string) => appData.memberInfo?.[zone+'__'+n] || {};
+  let mems = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
   const sortFns: Record<SortMode,(a:string,b:string)=>number> = {
     'name-asc':  (a,b) => a.localeCompare(b),
     'name-desc': (a,b) => b.localeCompare(a),
@@ -162,9 +157,13 @@ export default function MembersView() {
     'ip-desc':   (a,b) => String(getInfo(b).ip||'').localeCompare(String(getInfo(a).ip||''),undefined,{numeric:true}),
   };
   mems.sort(sortFns[sortMode]);
-  const filtered     = mems.filter(m => m.toLowerCase().includes(search.toLowerCase()));
+  const filteredMems = mems.filter(m => m.toLowerCase().includes(search.toLowerCase()));
   const deletedList  = Object.entries(appData.deletedMembers||{}).filter(([k])=>k.startsWith(zone+'__')).sort((a,b)=>b[1].deletedAt-a[1].deletedAt);
-  const sortLabels: Record<SortMode,string> = { 'name-asc':'Nama A-Z','name-desc':'Nama Z-A','id-asc':'ID ↑','id-desc':'ID ↓','ip-asc':'IP ↑','ip-desc':'IP ↓' };
+  const sortLabels: Record<SortMode,string> = { 'name-asc':'A-Z','name-desc':'Z-A','id-asc':'ID ↑','id-desc':'ID ↓','ip-asc':'IP ↑','ip-desc':'IP ↓' };
+
+  const badgeStyle: React.CSSProperties = {
+    fontSize:9, padding:'2px 6px', borderRadius:4, flexShrink:0, fontFamily:"'DM Mono',monospace",
+  };
 
   return (
     <div>
@@ -181,8 +180,8 @@ export default function MembersView() {
           ))}
         </div>
         <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'🔓 Dibuka':'🔒 Dikunci'); }}
-          style={{ background:membersLocked?'#0d2b1f':'#1f0d0d', border:`1px solid ${membersLocked?'#4CAF5033':'#e05c5c33'}`, color:membersLocked?'#4CAF50':'#e05c5c', padding:'7px 16px', borderRadius:7, cursor:'pointer', fontSize:11 }}>
-          {membersLocked ? '🔒 Terkunci' : '🔓 Tidak Terkunci'}
+          style={{ background:membersLocked?'#0d2b1f':'#1f0d0d', border:`1px solid ${membersLocked?'#4CAF5033':'#e05c5c33'}`, color:membersLocked?'#4CAF50':'#e05c5c', padding:'6px 14px', borderRadius:7, cursor:'pointer', fontSize:11 }}>
+          {membersLocked ? '🔒 Terkunci' : '🔓 Buka'}
         </button>
       </div>
 
@@ -192,7 +191,7 @@ export default function MembersView() {
         <button onClick={() => setMemberTab('deleted')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='deleted'?'#e05c3a':'transparent', color:memberTab==='deleted'?'#fff':'var(--txt3)' }}>🗑️ Terhapus ({deletedList.length})</button>
       </div>
 
-      {/* Deleted tab */}
+      {/* DELETED TAB */}
       {memberTab === 'deleted' ? (
         deletedList.length === 0
           ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:12 }}>🗑️ Recycle bin kosong</div>
@@ -200,7 +199,7 @@ export default function MembersView() {
             <div key={k} className="del-card">
               <div>
                 <div className="del-card-name">🗑️ {d.name}</div>
-                <div style={{ fontSize:10, color:'var(--txt4)' }}>Dihapus: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data bayar</div>
+                <div style={{ fontSize:10, color:'var(--txt4)' }}>Dihapus: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
               </div>
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <button className="restore-btn" onClick={() => restoreMember(k)}>♻️ Kembalikan</button>
@@ -215,19 +214,36 @@ export default function MembersView() {
             <div className="add-form">
               <div className="af-title">TAMBAH MEMBER BARU KE {zone}</div>
               <div className="af-grid">
-                <div><div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>NAMA</div><input ref={addRef.name} className="af-input" placeholder="Nama member" autoComplete="off" style={{ textTransform:'uppercase' }} onKeyDown={e=>e.key==='Enter'&&addMember()} /></div>
-                <div><div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>ID PELANGGAN</div><input ref={addRef.id} className="af-input" placeholder="Opsional" autoComplete="off" /></div>
-                <div style={{ gridColumn:'span 2' }}><div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>IP / LINK ROUTER</div><input ref={addRef.ip} className="af-input" placeholder="192.168.x.x atau http://..." autoComplete="off" /></div>
-                <div><div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>TARIF (×1000)</div><input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="Contoh: 100" autoComplete="off" /></div>
+                <div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>NAMA</div>
+                  <input ref={addRef.name} className="af-input" placeholder="Nama member" autoComplete="off"
+                    style={{ textTransform:'uppercase' }} onKeyDown={e=>e.key==='Enter'&&addMember()} />
+                </div>
+                <div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>ID PELANGGAN</div>
+                  <input ref={addRef.id} className="af-input" placeholder="Opsional" autoComplete="off" />
+                </div>
+                <div style={{ gridColumn:'span 2' }}>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>IP / LINK ROUTER</div>
+                  <input ref={addRef.ip} className="af-input" placeholder="192.168.x.x atau http://..." autoComplete="off" />
+                </div>
+                <div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>TARIF (×1000)</div>
+                  <input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="Contoh: 100" autoComplete="off" />
+                </div>
               </div>
-              <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer' }} onClick={addMember}>+ Tambah ke {zone}</button>
+              <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer' }} onClick={addMember}>
+                + Tambah ke {zone}
+              </button>
             </div>
           )}
 
-          {/* Sort buttons */}
+          {/* Sort */}
           <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:8 }}>
             {(Object.entries(sortLabels) as [SortMode,string][]).map(([k,l]) => (
-              <button key={k} onClick={() => setSortMode(k)} style={{ padding:'4px 9px', borderRadius:10, border:'none', cursor:'pointer', fontSize:10, background:sortMode===k?'#2196F3':'var(--bg3)', color:sortMode===k?'#fff':'var(--txt3)' }}>{l}</button>
+              <button key={k} onClick={() => setSortMode(k)}
+                style={{ padding:'4px 9px', borderRadius:10, border:'none', cursor:'pointer', fontSize:10,
+                  background:sortMode===k?'#2196F3':'var(--bg3)', color:sortMode===k?'#fff':'var(--txt3)' }}>{l}</button>
             ))}
           </div>
 
@@ -236,35 +252,63 @@ export default function MembersView() {
             <input className="search-box" placeholder={`🔍 Cari nama di ${zone}...`} value={search} onChange={e=>setSearch(e.target.value)} />
             {search && <button className="search-clear" onClick={()=>setSearch('')}>✕</button>}
           </div>
-          <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>{filtered.length} member{search?' ditemukan':''} · {zone}</div>
+          <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>{filteredMems.length} member{search?' ditemukan':''} · {zone}</div>
 
           {/* Member rows */}
           <div id="member-rows">
-            {filtered.length === 0
+            {filteredMems.length === 0
               ? <div style={{ textAlign:'center', padding:20, color:'var(--txt3)', fontSize:12 }}>Tidak ada member</div>
-              : filtered.map((name, i) => {
+              : filteredMems.map((name, i) => {
                 const info      = getInfo(name);
                 const isFreeNow = isFree(appData, zone, name, selYear, selMonth);
+                const ipStr     = String(info.ip || '');
+                const idStr     = String(info.id || '—');
+
                 return (
-                  <div key={name} className="mem-row" style={{ flexWrap:'wrap' }}>
-                    {/* Nomor */}
-                    <span style={{ fontSize:10, color:'var(--txt4)', width:18, flexShrink:0 }}>{i+1}</span>
-                    {/* ID Badge */}
-                    <span className="mem-id-badge" style={!info.id ? { color:'var(--txt4)', borderColor:'var(--border)' } : {}}>{String(info.id||'—')}</span>
-                    {/* Nama — klik buka riwayat */}
-                    <span style={{ fontSize:12, flex:1, cursor:'pointer', color:'var(--txt)' }} onClick={() => openRiwayat(zone, name)}>{name}</span>
-                    {/* Tags */}
-                    {isFreeNow && <span style={{ background:'#0a2a18', border:'1px solid #4CAF5033', color:'#4CAF50', fontSize:9, padding:'2px 5px', borderRadius:4, flexShrink:0 }}>🆓</span>}
-                    {info.tarif && <span style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', fontSize:9, padding:'2px 5px', borderRadius:4, flexShrink:0 }}>{rp(info.tarif as number)}</span>}
-                    {info.ip && <a href={String(info.ip).startsWith('http')?String(info.ip):'http://'+String(info.ip)} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{ color:'#2196F3', fontSize:9, textDecoration:'none', border:'1px solid #1e3a5f', padding:'2px 5px', borderRadius:4, flexShrink:0, fontFamily:"'DM Mono',monospace" }}>🔗</a>}
-                    {/* Action buttons rata kanan */}
-                    {!membersLocked && (
-                      <div style={{ display:'flex', gap:4, marginLeft:'auto' }}>
-                        <button onClick={() => openFree(zone, name)} style={{ background:isFreeNow?'#0a2a18':'none', border:`1px solid ${isFreeNow?'#4CAF50':'var(--border)'}`, color:isFreeNow?'#4CAF50':'var(--txt4)', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>🆓</button>
-                        <button onClick={() => openEdit(name)} style={{ background:'none', border:'1px solid var(--border)', color:'#2196F3', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>✏️</button>
-                        <button onClick={() => deleteMember(name)} style={{ background:'none', border:'1px solid #2a1a1a', color:'#4a2a2a', padding:'3px 7px', borderRadius:5, cursor:'pointer', fontSize:10 }}>✕</button>
-                      </div>
-                    )}
+                  <div key={name} style={{ background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:8, padding:'8px 12px', marginBottom:4 }}>
+                    {/* Baris 1: nomor, ID, nama, badge */}
+                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom: (!membersLocked || ipStr) ? 5 : 0 }}>
+                      <span style={{ fontSize:10, color:'var(--txt4)', width:18, flexShrink:0 }}>{i+1}</span>
+                      <span style={{ ...badgeStyle, background:'#1e2a4022', border:'1px solid #2196F322', color: info.id ? '#2196F3' : 'var(--txt4)' }}>{idStr}</span>
+                      <span style={{ fontSize:12, flex:1, cursor:'pointer', color:'var(--txt)', fontWeight:500 }} onClick={() => openRiwayat(zone, name)}>{name}</span>
+                      {isFreeNow && <span style={{ ...badgeStyle, background:'#0a2a18', border:'1px solid #4CAF5033', color:'#4CAF50' }}>🆓</span>}
+                      {info.tarif && <span style={{ ...badgeStyle, background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)' }}>{rp(info.tarif as number)}</span>}
+                    </div>
+
+                    {/* Baris 2: IP + action buttons */}
+                    <div style={{ display:'flex', alignItems:'center', gap:6, paddingLeft:24 }}>
+                      {/* IP tampil sebagai teks dengan link */}
+                      {ipStr ? (
+                        <a
+                          href={ipStr.startsWith('http') ? ipStr : 'http://'+ipStr}
+                          target="_blank" rel="noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          style={{ fontSize:10, color:'#2196F3', textDecoration:'none', fontFamily:"'DM Mono',monospace", flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                        >
+                          🔗 {ipStr}
+                        </a>
+                      ) : (
+                        <span style={{ flex:1, fontSize:10, color:'var(--txt5)', fontStyle:'italic' }}>—</span>
+                      )}
+
+                      {/* Action buttons — selalu di baris bawah */}
+                      {!membersLocked && (
+                        <div style={{ display:'flex', gap:4, flexShrink:0 }}>
+                          <button onClick={() => openFree(zone, name)}
+                            style={{ background:isFreeNow?'#0a2a18':'none', border:`1px solid ${isFreeNow?'#4CAF50':'var(--border)'}`, color:isFreeNow?'#4CAF50':'var(--txt4)', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
+                            🆓
+                          </button>
+                          <button onClick={() => openEdit(name)}
+                            style={{ background:'none', border:'1px solid var(--border)', color:'#2196F3', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
+                            ✏️
+                          </button>
+                          <button onClick={() => deleteMember(name)}
+                            style={{ background:'none', border:'1px solid #2a1a1a', color:'#4a2a2a', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })
@@ -278,29 +322,32 @@ export default function MembersView() {
         <div className="modal-bg center" onClick={() => setEditOpen(false)}>
           <div className="modal center" onClick={e => e.stopPropagation()}>
             <div className="modal-title">✏️ Edit Member <button className="modal-close" onClick={() => setEditOpen(false)}>✕</button></div>
-            {(['NAMA','ID PELANGGAN','IP / LINK ROUTER','TARIF BULANAN (×1000)'] as const).map((label, idx) => {
-              const fields = ['name','id','ip','tarif'] as const;
-              const field  = fields[idx];
-              return (
-                <div key={field} className="modal-row">
-                  <div className="modal-label">{label}</div>
-                  <input className="modal-select" type={field==='tarif'?'number':'text'} inputMode={field==='tarif'?'numeric':undefined}
-                    placeholder={field==='id'?'Opsional':field==='ip'?'192.168.x.x atau http://...':field==='tarif'?'Contoh: 100 = Rp 100.000':''}
-                    value={editData[field]} onChange={e => setEditData(prev => ({ ...prev, [field]:e.target.value }))}
-                    style={{ borderRadius:7, padding:'9px 12px', background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt)', fontSize:13 }} />
-                </div>
-              );
-            })}
+            {([
+              { label:'NAMA',                   field:'name',  type:'text',   ph:''                             },
+              { label:'ID PELANGGAN',            field:'id',    type:'text',   ph:'Opsional'                     },
+              { label:'IP / LINK ROUTER',        field:'ip',    type:'text',   ph:'192.168.x.x atau http://...'  },
+              { label:'TARIF BULANAN (×1000)',   field:'tarif', type:'number', ph:'Contoh: 100 = Rp 100.000'    },
+            ] as const).map(({ label, field, type, ph }) => (
+              <div key={field} className="modal-row">
+                <div className="modal-label">{label}</div>
+                <input
+                  className="modal-select"
+                  type={type}
+                  inputMode={type==='number' ? 'numeric' : undefined}
+                  placeholder={ph}
+                  value={editData[field]}
+                  onChange={e => setEditData(prev => ({ ...prev, [field]: e.target.value }))}
+                  style={{ borderRadius:7, padding:'9px 12px', background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt)', fontSize:13, fontFamily:"'DM Mono',monospace" }}
+                />
+              </div>
+            ))}
             <button className="modal-action" onClick={saveEdit}>Simpan Perubahan</button>
           </div>
         </div>
       )}
 
-      {/* Free Member Modal */}
       <FreeMemberModal open={freeOpen} zone={freeZone} name={freeName} onClose={() => setFreeOpen(false)} />
-
-      {/* Riwayat Modal */}
-      <RiwayatModal open={riwOpen} onClose={() => setRiwOpen(false)} />
+      <RiwayatModal    open={riwOpen}  onClose={() => setRiwOpen(false)} />
     </div>
   );
 }

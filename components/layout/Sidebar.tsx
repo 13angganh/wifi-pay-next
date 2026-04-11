@@ -51,6 +51,7 @@ export default function Sidebar({ onNavigate }: Props) {
           <div style={{ fontSize:9, color:'var(--txt4)', letterSpacing:'.04em' }}>
             {userName || userEmail}
           </div>
+          <div style={{ fontSize:8, color:'var(--txt5)', letterSpacing:'.06em' }}>v10.2 Next</div>
         </div>
       </div>
 
