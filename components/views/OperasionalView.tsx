@@ -76,15 +76,23 @@ export default function OperasionalView() {
       <div className="ops-card">
         <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10 }}>PENGELUARAN OPERASIONAL</div>
         {items.map((it, i) => (
-          <div key={i} className="ops-row" style={{ display:'flex', gap:8, alignItems:'stretch', marginBottom:6 }}>
-            <input className="ops-input wide" placeholder="Keterangan (listrik, internet...)"
-              defaultValue={it.label} onBlur={e => updateItem(i, 'label', e.target.value)}
-              autoComplete="off" autoCorrect="off" style={{ flex:1 }} />
-            <input className="ops-input num" type="number" inputMode="numeric" placeholder="0"
-              defaultValue={it.nominal || ''} onBlur={e => updateItem(i, 'nominal', e.target.value)}
-              autoComplete="off" style={{ width:110, textAlign:'right' }} />
+          <div key={i} style={{ display:'flex', gap:8, alignItems:'center', marginBottom:8 }}>
+            <input
+              style={{ flex:1, background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt)', borderRadius:6, padding:'8px 10px', fontSize:12, fontFamily:"'DM Mono',monospace", outline:'none' }}
+              placeholder="Keterangan (listrik, internet...)"
+              defaultValue={it.label}
+              onBlur={e => updateItem(i, 'label', e.target.value)}
+              autoComplete="off"
+            />
+            <input
+              style={{ width:100, background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt)', borderRadius:6, padding:'8px 10px', fontSize:12, fontFamily:"'DM Mono',monospace", outline:'none', textAlign:'right' }}
+              type="number" inputMode="numeric" placeholder="0"
+              defaultValue={it.nominal || ''}
+              onBlur={e => updateItem(i, 'nominal', e.target.value)}
+              autoComplete="off"
+            />
             <button onClick={() => deleteItem(i)}
-              style={{ background:'#1f0d0d', border:'1px solid #e05c5c55', color:'#e05c5c', padding:'6px 10px', borderRadius:6, cursor:'pointer', fontSize:12, flexShrink:0 }}>✕</button>
+              style={{ background:'#1f0d0d', border:'1px solid #e05c5c55', color:'#e05c5c', padding:'7px 10px', borderRadius:6, cursor:'pointer', fontSize:12, flexShrink:0 }}>✕</button>
           </div>
         ))}
         <button onClick={addItem}

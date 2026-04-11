@@ -75,7 +75,7 @@ export default function Header({ onToggleSidebar }: Props) {
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, letterSpacing:'-.02em' }}>
                 WiFi Pay
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)' }}>{userName || userEmail}</div>
+              <div style={{ fontSize:9, color:'var(--txt4)' }}>v10.2 Next</div>
             </div>
           </div>
 

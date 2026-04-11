@@ -4,13 +4,14 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS, QUICK } from '@/lib/constants';
+import { MONTHS, YEARS } from '@/lib/constants';
 import { getPay, isFree, rp } from '@/lib/helpers';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
 import RiwayatModal from '@/components/modals/RiwayatModal';
 import type { Zone } from '@/types';
+import { DEFAULT_SETTINGS } from '@/types';
 
 interface Props { name: string; index: number; }
 
@@ -23,6 +24,7 @@ export default function MemberCard({ name, index }: Props) {
     globalLocked, lockedEntries,
     setSyncStatus,
     setRiwayatZone, setRiwayatName, setRiwayatYear,
+    settings,
   } = useAppStore();
 
   const [riwOpen, setRiwOpen] = useState(false);
@@ -105,6 +107,16 @@ export default function MemberCard({ name, index }: Props) {
     if (isLocked) { showToast('Data terkunci! Unlock dulu', 'err'); return; }
     const k = `${activeZone}__${name}__${cardYear}__${cardMonth}`;
     const newData = { ...appData, payments: { ...appData.payments, [k]: amt } };
+    // Auto date jika setting aktif
+    if (settings?.autoDate) {
+      const today = new Date().toISOString().slice(0,10);
+      const infoKey = `${activeZone}__${name}`;
+      const dateKey = `date_${cardYear}_${cardMonth}`;
+      newData.memberInfo = {
+        ...(newData.memberInfo||{}),
+        [infoKey]: { ...(newData.memberInfo?.[infoKey]||{}), [dateKey]: today },
+      };
+    }
     await persist(newData,
       `💰 Quick Pay ${activeZone} - ${name}`,
       `${MONTHS[cardMonth]} ${cardYear}: ${rp(amt)}`
@@ -272,7 +284,7 @@ export default function MemberCard({ name, index }: Props) {
                       ? <button className="qb" style={{ borderColor:'var(--zc)',color:'var(--zc)',fontWeight:700 }}
                           onClick={() => quickPay(info.tarif as number)}>{info.tarif as number} ★</button>
                       : <span style={{ fontSize:9,color:'var(--txt4)',alignSelf:'center' }}>★ Belum ada tarif</span>}
-                    {QUICK.filter(a => a !== info.tarif).map(a => (
+                    {(settings?.quickAmounts || DEFAULT_SETTINGS.quickAmounts).filter(a => a !== info.tarif).map(a => (
                       <button key={a} className="qb" onClick={() => quickPay(a)}>{a}</button>
                     ))}
                   </div>

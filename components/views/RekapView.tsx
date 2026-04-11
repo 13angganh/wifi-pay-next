@@ -63,18 +63,24 @@ export default function RekapView() {
     setRekapExpanded(null);
   }
 
-  async function clearPay(name: string, month: number) {
+  async function clearPay(name: string, month: number, e?: React.MouseEvent) {
+    e?.stopPropagation();
     if (isLocked(name)) { showToast('Data terkunci!', 'err'); return; }
     const k = getKey(activeZone, name, selYear, month);
-    const old = getPay(appData, activeZone, name, selYear, month);
-    if (old === null) return;
-    showConfirm('🗑️', `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${old > 0 ? rp(old) : 'Akumulasi'}</span>`, 'Ya, Hapus', async () => {
-      const newData = { ...appData, payments: { ...appData.payments } };
-      delete newData.payments[k];
-      await persist(newData, `🗑️ Hapus bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear}`);
-      showToast(`${name} dihapus`, 'err');
-      setRekapExpanded(null);
-    });
+    const curVal = getPay(appData, activeZone, name, selYear, month);
+    if (curVal === null) return;
+    showConfirm(
+      '🗑️',
+      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : 'Akumulasi'}</span>`,
+      'Ya, Hapus',
+      async () => {
+        const newData = { ...appData, payments: { ...appData.payments } };
+        delete newData.payments[k];
+        await persist(newData, `🗑️ Hapus bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear}`);
+        showToast(`${name} ${MONTHS[month]} dihapus`, 'err');
+        setRekapExpanded(null);
+      }
+    );
   }
 
   // Float modal untuk cell yang di-klik
@@ -113,7 +119,7 @@ export default function RekapView() {
                     onKeyDown={e => { if (e.key === 'Enter') manualPay(name, (e.target as HTMLInputElement).value, month); }}
                     autoFocus
                   />
-                  {entryVal !== null && <button className="delbtn" onClick={() => clearPay(name, month)}>✕</button>}
+                  {entryVal !== null && <button className="delbtn" onClick={(e) => clearPay(name, month, e)}>✕</button>}
                 </div>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
                   {tarif && <button className="qb" style={{ borderColor:'var(--zc)', color:'var(--zc)', fontWeight:700 }} onClick={() => quickPay(name, tarif, month)}>{tarif} ★</button>}

@@ -1,4 +1,4 @@
-// components/layout/AppShell.tsx
+// components/layout/AppShell.tsx — v10.2: hapus BottomNav, tambah PinLock
 'use client';
 
 import { useCallback, useEffect } from 'react';
@@ -8,10 +8,10 @@ import { useAppStore } from '@/store/useAppStore';
 import { checkAutoBackup } from '@/lib/backup';
 import Header     from './Header';
 import Sidebar    from './Sidebar';
-import BottomNav  from './BottomNav';
 import LockBanner from './LockBanner';
 import Toast      from '@/components/ui/Toast';
 import Confirm    from '@/components/ui/Confirm';
+import PinLock    from '@/components/ui/PinLock';
 import type { ViewName } from '@/types';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -22,25 +22,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setDeferredPrompt, setUpdateBanner, showUpdateBanner,
   } = useAppStore();
 
-  // Sync view dengan pathname
+  // Sync view
   useEffect(() => {
     const seg = pathname.split('/')[1] as ViewName;
     if (seg) setView(seg);
   }, [pathname]);
 
-  // Dark/light mode
+  // Dark/light
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
   }, [darkMode]);
 
-  // PWA install prompt
+  // PWA
   useEffect(() => {
-    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    const h = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', h);
+    return () => window.removeEventListener('beforeinstallprompt', h);
   }, []);
 
-  // Service Worker
+  // SW
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -67,57 +67,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const navigate = useCallback((v: ViewName) => {
     setView(v);
     router.push('/'+v);
-    if (window.innerWidth < 768) setSidebar(false);
+    setSidebar(false); // selalu tutup sidebar setelah navigasi
   }, [router, setView, setSidebar]);
 
   return (
     <>
-      {/* CDN scripts */}
+      {/* CDN */}
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" strategy="lazyOnload" />
 
+      {/* PIN Lock — overlay pertama sebelum semua konten */}
+      <PinLock />
+
       {/* Update banner */}
       {showUpdateBanner && (
         <div className="update-banner">
           <span style={{ fontSize:12, color:'#4CAF50' }}>🆕 Ada versi terbaru WiFi Pay!</span>
-          <button
-            onClick={() => navigator.serviceWorker.getRegistration().then(r => {
-              r?.waiting?.postMessage({ type:'SKIP_WAITING' });
-              window.location.reload();
-            })}
-            style={{ background:'#4CAF50',color:'#0a0c12',border:'none',padding:'6px 14px',borderRadius:6,fontSize:11,fontWeight:700,cursor:'pointer',flexShrink:0 }}>
+          <button onClick={() => navigator.serviceWorker.getRegistration().then(r => {
+            r?.waiting?.postMessage({ type:'SKIP_WAITING' }); window.location.reload();
+          })} style={{ background:'#4CAF50', color:'#0a0c12', border:'none', padding:'6px 14px', borderRadius:6, fontSize:11, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
             Update Sekarang
           </button>
         </div>
       )}
 
-      {/* App container */}
       <div style={{ display:'flex', position:'fixed', inset:0, top: showUpdateBanner ? 44 : 0 }}>
+        {/* Sidebar overlay mobile */}
+        <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebar(false)} />
 
-        {/* Sidebar overlay (mobile) */}
-        <div
-          className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`}
-          onClick={() => setSidebar(false)}
-        />
-
-        {/* Sidebar — fixed di kiri desktop, slide dari kiri mobile */}
+        {/* Sidebar */}
         <div id="sidebar" className={sidebarOpen ? 'open' : ''}>
           <Sidebar onNavigate={navigate} />
         </div>
 
-        {/* Main area */}
+        {/* Main */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, overflow:'hidden' }}>
           <Header onToggleSidebar={() => setSidebar(!sidebarOpen)} />
-          {/* Lock banner tepat di bawah header */}
           <LockBanner />
-          {/* Content */}
-          <div id="content" style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' as any, padding:'12px 12px 80px', background:'var(--bg)' }}>
+          <div id="content" style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' as any, padding:'12px 12px 24px', background:'var(--bg)' }}>
             {children}
           </div>
-          {/* Bottom nav */}
-          <BottomNav onNavigate={navigate} />
+          {/* BottomNav DIHAPUS — navigasi via sidebar saja */}
         </div>
       </div>
 

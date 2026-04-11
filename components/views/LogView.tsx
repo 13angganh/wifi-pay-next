@@ -9,6 +9,7 @@ export default function LogView() {
   const { appData, logSearch, setLogSearch, logType, setLogType } = useAppStore();
   const [logYear,  setLogYear]  = useState('');
   const [logMonth, setLogMonth] = useState('');
+  const [logName,  setLogName]  = useState('');
 
   const logs = appData.activityLog || [];
 
@@ -23,10 +24,14 @@ export default function LogView() {
     const q = logSearch.trim().toLowerCase();
     filtered = filtered.filter(l => (l.action || '').toLowerCase().includes(q) || (l.detail || '').toLowerCase().includes(q));
   }
+  if (logName.trim()) {
+    const qn = logName.trim().toLowerCase();
+    filtered = filtered.filter(l => (l.action || '').toLowerCase().includes(qn) || (l.detail || '').toLowerCase().includes(qn));
+  }
   if (logYear)  filtered = filtered.filter(l => new Date(l.ts).getFullYear() === +logYear);
   if (logMonth) filtered = filtered.filter(l => new Date(l.ts).getMonth() === +logMonth);
 
-  function reset() { setLogSearch(''); setLogYear(''); setLogMonth(''); setLogType('all'); }
+  function reset() { setLogSearch(''); setLogYear(''); setLogMonth(''); setLogType('all'); setLogName(''); }
 
   const isPayLog = (action: string) =>
     action && (action.includes('💰') || action.includes('🗑️ Hapus bayar') || action.includes('🆓') || action.includes('Quick Pay'));
@@ -46,6 +51,11 @@ export default function LogView() {
       </div>
 
       {/* Date filter */}
+      {/* Filter nama member */}
+      <div className="search-wrap" style={{ marginBottom:8 }}>
+        <input className="search-box" style={{ margin:0 }} placeholder="👤 Filter nama member..." value={logName} onChange={e => setLogName(e.target.value)} />
+        {logName && <button className="search-clear" onClick={() => setLogName('')}>✕</button>}
+      </div>
       <div style={{ display:'flex', gap:6 }}>
         <select className="cs" style={{ flex:1 }} value={logYear} onChange={e => setLogYear(e.target.value)}>
           <option value="">Semua Tahun</option>

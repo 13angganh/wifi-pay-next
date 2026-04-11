@@ -43,6 +43,7 @@ export const PAGE_TITLES: Record<string, string> = {
   log: 'Log',
   members: 'Member',
   operasional: 'Operasional',
+  settings:    'Pengaturan',
 };
 
 export const PAGE_ICONS: Record<string, string> = {
@@ -54,4 +55,5 @@ export const PAGE_ICONS: Record<string, string> = {
   log: '🗂️',
   members: '👥',
   operasional: '💼',
+  settings:    '⚙️',
 };
