@@ -42,9 +42,9 @@ export default function EntryView() {
   }, [setEntryScrollTop]);
 
   const chips: { key: FilterType; label: string; count?: number }[] = [
-    { key:'all',    label:'Semua' },
-    { key:'paid',   label:'Lunas',  count: paid },
-    { key:'unpaid', label:'Belum',  count: unpaid },
+    { key:'all',    label:'📋 Semua' },
+    { key:'paid',   label:'✅ Lunas',  count: paid },
+    { key:'unpaid', label:'⏳ Belum',  count: unpaid },
     { key:'free',   label:'🆓 Free', count: freeCount },
   ];
 

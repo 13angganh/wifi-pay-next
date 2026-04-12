@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { showToast } from '@/components/ui/Toast';
 import { getZoneTotal, isLunas, isFree, getPay, getArrears, rp } from '@/lib/helpers';
+import { doJSONBackup, doWASummary } from '@/lib/export';
 import type { ViewName } from '@/types';
 
 export default function DashboardView() {
@@ -170,7 +171,7 @@ export default function DashboardView() {
           <div style={{fontSize:10,color:'var(--txt4)',marginTop:2}}>{backupLbl}</div>
         </div>
         <button style={{background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--txt2)',padding:'8px 14px',borderRadius:8,cursor:'pointer',fontSize:11}}
-          onClick={()=>{ /* diimplementasi Session 5 */ }}>
+          onClick={()=>{ doJSONBackup(appData); showToast('✅ Backup JSON berhasil!'); }}>
           Backup Sekarang
         </button>
       </div>
@@ -179,24 +180,11 @@ export default function DashboardView() {
       <div style={card}>
         <div style={{fontSize:11,fontWeight:700,color:'var(--txt)',marginBottom:8}}>📤 Ringkasan WA</div>
         <button style={{width:'100%',background:'#0d2b1f',border:'1px solid #4CAF5033',color:'#4CAF50',padding:10,borderRadius:8,cursor:'pointer',fontSize:12,fontWeight:600}}
-          onClick={()=>{ /* diimplementasi Session 5 */ }}>
+          onClick={()=>{ doWASummary(appData); }}>
           📊 Kirim Ringkasan Bulan Ini ke WA
         </button>
       </div>
 
-      {/* Quick nav */}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginBottom:8}}>
-        {(['📝 Entry entry','📊 Rekap rekap','⚠️ Tunggak tunggakan','📈 Grafik grafik','👥 Member members','💼 Ops operasional']).map(s=>{
-          const [icon,label,v] = s.split(' ');
-          return (
-            <button key={v} onClick={()=>nav(v as ViewName)}
-              style={{background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:10,padding:'10px 4px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-              <span style={{fontSize:18}}>{icon}</span>
-              <span style={{fontSize:10,color:'var(--txt2)'}}>{label}</span>
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
