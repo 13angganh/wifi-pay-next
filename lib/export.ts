@@ -123,10 +123,10 @@ export function doJSONBackup(data: AppData): void {
 }
 
 // ── WA Summary ──
-export function doWASummary(data: AppData): void {
+export function doWASummary(data: AppData, year?: number, month?: number): void {
   const now = new Date();
-  const dy  = now.getFullYear();
-  const dm  = now.getMonth();
+  const dy  = year  ?? now.getFullYear();
+  const dm  = month ?? now.getMonth();
   const bulan = `${MONTHS[dm]} ${dy}`;
 
   const krsTotal = getZoneTotal(data,'KRS',dy,dm);

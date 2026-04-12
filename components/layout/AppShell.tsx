@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Script from 'next/script';
 import { useAppStore } from '@/store/useAppStore';
 import { checkAutoBackup } from '@/lib/backup';
+import { useIdleTimeout } from '@/hooks/useIdleTimeout';
 import Header     from './Header';
 import Sidebar    from './Sidebar';
 import LockBanner from './LockBanner';
@@ -20,7 +21,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const {
     sidebarOpen, setSidebar, setView, darkMode, appData,
     setDeferredPrompt, setUpdateBanner, showUpdateBanner,
+    settings,
   } = useAppStore();
+
+  // Idle timeout PIN — hanya lock PIN, bukan logout Firebase
+  useIdleTimeout(settings.pinTimeoutMinutes);
 
   // Sync view
   useEffect(() => {

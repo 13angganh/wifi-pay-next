@@ -72,7 +72,7 @@ export default function TunggakanView() {
       {/* Cards */}
       {mode === 'nakal' && (
         allArrears.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'#4CAF50', fontSize:13 }}>✅ Semua lunas sampai bulan ini!</div>
+          ? <div className="empty-state" style={{padding:'28px 24px'}}><div className="empty-icon">✅</div><div className="empty-title" style={{color:'#4CAF50'}}>Semua Lunas!</div><div className="empty-sub">Tidak ada tunggakan sampai bulan ini</div></div>
           : allArrears.map((x, i) => (
             <div key={x.name} className="tcard">
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
@@ -89,7 +89,7 @@ export default function TunggakanView() {
 
       {mode === 'rajin' && (
         rajin.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:13 }}>Belum ada yang lunas sempurna</div>
+          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🏅</div><div className="empty-title">Belum Ada</div><div className="empty-sub">Belum ada member yang lunas semua bulan</div></div>
           : rajin.map((name, i) => (
             <div key={name} className="tcard" style={{ borderColor:'#4CAF5033' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -102,7 +102,7 @@ export default function TunggakanView() {
 
       {mode === 'free' && (
         freeList.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:13 }}>Tidak ada free member bulan ini</div>
+          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🆓</div><div className="empty-title">Tidak Ada</div><div className="empty-sub">Tidak ada free member aktif bulan ini</div></div>
           : freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined

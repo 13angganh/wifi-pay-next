@@ -1,15 +1,11 @@
-// components/layout/Header.tsx - FIXED: hapus tombol akun dari header
+// components/layout/Header.tsx — Sesi B: bersih, hanya 3 tombol
 'use client';
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { saveDB } from '@/lib/db';
-import { doWASummary } from '@/lib/export';
 import { showToast } from '@/components/ui/Toast';
-import ShareModal   from '@/components/modals/ShareModal';
-import ExportModal  from '@/components/modals/ExportModal';
 import GlobalSearch from '@/components/modals/GlobalSearch';
-import ImportInput, { triggerImport } from '@/components/modals/ImportModal';
 
 interface Props { onToggleSidebar: () => void; }
 
@@ -18,12 +14,9 @@ export default function Header({ onToggleSidebar }: Props) {
     activeZone, setZone,
     globalLocked, setGlobalLocked,
     syncStatus, darkMode, toggleTheme,
-    userName, userEmail,
     appData, uid, setSyncStatus,
   } = useAppStore();
 
-  const [shareOpen,  setShareOpen]  = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const zc = activeZone === 'KRS' ? '#2196F3' : '#e05c3a';
@@ -48,16 +41,11 @@ export default function Header({ onToggleSidebar }: Props) {
     showToast(next ? '🔒 Entry dikunci' : '🔓 Entry dibuka');
   }
 
-  const syncLabel: Record<string, string> = {
-    ok:'tersimpan', loading:'menyimpan...', err:'gagal sync', offline:'offline',
-  };
-
   return (
     <>
       <div id="header">
         {/* Row 1: hamburger + logo + zone switch */}
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-          {/* Hamburger — selalu tampil, buka/tutup sidebar */}
           <button
             id="hamburger"
             className="hbtn"
@@ -68,14 +56,14 @@ export default function Header({ onToggleSidebar }: Props) {
           </button>
 
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <div style={{ width:30, height:30, borderRadius:8, background:`linear-gradient(135deg,${zc},${zc}bb)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>
+            <div style={{ width:30, height:30, borderRadius:8, background:`linear-gradient(135deg,${zc},${zc}bb)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0, boxShadow:'var(--shadow-z)' }}>
               📶
             </div>
             <div>
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, letterSpacing:'-.02em' }}>
                 WiFi Pay
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)' }}>v10.2 Next</div>
+              <div style={{ fontSize:9, color:'var(--txt4)' }}>v11.0 Next</div>
             </div>
           </div>
 
@@ -86,34 +74,49 @@ export default function Header({ onToggleSidebar }: Props) {
           </div>
         </div>
 
-        {/* Row 2: action buttons — tanpa tombol akun (sudah di sidebar) */}
-        <div style={{ display:'flex', gap:6, alignItems:'center', flexWrap:'wrap' }}>
-          <span style={{ display:'flex', alignItems:'center', gap:4 }}>
-            <span className={`sync-dot ${syncStatus !== 'ok' ? 'off' : ''}`} />
-            <span style={{ fontSize:10, color:'var(--txt4)' }}>
-              {syncLabel[syncStatus] ?? syncStatus}
-            </span>
-          </span>
-          <button className="hbtn" onClick={() => setShareOpen(true)}>📤 Share</button>
-          <button className="hbtn" onClick={() => setExportOpen(true)}>⬇ Export</button>
-          <button className="hbtn" onClick={() => triggerImport()}>⬆ Import</button>
+        {/* Row 2: sync dot + 3 tombol saja */}
+        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+          {/* Sync indicator — dot saja tanpa teks */}
+          <span
+            className={`sync-dot ${syncStatus !== 'ok' ? 'off' : ''}`}
+            title={syncStatus === 'ok' ? 'Tersimpan' : syncStatus === 'loading' ? 'Menyimpan...' : syncStatus === 'err' ? 'Gagal sync' : 'Offline'}
+            style={{ marginRight:4 }}
+          />
+
+          <span style={{ flex:1 }} />
+
+          {/* Kunci/Buka entry */}
           <button
             className="hbtn"
-            style={{ color: globalLocked ? '#F44336' : '#4CAF50', display:'flex', alignItems:'center', gap:4 }}
+            style={{ color: globalLocked ? '#e05c5c' : '#4CAF50', display:'flex', alignItems:'center', gap:4 }}
             onClick={toggleGlobalLock}
+            title={globalLocked ? 'Buka kunci entry' : 'Kunci entry'}
           >
             {globalLocked ? '🔒' : '🔓'}
             <span style={{ fontSize:9 }}>{globalLocked ? 'KUNCI' : 'BUKA'}</span>
           </button>
-          <button className="hbtn" onClick={() => setSearchOpen(true)}>🔍</button>
-          <button className="hbtn" onClick={toggleTheme}>{darkMode ? '🌙' : '☀️'}</button>
+
+          {/* Pencarian */}
+          <button
+            className="hbtn"
+            onClick={() => setSearchOpen(true)}
+            title="Cari member"
+          >
+            🔍
+          </button>
+
+          {/* Toggle tema */}
+          <button
+            className="hbtn"
+            onClick={toggleTheme}
+            title={darkMode ? 'Mode terang' : 'Mode gelap'}
+          >
+            {darkMode ? '🌙' : '☀️'}
+          </button>
         </div>
       </div>
 
-      <ShareModal   open={shareOpen}  onClose={() => setShareOpen(false)} />
-      <ExportModal  open={exportOpen} onClose={() => setExportOpen(false)} />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
-      <ImportInput />
     </>
   );
 }

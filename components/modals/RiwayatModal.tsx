@@ -94,7 +94,13 @@ export default function RiwayatModal({ open, onClose }: Props) {
         {/* Rows */}
         <div>
           {rows.length === 0
-            ? <div style={{ textAlign:'center', padding:20, color:'var(--txt3)', fontSize:12 }}>Tidak ada data tahun {riwayatYear}</div>
+            ? (
+              <div className="empty-state" style={{ padding:'32px 24px' }}>
+                <div className="empty-icon">📭</div>
+                <div className="empty-title">Tidak Ada Data</div>
+                <div className="empty-sub">Belum ada riwayat pembayaran tahun {riwayatYear}</div>
+              </div>
+            )
             : rows}
         </div>
       </div>

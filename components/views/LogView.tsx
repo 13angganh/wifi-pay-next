@@ -75,7 +75,7 @@ export default function LogView() {
       {/* Log items */}
       <div id="log-items">
         {filtered.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:13 }}>📋 Tidak ada log ditemukan</div>
+          ? <div className="empty-state"><div className="empty-icon">📋</div><div className="empty-title">Tidak Ada Log</div><div className="empty-sub">Belum ada aktivitas yang tercatat</div></div>
           : filtered.slice(0, 150).map((l, i) => {
             const d  = new Date(l.ts);
             const dt = `${d.toLocaleDateString('id-ID')} ${d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })}`;

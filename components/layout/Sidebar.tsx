@@ -51,7 +51,7 @@ export default function Sidebar({ onNavigate }: Props) {
           <div style={{ fontSize:9, color:'var(--txt4)', letterSpacing:'.04em' }}>
             {userName || userEmail}
           </div>
-          <div style={{ fontSize:8, color:'var(--txt5)', letterSpacing:'.06em' }}>v10.2 Next</div>
+          <div style={{ fontSize:8, color:'var(--txt5)', letterSpacing:'.06em' }}>v11.0 Next</div>
         </div>
       </div>
 
@@ -89,9 +89,9 @@ export default function Sidebar({ onNavigate }: Props) {
       </nav>
 
       {/* Footer versi */}
-      <div style={{ padding:'10px 16px', borderTop:'1px solid var(--border)', fontSize:9, color:'var(--txt5)', display:'flex', justifyContent:'space-between' }}>
-        <span>WiFi Pay v10.2 Next</span>
-        <span style={{ color:'var(--txt5)' }}>wifi-pay-online</span>
+      <div style={{ padding:'10px 16px', borderTop:'1px solid var(--border)', fontSize:9, color:'var(--txt5)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+        <span style={{ letterSpacing:'.04em' }}>WiFi Pay v11.0 Next</span>
+        <span style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:4, padding:'2px 6px', fontSize:8, letterSpacing:'.04em' }}>wifi-pay-online</span>
       </div>
     </>
   );

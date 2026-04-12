@@ -194,7 +194,7 @@ export default function MembersView() {
       {/* DELETED TAB */}
       {memberTab === 'deleted' ? (
         deletedList.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:12 }}>🗑️ Recycle bin kosong</div>
+          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🗑️</div><div className="empty-title">Recycle Bin Kosong</div><div className="empty-sub">Tidak ada member yang dihapus</div></div>
           : deletedList.map(([k,d]) => (
             <div key={k} className="del-card">
               <div>
@@ -257,7 +257,7 @@ export default function MembersView() {
           {/* Member rows */}
           <div id="member-rows">
             {filteredMems.length === 0
-              ? <div style={{ textAlign:'center', padding:20, color:'var(--txt3)', fontSize:12 }}>Tidak ada member</div>
+              ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">👥</div><div className="empty-title">Belum Ada Member</div><div className="empty-sub">Tambahkan member baru di atas</div></div>
               : filteredMems.map((name, i) => {
                 const info      = getInfo(name);
                 const isFreeNow = isFree(appData, zone, name, selYear, selMonth);

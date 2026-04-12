@@ -1,4 +1,4 @@
-// components/views/EntryView.tsx — FIXED: filter free member
+// components/views/EntryView.tsx — Sesi C: tambah indikasi potensi belum lunas
 'use client';
 
 import { useCallback } from 'react';
@@ -20,10 +20,21 @@ export default function EntryView() {
   const mems = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
 
   // Hitung stats — free member TIDAK masuk paid NOR unpaid
-  const freeCount  = mems.filter(m => isFree(appData, activeZone, m, selYear, selMonth)).length;
-  const paid       = mems.filter(m => isLunas(appData, activeZone, m, selYear, selMonth) && !isFree(appData, activeZone, m, selYear, selMonth)).length;
-  const unpaid     = mems.filter(m => getPay(appData, activeZone, m, selYear, selMonth) === null && !isFree(appData, activeZone, m, selYear, selMonth)).length;
-  const total      = mems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, selMonth) || 0), 0);
+  const freeCount = mems.filter(m => isFree(appData, activeZone, m, selYear, selMonth)).length;
+  const paid      = mems.filter(m => isLunas(appData, activeZone, m, selYear, selMonth) && !isFree(appData, activeZone, m, selYear, selMonth)).length;
+  const unpaid    = mems.filter(m => getPay(appData, activeZone, m, selYear, selMonth) === null && !isFree(appData, activeZone, m, selYear, selMonth)).length;
+  const total     = mems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, selMonth) || 0), 0);
+
+  // ── Sesi C: Hitung potensi pendapatan belum masuk ──
+  // Hanya member yang belum bayar + punya tarif khusus terdaftar
+  const potensiUnpaid = mems.reduce((sum, m) => {
+    const belum = getPay(appData, activeZone, m, selYear, selMonth) === null
+      && !isFree(appData, activeZone, m, selYear, selMonth);
+    if (!belum) return sum;
+    const info  = appData.memberInfo?.[activeZone + '__' + m] || {};
+    const tarif = info.tarif as number | undefined;
+    return sum + (tarif ?? 0);
+  }, 0);
 
   // Filter chips — 'free' tambahan
   type FilterType = 'all' | 'paid' | 'unpaid' | 'free';
@@ -45,7 +56,7 @@ export default function EntryView() {
     { key:'all',    label:'📋 Semua' },
     { key:'paid',   label:'✅ Lunas',  count: paid },
     { key:'unpaid', label:'⏳ Belum',  count: unpaid },
-    { key:'free',   label:'🆓 Free', count: freeCount },
+    { key:'free',   label:'🆓 Free',   count: freeCount },
   ];
 
   return (
@@ -71,6 +82,30 @@ export default function EntryView() {
         </div>
       </div>
 
+      {/* ── Sesi C: Potensi belum lunas ── */}
+      {unpaid > 0 && potensiUnpaid > 0 && (
+        <div style={{
+          background:'#1f0d0d', border:'1px solid #e05c5c22', borderRadius:9,
+          padding:'8px 14px', marginBottom:10,
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+        }}>
+          <div>
+            <div style={{ fontSize:9, color:'#e05c5c88', letterSpacing:'.06em' }}>POTENSI BELUM MASUK</div>
+            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'#e05c5c' }}>
+              {rp(potensiUnpaid)}
+            </div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:10, color:'var(--txt4)' }}>
+              dari {unpaid} member belum bayar
+            </div>
+            <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>
+              berdasarkan tarif terdaftar
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Period selector */}
       <div className="ctrl-row">
         <select className="cs" value={selYear} onChange={e => setSelYear(+e.target.value)}>
@@ -82,7 +117,7 @@ export default function EntryView() {
         <span style={{ fontSize:11, color:'var(--txt3)', alignSelf:'center' }}>{MONTHS[selMonth]} {selYear}</span>
       </div>
 
-      {/* Filter chips — Semua | Lunas | Belum | 🆓 Free */}
+      {/* Filter chips */}
       <div style={{ display:'flex', gap:5, marginBottom:10, flexWrap:'wrap' }}>
         {chips.map(({ key, label, count }) => (
           <button
@@ -109,7 +144,7 @@ export default function EntryView() {
       {/* Member cards */}
       <div id="entry-cards">
         {filtered.length === 0
-          ? <div style={{ textAlign:'center', padding:30, color:'var(--txt3)', fontSize:12 }}>Tidak ada member</div>
+          ? <div className="empty-state"><div className="empty-icon">📝</div><div className="empty-title">Tidak Ada Member</div><div className="empty-sub">Tambahkan member di menu Member</div></div>
           : filtered.map((name, i) => <MemberCard key={name} name={name} index={i} />)
         }
       </div>
