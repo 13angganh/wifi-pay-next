@@ -199,13 +199,15 @@ export default function SettingsView() {
   }
 
   function Btn({ label, onClick, danger=false, secondary=false }: { label:string; onClick:()=>void; danger?:boolean; secondary?:boolean }) {
+    const borderVal = danger ? '1px solid #e05c5c33' : secondary ? '1px solid var(--border)' : 'none';
+    const extraStyle = (!danger && !secondary) ? { boxShadow:'var(--shadow-z)' as string } : {};
     return (
       <button onClick={onClick} style={{
-        width:'100%', padding:'10px', borderRadius:8, border:'none', cursor:'pointer',
+        width:'100%', padding:'10px', borderRadius:8, border: borderVal, cursor:'pointer',
         fontSize:13, fontWeight:600, marginTop:8, transition:'all var(--t-fast)',
         background: danger?'#1f0d0d':secondary?'var(--bg3)':'var(--zc)',
         color: danger?'#e05c5c':secondary?'var(--txt2)':'#fff',
-        ...(danger?{border:'1px solid #e05c5c33'}:secondary?{border:'1px solid var(--border)'}:{boxShadow:'var(--shadow-z)'}),
+        ...extraStyle,
       }}>{label}</button>
     );
   }
