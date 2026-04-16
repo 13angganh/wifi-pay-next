@@ -1,4 +1,4 @@
-// components/views/DashboardView.tsx — Sesi C: WA summary ikut selector + aging widget tunggakan
+// components/views/DashboardView.tsx — Sesi 5C: hero metric + hapus aging + Lucide + operasional tappable
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,13 @@ import { showToast } from '@/components/ui/Toast';
 import { getZoneTotal, isLunas, isFree, getPay, getArrears, rp } from '@/lib/helpers';
 import { doJSONBackup, doWASummary } from '@/lib/export';
 import type { ViewName } from '@/types';
+import {
+  LayoutDashboard, ChevronRight,
+  TrendingUp, TrendingDown,
+  CheckCircle2, Clock, Gift,
+  AlertTriangle, Database,
+  Share2, Wallet, Minus,
+} from 'lucide-react';
 
 export default function DashboardView() {
   const router = useRouter();
@@ -22,15 +29,17 @@ export default function DashboardView() {
   const prevDy      = dm === 0 ? dy - 1 : dy;
   const krsPrev     = getZoneTotal(appData, 'KRS', prevDy, prevDm);
   const slkPrev     = getZoneTotal(appData, 'SLK', prevDy, prevDm);
-  const krsPct2: number | null = krsPrev > 0 ? Math.round(((krsTotal - krsPrev) / krsPrev) * 100) : null;
-  const slkPct2: number | null = slkPrev > 0 ? Math.round(((slkTotal - slkPrev) / slkPrev) * 100) : null;
+  const totalPrev   = krsPrev + slkPrev;
+  const krsPct2: number | null  = krsPrev > 0 ? Math.round(((krsTotal - krsPrev) / krsPrev) * 100) : null;
+  const slkPct2: number | null  = slkPrev > 0 ? Math.round(((slkTotal - slkPrev) / slkPrev) * 100) : null;
+  const totalPct: number | null = totalPrev > 0 ? Math.round(((totalIncome - totalPrev) / totalPrev) * 100) : null;
   const opsData   = appData.operasional?.[`${dy}_${dm}`] || { items: [] };
   const totalOps  = (opsData.items || []).reduce((s, it) => s + (+it.nominal || 0), 0);
   const netIncome = totalIncome - totalOps;
 
   // ── Member counts ──
-  const krsAll = appData.krsMembers || [];
-  const slkAll = appData.slkMembers || [];
+  const krsAll   = appData.krsMembers || [];
+  const slkAll   = appData.slkMembers || [];
   const krsLunas = krsAll.filter(m => isLunas(appData, 'KRS', m, dy, dm) && !isFree(appData, 'KRS', m, dy, dm)).length;
   const krsBelum = krsAll.filter(m => getPay(appData, 'KRS', m, dy, dm) === null && !isFree(appData, 'KRS', m, dy, dm)).length;
   const slkLunas = slkAll.filter(m => isLunas(appData, 'SLK', m, dy, dm) && !isFree(appData, 'SLK', m, dy, dm)).length;
@@ -53,16 +62,6 @@ export default function DashboardView() {
   topTunggak.sort((a, b) => b.count - a.count);
   const top5 = topTunggak.slice(0, 5);
 
-  // ── Sesi C: Aging widget ──
-  // Klasifikasi tunggakan berdasarkan lama waktu
-  const aging = { one: 0, two3: 0, four: 0 };
-  for (const t of topTunggak) {
-    if (t.count === 1)       aging.one++;
-    else if (t.count <= 3)   aging.two3++;
-    else                     aging.four++;
-  }
-  const totalTunggak = aging.one + aging.two3 + aging.four;
-
   // ── Misc ──
   const lastBackup = typeof window !== 'undefined' ? localStorage.getItem('wp_last_backup') : null;
   const backupLbl  = lastBackup ? new Date(+lastBackup).toLocaleDateString('id-ID') : 'Belum pernah';
@@ -74,19 +73,30 @@ export default function DashboardView() {
     if (pct === null) return null;
     const up = pct >= 0;
     return (
-      <span style={{ fontSize:9, fontWeight:600, color: up ? '#4CAF50' : '#e05c5c', marginLeft:4 }}>
-        {up ? '▲' : '▼'}{Math.abs(pct)}% vs {MONTHS[prevDm]}
+      <span style={{ fontSize:9, fontWeight:600, color: up ? 'var(--c-lunas)' : 'var(--c-belum)', marginLeft:4, display:'inline-flex', alignItems:'center', gap:2 }}>
+        {up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+        {Math.abs(pct)}% vs {MONTHS[prevDm]}
       </span>
     );
   }
 
-  const card = { background:'var(--card)', border:'1px solid var(--border)', borderRadius:12, padding:12, marginBottom:8 } as const;
+  const card = {
+    background:'var(--bg2)',
+    border:'1px solid rgba(255,255,255,0.05)',
+    borderRadius:'var(--r-md)',
+    padding:16,
+    marginBottom:10,
+    boxShadow:'var(--shadow-sm)',
+  } as const;
 
   return (
     <div>
-      {/* Period selector */}
+      {/* Header + Period selector */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:16, color:'var(--txt)' }}>📊 Dashboard</div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <LayoutDashboard size={16} style={{ color:'var(--txt3)' }} />
+          <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:16, color:'var(--txt)' }}>Dashboard</span>
+        </div>
         <div style={{ display:'flex', gap:5 }}>
           <select className="cs" style={{ fontSize:11, padding:'5px 8px' }} value={dm} onChange={e => setSelMonth(+e.target.value)}>
             {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
@@ -96,146 +106,219 @@ export default function DashboardView() {
           </select>
         </div>
       </div>
-      <div style={{ fontSize:9, color:'var(--txt4)', letterSpacing:'.07em', marginBottom:6 }}>{bulanLbl.toUpperCase()}</div>
+      <div style={{ fontSize:9, color:'var(--txt4)', letterSpacing:'.07em', marginBottom:12, textTransform:'uppercase' }}>{bulanLbl}</div>
 
-      {/* KRS + SLK */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
+      {/* ── Hero Metric: Total Income ── */}
+      <div style={{
+        ...card,
+        background:'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(24,28,39,0) 60%)',
+        borderColor:'rgba(34,197,94,0.15)',
+        padding:'20px 16px',
+        marginBottom:10,
+      }}>
+        <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', textTransform:'uppercase', marginBottom:4 }}>
+          Pendapatan Bulan Ini
+        </div>
+        <div style={{
+          fontFamily:"'Syne',sans-serif",
+          fontSize:'clamp(22px,6vw,32px)',
+          fontWeight:800,
+          color:'var(--c-lunas)',
+          lineHeight:1.1,
+          marginBottom:6,
+        }}>
+          {rp(totalIncome)}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+          <PctBadge pct={totalPct} />
+          {totalOps > 0 && (
+            <span style={{ fontSize:10, color:'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
+              <Minus size={10} /> Ops: {rp(totalOps)} →
+              <span style={{ color: netIncome >= 0 ? 'var(--c-lunas)' : 'var(--c-belum)', fontWeight:600, marginLeft:2 }}>
+                Bersih: {rp(netIncome)}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* KRS + SLK cards — shadow-md, progress bar 6px */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:10 }}>
         {([
-          ['KRS', '#2196F3', krsTotal, krsPct2, krsLunas, krsAll.length, krsPct],
-          ['SLK', '#e05c3a', slkTotal, slkPct2, slkLunas, slkAll.length, slkPct],
+          ['KRS', 'var(--zc-krs)', krsTotal, krsPct2, krsLunas, krsAll.length, krsPct],
+          ['SLK', 'var(--zc-slk)', slkTotal, slkPct2, slkLunas, slkAll.length, slkPct],
         ] as const).map(([zone, color, tot, pct2, lunas, allLen, pct]) => (
-          <div key={zone} style={card}>
-            <div style={{ fontSize:9, color:'var(--txt4)', marginBottom:2 }}>{zone} <PctBadge pct={pct2 as number | null} /></div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(11px,3.5vw,14px)', fontWeight:800, color: color as string, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+          <div key={zone} style={{
+            ...card,
+            boxShadow:'var(--shadow-md)',
+            padding:'14px 14px',
+          }}>
+            <div style={{ fontSize:9, color:'var(--txt4)', marginBottom:4, display:'flex', alignItems:'center', gap:4 }}>
+              {zone} <PctBadge pct={pct2 as number | null} />
+            </div>
+            <div style={{
+              fontFamily:"'Syne',sans-serif",
+              fontSize:'clamp(12px,3.8vw,15px)',
+              fontWeight:800,
+              color: color as string,
+              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+              marginBottom:8,
+            }}>
               {rp(tot as number)}
             </div>
-            <div style={{ marginTop:6 }}>
-              <div style={{ height:4, background:'var(--bg3)', borderRadius:2, overflow:'hidden' }}>
-                <div style={{ height:'100%', width:`${pct}%`, background: color as string, borderRadius:2, transition:'width .4s' }} />
+            <div>
+              {/* Progress bar 6px */}
+              <div style={{ height:6, background:'var(--bg3)', borderRadius:3, overflow:'hidden' }}>
+                <div style={{
+                  height:'100%', width:`${pct}%`,
+                  background: color as string,
+                  borderRadius:3, transition:'width .4s var(--ease-smooth)',
+                }} />
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:3 }}>{lunas}/{allLen} lunas ({pct}%)</div>
+              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:4 }}>{lunas}/{allLen} lunas ({pct}%)</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Income summary */}
-      <div style={card}>
-        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8, gap:8 }}>
-          <div style={{ minWidth:0, flex:1 }}>
-            <div style={{ fontSize:9, color:'var(--txt4)', marginBottom:2 }}>PENDAPATAN KOTOR</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(11px,3.8vw,16px)', fontWeight:800, color:'#4CAF50', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{rp(totalIncome)}</div>
-          </div>
-          <div style={{ textAlign:'right', minWidth:0, flex:1 }}>
-            <div style={{ fontSize:9, color:'var(--txt4)', marginBottom:2 }}>BERSIH (setelah ops)</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontSize:'clamp(11px,3.8vw,16px)', fontWeight:800, color: netIncome >= 0 ? '#4CAF50' : '#e05c5c', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{rp(netIncome)}</div>
-          </div>
-        </div>
-        {totalOps > 0
-          ? <div style={{ fontSize:10, color:'#e05c5c' }}>💸 Operasional: {rp(totalOps)}</div>
-          : <div style={{ fontSize:10, color:'var(--txt4)' }}>💸 Belum ada data operasional</div>}
-      </div>
-
       {/* Belum bayar */}
       <div style={card}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-          <div style={{ fontSize:11, fontWeight:700, color:'var(--txt)' }}>⚠️ Belum Bayar {bulanLbl}</div>
-          <div style={{ fontSize:11, color:'#e05c5c', fontWeight:700 }}>{krsBelum + slkBelum} pelanggan</div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)' }}>
+            <Clock size={14} style={{ color:'var(--c-belum)' }} /> Belum Bayar {bulanLbl}
+          </div>
+          <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{krsBelum + slkBelum} pelanggan</div>
         </div>
         <div style={{ display:'flex', gap:8, marginBottom: totalFree > 0 ? 8 : 0 }}>
-          {([['KRS', krsBelum, '#e05c5c'], ['SLK', slkBelum, '#e05c5c'], ['LUNAS', krsLunas + slkLunas, '#4CAF50']] as const).map(
-            ([label, val, color]) => (
-              <div key={label} style={{ flex:1, background:'var(--bg3)', borderRadius:8, padding:8, textAlign:'center' }}>
-                <div style={{ fontSize:9, color:'var(--txt4)' }}>{label}</div>
-                <div style={{ fontSize:18, fontWeight:700, color: color as string }}>{val}</div>
-              </div>
-            )
-          )}
+          {([
+            ['KRS', krsBelum, 'var(--c-belum)'],
+            ['SLK', slkBelum, 'var(--c-belum)'],
+            ['Lunas', krsLunas + slkLunas, 'var(--c-lunas)'],
+          ] as const).map(([label, val, color]) => (
+            <div key={label} style={{ flex:1, background:'var(--bg3)', borderRadius:'var(--r-sm)', padding:'8px 6px', textAlign:'center' }}>
+              <div style={{ fontSize:9, color:'var(--txt4)' }}>{label}</div>
+              <div style={{ fontSize:20, fontWeight:800, fontFamily:"'Syne',sans-serif", color: color as string }}>{val}</div>
+            </div>
+          ))}
         </div>
         {totalFree > 0 && (
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'#0a2a1a', border:'1px solid #4CAF5022', borderRadius:7, padding:'7px 10px' }}>
-            <span style={{ fontSize:10, color:'#4CAF50' }}>🆓 Free member {bulanLbl}</span>
-            <span style={{ fontSize:12, fontWeight:700, color:'#4CAF50' }}>{totalFree} member <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span></span>
+          <div style={{
+            display:'flex', alignItems:'center', justifyContent:'space-between',
+            background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.15)',
+            borderRadius:'var(--r-sm)', padding:'7px 10px',
+          }}>
+            <span style={{ fontSize:10, color:'var(--c-free)', display:'flex', alignItems:'center', gap:5 }}>
+              <Gift size={12} /> Free member {bulanLbl}
+            </span>
+            <span style={{ fontSize:12, fontWeight:700, color:'var(--c-free)' }}>
+              {totalFree} member <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span>
+            </span>
           </div>
         )}
       </div>
 
-      {/* Top tunggakan */}
+      {/* Top tunggakan — tanpa aging widget */}
       <div style={card}>
-        <div style={{ fontSize:11, fontWeight:700, color:'var(--txt)', marginBottom:8 }}>🔴 Tunggakan Terbanyak</div>
-        {top5.length === 0
-          ? <div style={{ textAlign:'center', padding:16, color:'#4CAF50', fontSize:12 }}>✅ Semua lunas!</div>
-          : top5.map((t, i) => (
-            <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 0', borderBottom: i < top5.length - 1 ? '1px solid var(--border2)' : 'none' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)', marginBottom:10 }}>
+          <AlertTriangle size={14} style={{ color:'var(--c-belum)' }} /> Tunggakan Terbanyak
+        </div>
+        {top5.length === 0 ? (
+          <div style={{ textAlign:'center', padding:'16px 0', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+            <CheckCircle2 size={24} style={{ color:'var(--c-lunas)' }} />
+            <span style={{ color:'var(--c-lunas)', fontSize:12 }}>Semua lunas!</span>
+          </div>
+        ) : (
+          top5.map((t, i) => (
+            <div key={i} style={{
+              display:'flex', justifyContent:'space-between', alignItems:'center',
+              padding:'8px 0',
+              borderBottom: i < top5.length - 1 ? '1px solid var(--border2)' : 'none',
+            }}>
               <div>
-                <span style={{ fontSize:12, color:'var(--txt)' }}>{t.name}</span>
+                <span style={{ fontSize:13, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{t.name}</span>
                 <span style={{ fontSize:9, color:'var(--txt4)', marginLeft:6 }}>{t.z}</span>
               </div>
               <div style={{ textAlign:'right' }}>
-                <div style={{ fontSize:11, color:'#e05c5c', fontWeight:700 }}>{t.count} bulan</div>
+                <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{t.count} bulan</div>
                 <div style={{ fontSize:9, color:'var(--txt4)' }}>sejak {t.oldest}</div>
               </div>
             </div>
-          ))}
+          ))
+        )}
         {topTunggak.length > 5 && (
-          <div style={{ fontSize:10, color:'var(--txt4)', textAlign:'center', marginTop:8, cursor:'pointer' }} onClick={() => nav('tunggakan')}>
-            +{topTunggak.length - 5} lainnya → Lihat semua
+          <div
+            style={{ fontSize:10, color:'var(--txt3)', textAlign:'center', marginTop:10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
+            onClick={() => nav('tunggakan')}
+          >
+            +{topTunggak.length - 5} lainnya
+            <ChevronRight size={12} />
           </div>
         )}
+      </div>
 
-        {/* ── Sesi C: Aging Widget ── */}
-        {totalTunggak > 0 && (
-          <div style={{ marginTop:14, paddingTop:12, borderTop:'1px solid var(--border2)' }}>
-            <div style={{ fontSize:9, color:'var(--txt4)', letterSpacing:'.07em', marginBottom:10 }}>KLASIFIKASI USIA TUNGGAKAN</div>
-            <div style={{ display:'flex', gap:8 }}>
-              {/* 1 bulan */}
-              <div style={{ flex:1, textAlign:'center', background:'#1a1500', border:'1px solid #FFC10733', borderRadius:9, padding:'10px 6px' }}>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#FFC107' }}>{aging.one}</div>
-                <div style={{ fontSize:9, color:'#FFC10799', marginTop:3 }}>1 bulan</div>
-                <div style={{ fontSize:8, color:'var(--txt5)', marginTop:2 }}>⚠️ Baru</div>
-              </div>
-              {/* 2-3 bulan */}
-              <div style={{ flex:1, textAlign:'center', background:'#1a0d00', border:'1px solid #FF980033', borderRadius:9, padding:'10px 6px' }}>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#FF9800' }}>{aging.two3}</div>
-                <div style={{ fontSize:9, color:'#FF980099', marginTop:3 }}>2–3 bulan</div>
-                <div style={{ fontSize:8, color:'var(--txt5)', marginTop:2 }}>🔶 Segera</div>
-              </div>
-              {/* 4+ bulan */}
-              <div style={{ flex:1, textAlign:'center', background:'#1f0d0d', border:'1px solid #e05c5c33', borderRadius:9, padding:'10px 6px' }}>
-                <div style={{ fontFamily:"'Syne',sans-serif", fontSize:22, fontWeight:800, color:'#e05c5c' }}>{aging.four}</div>
-                <div style={{ fontSize:9, color:'#e05c5c99', marginTop:3 }}>4+ bulan</div>
-                <div style={{ fontSize:8, color:'var(--txt5)', marginTop:2 }}>🔴 Kritis</div>
-              </div>
-            </div>
+      {/* Operasional row — tappable, navigate ke Operasional */}
+      <div
+        style={{
+          ...card,
+          display:'flex', justifyContent:'space-between', alignItems:'center',
+          cursor:'pointer', transition:'background var(--t-fast)',
+        }}
+        onClick={() => nav('operasional')}
+        role="button"
+        aria-label="Buka menu Operasional"
+      >
+        <div>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
+            <Wallet size={14} style={{ color:'var(--txt3)' }} /> Operasional {bulanLbl}
           </div>
-        )}
+          <div style={{ fontSize:11, color: totalOps > 0 ? 'var(--c-belum)' : 'var(--txt4)', marginTop:3 }}>
+            {totalOps > 0 ? rp(totalOps) : 'Belum ada data'}
+          </div>
+        </div>
+        <ChevronRight size={16} style={{ color:'var(--txt4)', flexShrink:0 }} />
       </div>
 
       {/* Backup */}
       <div style={{ ...card, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
-          <div style={{ fontSize:11, fontWeight:700, color:'var(--txt)' }}>💾 Backup Terakhir</div>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
+            <Database size={14} style={{ color:'var(--txt3)' }} /> Backup Terakhir
+          </div>
           <div style={{ fontSize:10, color:'var(--txt4)', marginTop:2 }}>{backupLbl}</div>
         </div>
         <button
-          style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt2)', padding:'8px 14px', borderRadius:8, cursor:'pointer', fontSize:11, transition:'all var(--t-fast)' }}
-          onClick={() => { doJSONBackup(appData); showToast('✅ Backup JSON berhasil!'); }}
+          style={{
+            background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt2)',
+            padding:'8px 14px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11,
+            transition:'all var(--t-fast)', minHeight:40,
+          }}
+          onClick={(e) => { e.stopPropagation(); doJSONBackup(appData); showToast('Backup JSON berhasil!'); }}
         >
           Backup Sekarang
         </button>
       </div>
 
-      {/* ── Sesi C: WA Summary — ikut selector bulan/tahun ── */}
+      {/* WA Summary — label dinamis sesuai selector bulan */}
       <div style={card}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-          <div style={{ fontSize:11, fontWeight:700, color:'var(--txt)' }}>📤 Ringkasan WA</div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
+            <Share2 size={14} style={{ color:'var(--txt3)' }} /> Ringkasan WA
+          </div>
           <div style={{ fontSize:10, color:'var(--txt4)' }}>{bulanLbl}</div>
         </div>
         <button
-          style={{ width:'100%', background:'#0d2b1f', border:'1px solid #4CAF5033', color:'#4CAF50', padding:10, borderRadius:8, cursor:'pointer', fontSize:12, fontWeight:600, transition:'all var(--t-fast)' }}
+          style={{
+            width:'100%',
+            background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)',
+            color:'var(--c-lunas)', padding:12, borderRadius:'var(--r-sm)',
+            cursor:'pointer', fontSize:13, fontWeight:600,
+            transition:'all var(--t-fast)', minHeight:44,
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+          }}
           onClick={() => { doWASummary(appData, dy, dm); }}
         >
-          📊 Kirim Ringkasan {bulanLbl} ke WA
+          <Share2 size={15} />
+          Kirim Ringkasan {bulanLbl} ke WA
         </button>
         <div style={{ fontSize:9, color:'var(--txt4)', marginTop:6, textAlign:'center' }}>
           Periode sesuai selector di atas

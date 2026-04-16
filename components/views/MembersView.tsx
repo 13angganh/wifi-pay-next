@@ -10,6 +10,7 @@ import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
 import FreeMemberModal from '@/components/modals/FreeMemberModal';
 import RiwayatModal    from '@/components/modals/RiwayatModal';
+import { Users, Trash2, Search, X, Gift, Lock, LockOpen } from 'lucide-react';
 import type { Zone } from '@/types';
 
 type SortMode = 'name-asc'|'name-desc'|'id-asc'|'id-desc'|'ip-asc'|'ip-desc';
@@ -35,7 +36,7 @@ export default function MembersView() {
   const [riwOpen,  setRiwOpen]  = useState(false);
 
   const zone = newMemberZone;
-  const zc   = zone === 'KRS' ? '#2196F3' : '#e05c3a';
+  const zc   = zone === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)';
 
   const addRef = {
     name:  useRef<HTMLInputElement>(null),
@@ -173,37 +174,47 @@ export default function MembersView() {
           {(['KRS','SLK'] as Zone[]).map(z => (
             <button key={z} onClick={() => { setNewMemberZone(z); setSearch(''); setMemberTab('active'); }}
               style={{ padding:'6px 16px', borderRadius:20, border:'none', cursor:'pointer', fontSize:11, fontWeight:600,
-                background: zone===z ? (z==='KRS'?'#2196F3':'#e05c3a') : 'transparent',
-                color: zone===z ? '#fff' : 'var(--txt3)' }}>
+                background: zone===z ? (z==='KRS'?'var(--zc-krs)':'var(--zc-slk)') : 'transparent',
+                color: zone===z ? '#fff' : 'var(--txt3)', minHeight:32 }}>
               {z} <span style={{ opacity:.6, fontSize:10 }}>({z==='KRS'?appData.krsMembers.length:appData.slkMembers.length})</span>
             </button>
           ))}
         </div>
-        <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'🔓 Dibuka':'🔒 Dikunci'); }}
-          style={{ background:membersLocked?'#0d2b1f':'#1f0d0d', border:`1px solid ${membersLocked?'#4CAF5033':'#e05c5c33'}`, color:membersLocked?'#4CAF50':'#e05c5c', padding:'6px 14px', borderRadius:7, cursor:'pointer', fontSize:11 }}>
-          {membersLocked ? '🔒 Terkunci' : '🔓 Buka'}
+        <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'Dibuka':'Dikunci'); }}
+          aria-label={membersLocked ? 'Buka kunci daftar member' : 'Kunci daftar member'}
+          style={{ background:membersLocked?'rgba(34,197,94,0.06)':'rgba(239,68,68,0.06)', border:`1px solid ${membersLocked?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'}`, color:membersLocked?'var(--c-lunas)':'var(--c-belum)', padding:'6px 14px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, minHeight:34, display:'flex', alignItems:'center', gap:5 }}>
+          {membersLocked ? <><Lock size={12} strokeWidth={1.5} /> Terkunci</> : <><LockOpen size={12} strokeWidth={1.5} /> Buka</>}
         </button>
       </div>
 
       {/* Active / Deleted tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:10, background:'var(--bg2)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
-        <button onClick={() => setMemberTab('active')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='active'?zc:'transparent', color:memberTab==='active'?'#fff':'var(--txt3)' }}>👥 Aktif ({mems.length})</button>
-        <button onClick={() => setMemberTab('deleted')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='deleted'?'#e05c3a':'transparent', color:memberTab==='deleted'?'#fff':'var(--txt3)' }}>🗑️ Terhapus ({deletedList.length})</button>
+        <button onClick={() => setMemberTab('active')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='active'?zc:'transparent', color:memberTab==='active'?'#fff':'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+          <Users size={12} strokeWidth={1.5} /> Aktif ({mems.length})
+        </button>
+        <button onClick={() => setMemberTab('deleted')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='deleted'?'var(--zc-slk)':'transparent', color:memberTab==='deleted'?'#fff':'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+          <Trash2 size={12} strokeWidth={1.5} /> Terhapus ({deletedList.length})
+        </button>
       </div>
 
       {/* DELETED TAB */}
       {memberTab === 'deleted' ? (
         deletedList.length === 0
-          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🗑️</div><div className="empty-title">Recycle Bin Kosong</div><div className="empty-sub">Tidak ada member yang dihapus</div></div>
+          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Trash2 size={28} color="var(--txt5)" /></div><div className="empty-title">Recycle Bin Kosong</div><div className="empty-sub">Tidak ada member yang dihapus</div></div>
           : deletedList.map(([k,d]) => (
             <div key={k} className="del-card">
               <div>
-                <div className="del-card-name">🗑️ {d.name}</div>
+                <div className="del-card-name" style={{ display:'flex', alignItems:'center', gap:5 }}>
+                  <Trash2 size={12} strokeWidth={1.5} color="var(--c-belum)" /> {d.name}
+                </div>
                 <div style={{ fontSize:10, color:'var(--txt4)' }}>Dihapus: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
               </div>
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-                <button className="restore-btn" onClick={() => restoreMember(k)}>♻️ Kembalikan</button>
-                <button onClick={() => permanentDelete(k)} style={{ background:'#1f0d0d', border:'1px solid #e05c5c55', color:'#e05c5c', padding:'5px 10px', borderRadius:6, cursor:'pointer', fontSize:11 }}>🗑️</button>
+                <button className="restore-btn" onClick={() => restoreMember(k)}>Kembalikan</button>
+                <button onClick={() => permanentDelete(k)} aria-label={`Hapus permanen ${d.name}`}
+                  style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', color:'var(--c-belum)', padding:'5px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <Trash2 size={12} strokeWidth={1.5} />
+                </button>
               </div>
             </div>
           ))
@@ -232,7 +243,7 @@ export default function MembersView() {
                   <input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="Contoh: 100" autoComplete="off" />
                 </div>
               </div>
-              <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer' }} onClick={addMember}>
+              <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:'var(--r-sm)', fontSize:13, fontWeight:600, cursor:'pointer', minHeight:40 }} onClick={addMember}>
                 + Tambah ke {zone}
               </button>
             </div>
@@ -241,23 +252,23 @@ export default function MembersView() {
           {/* Sort */}
           <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:8 }}>
             {(Object.entries(sortLabels) as [SortMode,string][]).map(([k,l]) => (
-              <button key={k} onClick={() => setSortMode(k)}
-                style={{ padding:'4px 9px', borderRadius:10, border:'none', cursor:'pointer', fontSize:10,
-                  background:sortMode===k?'#2196F3':'var(--bg3)', color:sortMode===k?'#fff':'var(--txt3)' }}>{l}</button>
+            <button key={k} onClick={() => setSortMode(k)}
+                style={{ padding:'4px 9px', borderRadius:'var(--r-full)', border:'none', cursor:'pointer', fontSize:10,
+                  background:sortMode===k?'var(--zc-krs)':'var(--bg3)', color:sortMode===k?'#fff':'var(--txt3)' }}>{l}</button>
             ))}
           </div>
 
           {/* Search */}
           <div className="search-wrap">
-            <input className="search-box" placeholder={`🔍 Cari nama di ${zone}...`} value={search} onChange={e=>setSearch(e.target.value)} />
-            {search && <button className="search-clear" onClick={()=>setSearch('')}>✕</button>}
+            <input className="search-box" placeholder={`Cari nama di ${zone}...`} value={search} onChange={e=>setSearch(e.target.value)} />
+            {search && <button className="search-clear" onClick={()=>setSearch('')} aria-label="Hapus pencarian"><X size={12} /></button>}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>{filteredMems.length} member{search?' ditemukan':''} · {zone}</div>
 
           {/* Member rows */}
           <div id="member-rows">
             {filteredMems.length === 0
-              ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">👥</div><div className="empty-title">Belum Ada Member</div><div className="empty-sub">Tambahkan member baru di atas</div></div>
+              ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Users size={28} color="var(--txt5)" /></div><div className="empty-title">Belum Ada Member</div><div className="empty-sub">Tambahkan member baru di atas</div></div>
               : filteredMems.map((name, i) => {
                 const info      = getInfo(name);
                 const isFreeNow = isFree(appData, zone, name, selYear, selMonth);
@@ -269,9 +280,9 @@ export default function MembersView() {
                     {/* Baris 1: nomor, ID, nama, badge */}
                     <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom: (!membersLocked || ipStr) ? 5 : 0 }}>
                       <span style={{ fontSize:10, color:'var(--txt4)', width:18, flexShrink:0 }}>{i+1}</span>
-                      <span style={{ ...badgeStyle, background:'#1e2a4022', border:'1px solid #2196F322', color: info.id ? '#2196F3' : 'var(--txt4)' }}>{idStr}</span>
+                      <span style={{ ...badgeStyle, background:'rgba(59,130,246,0.06)', border:'1px solid rgba(59,130,246,0.15)', color: info.id ? 'var(--zc-krs)' : 'var(--txt4)' }}>{idStr}</span>
                       <span style={{ fontSize:12, flex:1, cursor:'pointer', color:'var(--txt)', fontWeight:500 }} onClick={() => openRiwayat(zone, name)}>{name}</span>
-                      {isFreeNow && <span style={{ ...badgeStyle, background:'#0a2a18', border:'1px solid #4CAF5033', color:'#4CAF50' }}>🆓</span>}
+                      {isFreeNow && <span style={{ ...badgeStyle, background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', color:'var(--c-free)', display:'flex', alignItems:'center', gap:3 }}><Gift size={9} strokeWidth={1.5} />Free</span>}
                       {info.tarif && <span style={{ ...badgeStyle, background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)' }}>{rp(info.tarif as number)}</span>}
                     </div>
 
@@ -283,9 +294,9 @@ export default function MembersView() {
                           href={ipStr.startsWith('http') ? ipStr : 'http://'+ipStr}
                           target="_blank" rel="noreferrer"
                           onClick={e => e.stopPropagation()}
-                          style={{ fontSize:10, color:'#2196F3', textDecoration:'none', fontFamily:"'DM Mono',monospace", flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                          style={{ fontSize:10, color:'var(--zc-krs)', textDecoration:'none', fontFamily:"'DM Mono',monospace", flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
                         >
-                          🔗 {ipStr}
+                          {ipStr}
                         </a>
                       ) : (
                         <span style={{ flex:1, fontSize:10, color:'var(--txt5)', fontStyle:'italic' }}>—</span>
@@ -295,16 +306,19 @@ export default function MembersView() {
                       {!membersLocked && (
                         <div style={{ display:'flex', gap:4, flexShrink:0 }}>
                           <button onClick={() => openFree(zone, name)}
-                            style={{ background:isFreeNow?'#0a2a18':'none', border:`1px solid ${isFreeNow?'#4CAF50':'var(--border)'}`, color:isFreeNow?'#4CAF50':'var(--txt4)', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
-                            🆓
+                            aria-label={`${isFreeNow ? 'Cabut status' : 'Set'} member gratis: ${name}`}
+                            style={{ background:isFreeNow?'rgba(34,197,94,0.08)':'none', border:`1px solid ${isFreeNow?'rgba(34,197,94,0.3)':'var(--border)'}`, color:isFreeNow?'var(--c-free)':'var(--txt4)', padding:'3px 8px', borderRadius:'var(--r-xs)', cursor:'pointer', fontSize:10, display:'flex', alignItems:'center', justifyContent:'center', minHeight:28 }}>
+                            <Gift size={11} strokeWidth={1.5} />
                           </button>
                           <button onClick={() => openEdit(name)}
-                            style={{ background:'none', border:'1px solid var(--border)', color:'#2196F3', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
-                            ✏️
+                            aria-label={`Edit member: ${name}`}
+                            style={{ background:'none', border:'1px solid rgba(59,130,246,0.3)', color:'var(--zc-krs)', padding:'3px 8px', borderRadius:'var(--r-xs)', cursor:'pointer', fontSize:10, fontFamily:"'DM Mono',monospace", minHeight:28 }}>
+                            Edit
                           </button>
                           <button onClick={() => deleteMember(name)}
-                            style={{ background:'none', border:'1px solid #2a1a1a', color:'#4a2a2a', padding:'3px 8px', borderRadius:5, cursor:'pointer', fontSize:10 }}>
-                            ✕
+                            aria-label={`Hapus member: ${name}`}
+                            style={{ background:'none', border:'1px solid rgba(239,68,68,0.15)', color:'rgba(239,68,68,0.4)', padding:'3px 8px', borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', minHeight:28 }}>
+                            <X size={11} strokeWidth={1.5} />
                           </button>
                         </div>
                       )}
@@ -321,7 +335,7 @@ export default function MembersView() {
       {editOpen && (
         <div className="modal-bg center" onClick={() => setEditOpen(false)}>
           <div className="modal center" onClick={e => e.stopPropagation()}>
-            <div className="modal-title">✏️ Edit Member <button className="modal-close" onClick={() => setEditOpen(false)}>✕</button></div>
+            <div className="modal-title">Edit Member <button className="modal-close" aria-label="Tutup modal edit" onClick={() => setEditOpen(false)}><X size={13} strokeWidth={1.5} /></button></div>
             {([
               { label:'NAMA',                   field:'name',  type:'text',   ph:''                             },
               { label:'ID PELANGGAN',            field:'id',    type:'text',   ph:'Opsional'                     },

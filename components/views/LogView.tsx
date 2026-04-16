@@ -1,9 +1,11 @@
-// components/views/LogView.tsx
+// components/views/LogView.tsx — Sesi 5D: Lucide icons
 'use client';
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
+import { fuzzyMatch } from '@/lib/helpers';
+import { ScrollText, Search, User, X, RotateCcw } from 'lucide-react';
 
 export default function LogView() {
   const { appData, logSearch, setLogSearch, logType, setLogType } = useAppStore();
@@ -25,8 +27,9 @@ export default function LogView() {
     filtered = filtered.filter(l => (l.action || '').toLowerCase().includes(q) || (l.detail || '').toLowerCase().includes(q));
   }
   if (logName.trim()) {
-    const qn = logName.trim().toLowerCase();
-    filtered = filtered.filter(l => (l.action || '').toLowerCase().includes(qn) || (l.detail || '').toLowerCase().includes(qn));
+    filtered = filtered.filter(l =>
+      fuzzyMatch(l.action || '', logName) || fuzzyMatch(l.detail || '', logName)
+    );
   }
   if (logYear)  filtered = filtered.filter(l => new Date(l.ts).getFullYear() === +logYear);
   if (logMonth) filtered = filtered.filter(l => new Date(l.ts).getMonth() === +logMonth);
@@ -40,22 +43,29 @@ export default function LogView() {
     <div>
       {/* Type filter tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:8, background:'var(--bg3)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
-        <button onClick={() => setLogType('all')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background: logType==='all' ? '#2196F3' : 'transparent', color: logType==='all' ? '#fff' : 'var(--txt3)' }}>📋 Semua</button>
-        <button onClick={() => setLogType('pay')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background: logType==='pay' ? '#4CAF50' : 'transparent', color: logType==='pay' ? '#0a0c12' : 'var(--txt3)' }}>💰 Hanya Bayar</button>
+        <button onClick={() => setLogType('all')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, transition:'all var(--t-fast)', background: logType==='all' ? 'var(--zc)' : 'transparent', color: logType==='all' ? '#fff' : 'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+          <ScrollText size={11} /> Semua
+        </button>
+        <button onClick={() => setLogType('pay')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, transition:'all var(--t-fast)', background: logType==='pay' ? 'var(--c-lunas)' : 'transparent', color: logType==='pay' ? '#0a0c12' : 'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+          Hanya Bayar
+        </button>
       </div>
 
-      {/* Search */}
-      <div className="search-wrap" style={{ marginBottom:8 }}>
-        <input className="search-box" style={{ margin:0 }} placeholder="🔍 Cari nama / aksi..." value={logSearch} onChange={e => setLogSearch(e.target.value)} />
-        {logSearch && <button className="search-clear" onClick={() => setLogSearch('')}>✕</button>}
+      {/* Search aksi */}
+      <div className="search-wrap" style={{ marginBottom:8, position:'relative', display:'flex', alignItems:'center' }}>
+        <Search size={13} style={{ position:'absolute', left:10, color:'var(--txt4)', pointerEvents:'none' }} />
+        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder="Cari nama / aksi..." value={logSearch} onChange={e => setLogSearch(e.target.value)} />
+        {logSearch && <button className="search-clear" onClick={() => setLogSearch('')} aria-label="Hapus pencarian"><X size={12} /></button>}
+      </div>
+
+      {/* Filter nama */}
+      <div className="search-wrap" style={{ marginBottom:8, position:'relative', display:'flex', alignItems:'center' }}>
+        <User size={13} style={{ position:'absolute', left:10, color:'var(--txt4)', pointerEvents:'none' }} />
+        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder="Filter nama member..." value={logName} onChange={e => setLogName(e.target.value)} />
+        {logName && <button className="search-clear" onClick={() => setLogName('')} aria-label="Hapus filter"><X size={12} /></button>}
       </div>
 
       {/* Date filter */}
-      {/* Filter nama member */}
-      <div className="search-wrap" style={{ marginBottom:8 }}>
-        <input className="search-box" style={{ margin:0 }} placeholder="👤 Filter nama member..." value={logName} onChange={e => setLogName(e.target.value)} />
-        {logName && <button className="search-clear" onClick={() => setLogName('')}>✕</button>}
-      </div>
       <div style={{ display:'flex', gap:6 }}>
         <select className="cs" style={{ flex:1 }} value={logYear} onChange={e => setLogYear(e.target.value)}>
           <option value="">Semua Tahun</option>
@@ -65,23 +75,31 @@ export default function LogView() {
           <option value="">Semua Bulan</option>
           {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
-        <button onClick={reset} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:7, cursor:'pointer', fontSize:11 }}>Reset</button>
+        <button onClick={reset} aria-label="Reset filter" style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, transition:'all var(--t-fast)' }}>
+          <RotateCcw size={12} /> Reset
+        </button>
       </div>
 
-      <div style={{ fontSize:10, color:'var(--txt3)', margin:'10px 0', letterSpacing:'.06em' }}>
-        {filtered.length} dari {logs.length} LOG · Semua log dihapus otomatis 30 hari
+      <div style={{ fontSize:10, color:'var(--txt3)', margin:'10px 0', letterSpacing:'.06em', fontFamily:"'DM Sans',sans-serif" }}>
+        {filtered.length} dari {logs.length} LOG · Log dihapus otomatis 30 hari
       </div>
 
       {/* Log items */}
       <div id="log-items">
         {filtered.length === 0
-          ? <div className="empty-state"><div className="empty-icon">📋</div><div className="empty-title">Tidak Ada Log</div><div className="empty-sub">Belum ada aktivitas yang tercatat</div></div>
+          ? (
+            <div className="empty-state">
+              <div className="empty-icon"><ScrollText size={28} color="var(--txt5)" /></div>
+              <div className="empty-title">Tidak Ada Log</div>
+              <div className="empty-sub">Belum ada aktivitas yang tercatat</div>
+            </div>
+          )
           : filtered.slice(0, 150).map((l, i) => {
             const d  = new Date(l.ts);
             const dt = `${d.toLocaleDateString('id-ID')} ${d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })}`;
             const isPay = isPayLog(l.action);
             return (
-              <div key={i} className="log-item" style={{ borderLeft: `2px solid ${isPay ? '#4CAF5044' : 'var(--border)'}` }}>
+              <div key={i} className="log-item" style={{ borderLeft: `2px solid ${isPay ? 'rgba(34,197,94,0.4)' : 'var(--border)'}` }}>
                 <div className="log-time">{dt} · {l.user || '—'}</div>
                 <div className="log-action">{l.action}</div>
                 {l.detail && <div className="log-detail">{l.detail}</div>}

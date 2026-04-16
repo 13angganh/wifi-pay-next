@@ -1,19 +1,136 @@
-// components/layout/AppShell.tsx — v10.2: hapus BottomNav, tambah PinLock
+// components/layout/AppShell.tsx — Sesi 5E: offline detection + error boundary + onboarding
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState, Component } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Script from 'next/script';
 import { useAppStore } from '@/store/useAppStore';
 import { checkAutoBackup } from '@/lib/backup';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
-import Header     from './Header';
-import Sidebar    from './Sidebar';
-import LockBanner from './LockBanner';
-import Toast      from '@/components/ui/Toast';
-import Confirm    from '@/components/ui/Confirm';
-import PinLock    from '@/components/ui/PinLock';
+import Header        from './Header';
+import Sidebar       from './Sidebar';
+import LockBanner    from './LockBanner';
+import Toast         from '@/components/ui/Toast';
+import Confirm       from '@/components/ui/Confirm';
+import PinLock       from '@/components/ui/PinLock';
+import OnboardingHint from '@/components/ui/OnboardingHint';
+import { WifiOff, RotateCcw } from 'lucide-react';
 import type { ViewName } from '@/types';
+
+// ─── Error Boundary ────────────────────────────────────────────────────────────
+
+interface EBState { hasError: boolean; error?: Error }
+
+class AppErrorBoundary extends Component<{ children: React.ReactNode }, EBState> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): EBState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[WiFi Pay] Unhandled error:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          height:'100vh', gap:16, padding:24, background:'var(--bg)', textAlign:'center',
+        }}>
+          <div style={{
+            width:56, height:56, borderRadius:'var(--r-lg)',
+            background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.25)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+          }}>
+            <RotateCcw size={24} color="var(--c-belum)" strokeWidth={1.5} />
+          </div>
+          <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:17, color:'var(--txt)' }}>
+            Oops, ada yang error
+          </div>
+          <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--txt2)', maxWidth:280, lineHeight:1.55 }}>
+            Aplikasi mengalami error tidak terduga. Coba muat ulang halaman.
+          </div>
+          {this.state.error && (
+            <div style={{
+              fontFamily:"'DM Mono',monospace", fontSize:10, color:'var(--txt4)',
+              background:'var(--bg3)', border:'1px solid var(--border)',
+              borderRadius:'var(--r-sm)', padding:'8px 12px',
+              maxWidth:300, wordBreak:'break-all', textAlign:'left',
+            }}>
+              {this.state.error.message}
+            </div>
+          )}
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background:'var(--zc)', color:'#fff', border:'none',
+              borderRadius:'var(--r-md)', padding:'10px 24px',
+              fontFamily:"'DM Sans',sans-serif", fontWeight:600,
+              fontSize:13, cursor:'pointer',
+            }}
+          >
+            Muat Ulang
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ─── Offline Banner ─────────────────────────────────────────────────────────────
+
+function OfflineBanner() {
+  const [offline, setOffline] = useState(false);
+  const [show, setShow]       = useState(false);
+
+  useEffect(() => {
+    function onOnline()  { setOffline(false); setTimeout(() => setShow(false), 1200); }
+    function onOffline() { setOffline(true); setShow(true); }
+
+    if (!navigator.onLine) { setOffline(true); setShow(true); }
+
+    window.addEventListener('online',  onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online',  onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <div
+      style={{
+        display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+        padding:'7px 16px',
+        background: offline ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.10)',
+        borderBottom: offline ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(34,197,94,0.2)',
+        transition:'background var(--t-base), border-color var(--t-base)',
+      }}
+      role="status"
+      aria-live="polite"
+      aria-label={offline ? 'Tidak terhubung ke internet' : 'Kembali online'}
+    >
+      <WifiOff size={13} strokeWidth={1.5} color={offline ? 'var(--c-belum)' : 'var(--c-lunas)'} />
+      <span style={{
+        fontFamily:"'DM Sans',sans-serif", fontSize:12,
+        color: offline ? 'var(--c-belum)' : 'var(--c-lunas)',
+        fontWeight:500,
+      }}>
+        {offline ? 'Offline — data tersimpan lokal' : 'Kembali online'}
+      </span>
+    </div>
+  );
+}
+
+// ─── AppShell ────────────────────────────────────────────────────────────────────
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
@@ -24,28 +141,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     settings,
   } = useAppStore();
 
-  // Idle timeout PIN — hanya lock PIN, bukan logout Firebase
   useIdleTimeout(settings.pinTimeoutMinutes);
 
-  // Sync view
   useEffect(() => {
     const seg = pathname.split('/')[1] as ViewName;
     if (seg) setView(seg);
   }, [pathname]);
 
-  // Dark/light
   useEffect(() => {
     document.body.classList.toggle('light', !darkMode);
   }, [darkMode]);
 
-  // PWA
   useEffect(() => {
     const h = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
     window.addEventListener('beforeinstallprompt', h);
     return () => window.removeEventListener('beforeinstallprompt', h);
   }, []);
 
-  // SW
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -64,7 +176,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Auto backup
   useEffect(() => {
     if (appData.krsMembers?.length) checkAutoBackup(appData);
   }, [appData]);
@@ -72,54 +183,64 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const navigate = useCallback((v: ViewName) => {
     setView(v);
     router.push('/'+v);
-    setSidebar(false); // selalu tutup sidebar setelah navigasi
+    setSidebar(false);
   }, [router, setView, setSidebar]);
 
   return (
-    <>
-      {/* CDN */}
+    <AppErrorBoundary>
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" strategy="lazyOnload" />
       <Script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" strategy="lazyOnload" />
 
-      {/* PIN Lock — overlay pertama sebelum semua konten */}
       <PinLock />
+      <OnboardingHint />
 
-      {/* Update banner */}
       {showUpdateBanner && (
         <div className="update-banner">
-          <span style={{ fontSize:12, color:'#4CAF50' }}>🆕 Ada versi terbaru WiFi Pay!</span>
-          <button onClick={() => navigator.serviceWorker.getRegistration().then(r => {
-            r?.waiting?.postMessage({ type:'SKIP_WAITING' }); window.location.reload();
-          })} style={{ background:'#4CAF50', color:'#0a0c12', border:'none', padding:'6px 14px', borderRadius:6, fontSize:11, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
+          <span style={{ fontSize:12, color:'var(--c-lunas)' }}>Ada versi terbaru WiFi Pay!</span>
+          <button
+            onClick={() => navigator.serviceWorker.getRegistration().then(r => {
+              r?.waiting?.postMessage({ type:'SKIP_WAITING' }); window.location.reload();
+            })}
+            style={{
+              background:'var(--c-lunas)', color:'#0a0c12', border:'none',
+              padding:'6px 14px', borderRadius:6, fontSize:11, fontWeight:700,
+              cursor:'pointer', flexShrink:0,
+            }}
+          >
             Update Sekarang
           </button>
         </div>
       )}
 
       <div style={{ display:'flex', position:'fixed', inset:0, top: showUpdateBanner ? 44 : 0 }}>
-        {/* Sidebar overlay mobile */}
         <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebar(false)} />
 
-        {/* Sidebar */}
         <div id="sidebar" className={sidebarOpen ? 'open' : ''}>
           <Sidebar onNavigate={navigate} />
         </div>
 
-        {/* Main */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', minWidth:0, overflow:'hidden' }}>
           <Header onToggleSidebar={() => setSidebar(!sidebarOpen)} />
           <LockBanner />
-          <div id="content" style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' as any, padding:'12px 12px 24px', background:'var(--bg)' }}>
+          <OfflineBanner />
+          <div
+            id="content"
+            style={{
+              flex:1, overflowY:'auto',
+              WebkitOverflowScrolling:'touch' as any,
+              padding:'12px 12px 24px',
+              background:'var(--bg)',
+            }}
+          >
             {children}
           </div>
-          {/* BottomNav DIHAPUS — navigasi via sidebar saja */}
         </div>
       </div>
 
       <Toast />
       <Confirm />
-    </>
+    </AppErrorBoundary>
   );
 }

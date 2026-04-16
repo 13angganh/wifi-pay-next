@@ -1,10 +1,11 @@
-// components/modals/GlobalSearch.tsx
+// components/modals/GlobalSearch.tsx — Sesi 5D: fuzzy, Lucide, left border status
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
-import { getPay, isFree, rp } from '@/lib/helpers';
+import { getPay, isFree, rp, fuzzyMatch } from '@/lib/helpers';
+import { Search, X, Gift, CheckCircle2, XCircle } from 'lucide-react';
 
 interface Props { open: boolean; onClose: () => void; }
 
@@ -20,12 +21,16 @@ export default function GlobalSearch({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  // Cari di semua zona
-  const results: { z: 'KRS'|'SLK'; name: string; paid: boolean; free: boolean; val: number|null; id?: string; ip?: string; tarif?: number }[] = [];
+  const results: {
+    z: 'KRS'|'SLK'; name: string;
+    paid: boolean; free: boolean; val: number|null;
+    id?: string; ip?: string; tarif?: number;
+  }[] = [];
+
   for (const z of ['KRS','SLK'] as const) {
     const mems = z === 'KRS' ? appData.krsMembers : appData.slkMembers;
     for (const name of mems) {
-      if (!q.trim() || name.toLowerCase().includes(q.toLowerCase())) {
+      if (!q.trim() || fuzzyMatch(name, q)) {
         const info = appData.memberInfo?.[z+'__'+name] || {};
         const val  = getPay(appData, z, name, selYear, selMonth);
         results.push({ z, name, paid: val !== null, free: isFree(appData, z, name, selYear, selMonth), val, id: info.id as string, ip: info.ip as string, tarif: info.tarif as number });
@@ -42,57 +47,111 @@ export default function GlobalSearch({ open, onClose }: Props) {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:9000, background:'#000b', display:'flex', flexDirection:'column', padding:'16px 14px', animation:'modalBgIn .18s ease' }}>
+    <div style={{ position:'fixed', inset:0, zIndex:9000, background:'rgba(0,0,0,0.7)', backdropFilter:'blur(8px)', display:'flex', flexDirection:'column', padding:'16px 14px', animation:'modalBgIn .18s ease' }}>
+      {/* Search input */}
       <div style={{ display:'flex', gap:8, alignItems:'center', marginTop:'env(safe-area-inset-top)', animation:'modalSlideUp .22s cubic-bezier(.4,0,.2,1)' }}>
-        <input
-          ref={inputRef}
-          style={{ flex:1, background:'var(--bg2)', border:'1px solid var(--border)', color:'var(--txt)', padding:'12px 16px', borderRadius:12, fontSize:14, fontFamily:"'DM Mono',monospace", outline:'none', transition:'border-color var(--t-fast)', boxShadow:'var(--shadow-sm)' }}
-          placeholder="🔍 Cari nama member..."
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = 'var(--zc)'}
-          onBlur={e  => (e.target as HTMLInputElement).style.borderColor = 'var(--border)'}
-        />
-        <button onClick={onClose} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt2)', padding:'10px 14px', borderRadius:10, cursor:'pointer', fontSize:13, flexShrink:0, transition:'all var(--t-fast)' }}>✕</button>
+        <div style={{ flex:1, position:'relative', display:'flex', alignItems:'center' }}>
+          <Search size={15} style={{ position:'absolute', left:12, color:'var(--txt4)', pointerEvents:'none' }} />
+          <input
+            ref={inputRef}
+            style={{
+              width:'100%', background:'rgba(24,28,39,0.95)', backdropFilter:'blur(16px)',
+              border:'1px solid rgba(255,255,255,0.1)', color:'var(--txt)',
+              padding:'12px 16px 12px 38px', borderRadius:'var(--r-md)',
+              fontSize:14, fontFamily:"'DM Mono',monospace", outline:'none',
+              transition:'border-color var(--t-fast)', boxShadow:'var(--shadow-md)',
+            }}
+            placeholder="Cari nama member..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            onFocus={e => (e.target as HTMLInputElement).style.borderColor = 'var(--zc)'}
+            onBlur={e  => (e.target as HTMLInputElement).style.borderColor = 'rgba(255,255,255,0.1)'}
+          />
+          {q && (
+            <button
+              onClick={() => setQ('')}
+              aria-label="Hapus pencarian"
+              style={{ position:'absolute', right:10, background:'none', border:'none', color:'var(--txt3)', cursor:'pointer', padding:4, display:'flex' }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <button
+          onClick={onClose}
+          aria-label="Tutup pencarian"
+          style={{ background:'rgba(24,28,39,0.9)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt2)', padding:'10px 14px', borderRadius:'var(--r-md)', cursor:'pointer', fontSize:13, flexShrink:0, transition:'all var(--t-fast)', display:'flex', alignItems:'center' }}
+        >
+          Tutup
+        </button>
       </div>
 
+      {/* Results */}
       <div style={{ flex:1, overflowY:'auto', marginTop:10 }}>
-        {!q.trim()
-          ? (
-            <div className="empty-state">
-              <div className="empty-icon">🔍</div>
-              <div className="empty-title">Cari Member</div>
-              <div className="empty-sub">Ketik nama member untuk mencari di semua zona</div>
-            </div>
-          )
-          : results.length === 0
-            ? (
-              <div className="empty-state">
-                <div className="empty-icon">😶</div>
-                <div className="empty-title">Tidak Ditemukan</div>
-                <div className="empty-sub">Tidak ada member dengan nama &ldquo;{q}&rdquo;</div>
+        {!q.trim() ? (
+          <div className="empty-state">
+            <div className="empty-icon"><Search size={28} color="var(--txt5)" /></div>
+            <div className="empty-title">Cari Member</div>
+            <div className="empty-sub">Ketik nama member untuk mencari di semua zona</div>
+          </div>
+        ) : results.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon"><XCircle size={28} color="var(--txt5)" /></div>
+            <div className="empty-title">Tidak Ditemukan</div>
+            <div className="empty-sub">Tidak ada member dengan nama &ldquo;{q}&rdquo;</div>
+          </div>
+        ) : results.map(r => {
+          // Left border status
+          const borderColor = r.free ? 'var(--c-free)' : r.paid ? 'var(--c-lunas)' : 'var(--c-belum)';
+
+          return (
+            <div
+              key={r.z+r.name}
+              className="gsr-item"
+              onClick={() => gotoMember(r.z, r.name)}
+              style={{ borderLeft: `3px solid ${borderColor}` }}
+            >
+              {/* Zona badge */}
+              <span style={{
+                fontSize:9, padding:'2px 7px', borderRadius:'var(--r-xs)', fontWeight:600, flexShrink:0,
+                background: r.z === 'KRS' ? 'rgba(59,130,246,0.15)' : 'rgba(249,115,22,0.15)',
+                color: r.z === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)',
+                border: `1px solid ${r.z === 'KRS' ? 'rgba(59,130,246,0.2)' : 'rgba(249,115,22,0.2)'}`,
+                fontFamily:"'DM Mono',monospace",
+              }}>
+                {r.z}
+              </span>
+
+              {/* Nama + info */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div className="gsr-name">{r.name}</div>
+                {r.id && <div style={{ fontSize:9, color:'var(--txt4)', fontFamily:"'DM Mono',monospace" }}>{r.id}{r.ip ? ' · ' + r.ip : ''}</div>}
               </div>
-            )
-            : results.map(r => (
-                <div key={r.z+r.name} className="gsr-item" onClick={() => gotoMember(r.z, r.name)}>
-                  <span style={{ fontSize:9, padding:'2px 7px', borderRadius:4, fontWeight:600, flexShrink:0, background: r.z==='KRS'?'#1e2a40':'#3d1f14', color: r.z==='KRS'?'#2196F3':'#e05c3a' }}>{r.z}</span>
-                  <div style={{ flex:1 }}>
-                    <div className="gsr-name">{r.name}</div>
-                    {r.id && <div style={{ fontSize:9, color:'var(--txt4)' }}>{r.id}{r.ip?' · '+r.ip:''}</div>}
-                  </div>
-                  <div className="gsr-detail">
-                    {r.free
-                      ? <span style={{ color:'#4CAF50' }}>🆓 Free</span>
-                      : r.paid && r.val === 0
-                        ? <span style={{ color:'#3a9e7a' }}>✓ Akumulasi</span>
-                        : r.paid
-                          ? <span style={{ color:'#4CAF50' }}>✓ {r.val?.toLocaleString('id-ID')}</span>
-                          : <span style={{ color:'#e05c5c' }}>✕ Belum</span>}
-                    {r.tarif && <div style={{ fontSize:9, color:'var(--txt4)' }}>Tarif: {rp(r.tarif)}</div>}
-                  </div>
-                </div>
-              ))
-        }
+
+              {/* Status */}
+              <div className="gsr-detail">
+                {r.free ? (
+                  <span style={{ color:'var(--c-free)', display:'flex', alignItems:'center', gap:4 }}>
+                    <Gift size={11} /> Free
+                  </span>
+                ) : r.paid && r.val === 0 ? (
+                  <span style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:4 }}>
+                    <CheckCircle2 size={11} /> Akumulasi
+                  </span>
+                ) : r.paid ? (
+                  <span style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:4 }}>
+                    <CheckCircle2 size={11} /> {r.val?.toLocaleString('id-ID')}
+                  </span>
+                ) : (
+                  <span style={{ color:'var(--c-belum)', display:'flex', alignItems:'center', gap:4 }}>
+                    <XCircle size={11} /> Belum
+                  </span>
+                )}
+                {r.tarif && <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>Tarif: {rp(r.tarif)}</div>}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

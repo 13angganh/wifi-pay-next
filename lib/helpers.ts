@@ -142,3 +142,31 @@ export function getSavedCred(): { email: string; pass: string } | null {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+// ── Fuzzy match (subsequence matching) ──
+// Contoh: query "ag" → match "Angga", "Agus"
+export function fuzzyMatch(str: string, query: string): boolean {
+  if (!query) return true;
+  const s = str.toLowerCase();
+  const q = query.toLowerCase();
+  let si = 0;
+  for (let qi = 0; qi < q.length; qi++) {
+    while (si < s.length && s[si] !== q[qi]) si++;
+    if (si >= s.length) return false;
+    si++;
+  }
+  return true;
+}
+
+// ── Format tanggal — "1 Apr 2026" ──
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+export function formatDate(dateStr: string | number | null | undefined): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]} ${d.getFullYear()}`;
+  } catch {
+    return String(dateStr);
+  }
+}

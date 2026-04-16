@@ -78,6 +78,17 @@ export interface ViewSlice {
   logType:      'all' | 'pay';
   setLogSearch: (s: string) => void;
   setLogType:   (t: 'all' | 'pay') => void;
+
+  // Batch action (Entry)
+  batchMode:        boolean;
+  batchSelected:    string[];
+  batchYear:        number;
+  batchMonth:       number;
+  setBatchMode:     (v: boolean) => void;
+  setBatchSelected: (v: string[]) => void;
+  setBatchPeriod:   (year: number, month: number) => void;
+  toggleBatchMember: (name: string) => void;
+  clearBatch:       () => void;
 }
 
 const now = new Date();
@@ -159,4 +170,18 @@ export const createViewSlice: StateCreator<ViewSlice> = (set) => ({
   logType:      'all',
   setLogSearch: (s) => set({ logSearch: s }),
   setLogType:   (t) => set({ logType: t }),
+
+  // Batch action (Entry)
+  batchMode:     false,
+  batchSelected: [],
+  batchYear:     now.getFullYear(),
+  batchMonth:    now.getMonth(),
+  setBatchMode:  (v) => set({ batchMode: v }),
+  setBatchSelected: (v) => set({ batchSelected: v }),
+  setBatchPeriod: (year, month) => set({ batchYear: year, batchMonth: month }),
+  toggleBatchMember: (name) => set((s) => {
+    const exists = s.batchSelected.includes(name);
+    return { batchSelected: exists ? s.batchSelected.filter(n => n !== name) : [...s.batchSelected, name] };
+  }),
+  clearBatch: () => set({ batchMode: false, batchSelected: [], }),
 });

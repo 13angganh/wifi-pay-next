@@ -1,16 +1,24 @@
-// components/views/TunggakanView.tsx
+// components/views/TunggakanView.tsx — Sesi 5C: filter bar aging baru + left border merah + Lucide
 'use client';
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { getArrears, isFree } from '@/lib/helpers';
+import {
+  AlertTriangle, Star, Gift, CheckCircle2,
+  AlertCircle, Flame, Clock, Medal,
+} from 'lucide-react';
 
+// Tab mode: nakal/rajin/free (mode existing)
 type TMode = 'nakal' | 'rajin' | 'free';
+// Aging filter (sub-filter dari nakal)
+type AgingFilter = 'total' | 'baru' | 'segera' | 'kritis';
 
 export default function TunggakanView() {
   const { appData, activeZone, selYear, selMonth, setSelYear, setSelMonth } = useAppStore();
   const [mode, setMode] = useState<TMode>('nakal');
+  const [agingFilter, setAgingFilter] = useState<AgingFilter>('total');
 
   const mems = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
 
@@ -31,8 +39,19 @@ export default function TunggakanView() {
   // Free
   const freeList = mems.filter(name => isFree(appData, activeZone, name, selYear, selMonth));
 
-  const count = mode === 'nakal' ? allArrears.length : mode === 'rajin' ? rajin.length : freeList.length;
-  const sumColor = mode === 'nakal' ? '#e05c5c' : mode === 'rajin' ? '#4CAF50' : '#2196F3';
+  // ── Aging classification ──
+  const agingBaru   = allArrears.filter(x => x.count === 1);
+  const agingSegera = allArrears.filter(x => x.count >= 2 && x.count <= 3);
+  const agingKritis = allArrears.filter(x => x.count >= 4);
+
+  // Filtered list berdasarkan aging tab
+  const filteredArrears = agingFilter === 'total'  ? allArrears
+    : agingFilter === 'baru'    ? agingBaru
+    : agingFilter === 'segera'  ? agingSegera
+    : agingKritis;
+
+  const count = mode === 'nakal' ? filteredArrears.length : mode === 'rajin' ? rajin.length : freeList.length;
+  const sumColor = mode === 'nakal' ? 'var(--c-belum)' : mode === 'rajin' ? 'var(--c-lunas)' : 'var(--c-free)';
   const sumLabel = mode === 'nakal' ? 'TUNGGAKAN S/D' : mode === 'rajin' ? 'LUNAS S/D' : 'FREE MEMBER';
 
   return (
@@ -50,18 +69,68 @@ export default function TunggakanView() {
       {/* Mode tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:10, background:'var(--bg3)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
         {([
-          ['nakal', '⚠️ Nunggak', '#e05c3a', '#fff'],
-          ['rajin', '🌟 Rajin',   '#4CAF50', '#0a0c12'],
-          ['free',  '🆓 Free',    '#3a5bce', '#fff'],
-        ] as const).map(([m, label, bg, fg]) => (
-          <button key={m} onClick={() => setMode(m)}
-            style={{ flex:1, padding:7, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600,
-              background: mode === m ? bg : 'transparent',
-              color:      mode === m ? fg : 'var(--txt3)' }}>
-            {label} ({m === 'nakal' ? allArrears.length : m === 'rajin' ? rajin.length : freeList.length})
+          ['nakal', <AlertCircle size={12} />, 'Nunggak', allArrears.length, 'var(--c-belum)'],
+          ['rajin', <Star size={12} />,        'Rajin',   rajin.length,       'var(--c-lunas)'],
+          ['free',  <Gift size={12} />,         'Free',    freeList.length,    'var(--c-free)'],
+        ] as const).map(([m, icon, label, cnt, color]) => (
+          <button
+            key={m}
+            onClick={() => { setMode(m as TMode); setAgingFilter('total'); }}
+            style={{
+              flex:1, padding:'7px 4px', borderRadius:16, border:'none', cursor:'pointer',
+              fontSize:11, fontWeight:600, minHeight:36,
+              background: mode === m ? color as string : 'transparent',
+              color:      mode === m ? (m === 'rajin' ? '#0a0c12' : '#fff') : 'var(--txt3)',
+              display:'flex', alignItems:'center', justifyContent:'center', gap:5,
+              transition:'all var(--t-fast)',
+            }}
+          >
+            {icon} {label} ({cnt})
           </button>
         ))}
       </div>
+
+      {/* ── Aging filter bar — hanya tampil di mode nakal ── */}
+      {mode === 'nakal' && (
+        <div style={{
+          display:'flex', gap:6, marginBottom:10,
+          overflowX:'auto', paddingBottom:2,
+        }}>
+          {([
+            ['total',  <AlertTriangle size={11} />, 'Total',   allArrears.length,  'var(--txt2)',   'var(--bg3)', 'var(--border)'],
+            ['baru',   <Clock size={11} />,          'Baru',    agingBaru.length,   '#FFC107',       '#1a1500',   '#FFC10733'],
+            ['segera', <AlertCircle size={11} />,    'Segera',  agingSegera.length, '#F97316',       '#1a0d00',   '#F9731633'],
+            ['kritis', <Flame size={11} />,           'Kritis',  agingKritis.length, 'var(--c-belum)','rgba(239,68,68,0.08)', 'rgba(239,68,68,0.25)'],
+          ] as const).map(([key, icon, label, cnt, textColor, bgColor, borderColor]) => (
+            <button
+              key={key}
+              onClick={() => setAgingFilter(key as AgingFilter)}
+              style={{
+                display:'flex', alignItems:'center', gap:6,
+                padding:'7px 14px', borderRadius:'var(--r-full)',
+                border:`1px solid ${agingFilter === key ? borderColor as string : 'var(--border)'}`,
+                background: agingFilter === key ? bgColor as string : 'transparent',
+                color: agingFilter === key ? textColor as string : 'var(--txt4)',
+                fontSize:11, fontWeight: agingFilter === key ? 700 : 500,
+                cursor:'pointer', whiteSpace:'nowrap', minHeight:36,
+                transition:'all var(--t-fast)',
+                flexShrink:0,
+              }}
+            >
+              {icon}
+              {label}
+              <span style={{
+                background: agingFilter === key ? 'rgba(0,0,0,0.2)' : 'var(--bg3)',
+                borderRadius:'var(--r-full)', padding:'1px 7px',
+                fontSize:10, fontWeight:700,
+                color: agingFilter === key ? textColor as string : 'var(--txt3)',
+              }}>
+                {cnt}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Summary bar */}
       <div className="sum-bar" style={{ marginBottom:10 }}>
@@ -69,49 +138,102 @@ export default function TunggakanView() {
         <div className="sum-val" style={{ color: sumColor }}>{count} pelanggan</div>
       </div>
 
-      {/* Cards */}
+      {/* Cards — mode nakal */}
       {mode === 'nakal' && (
-        allArrears.length === 0
-          ? <div className="empty-state" style={{padding:'28px 24px'}}><div className="empty-icon">✅</div><div className="empty-title" style={{color:'#4CAF50'}}>Semua Lunas!</div><div className="empty-sub">Tidak ada tunggakan sampai bulan ini</div></div>
-          : allArrears.map((x, i) => (
-            <div key={x.name} className="tcard">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
-                <span className="tcard-name">{i + 1}. {x.name}</span>
-                <span style={{ fontSize:10, color:'#e05c5c', fontWeight:600 }}>{x.count} bulan nunggak</span>
-              </div>
-              <div className="tcard-months">
-                {x.unpaid.slice(0, 12).map(u => <span key={u.label} className="tmonth">{u.label}</span>)}
-                {x.unpaid.length > 12 && <span className="tmonth" style={{ color:'var(--txt2)' }}>+{x.unpaid.length - 12} lagi</span>}
-              </div>
+        filteredArrears.length === 0 ? (
+          <div className="empty-state" style={{ padding:'28px 24px' }}>
+            <div className="empty-icon"><CheckCircle2 size={32} strokeWidth={1.2} style={{ color:'var(--c-lunas)' }} /></div>
+            <div className="empty-title" style={{ color:'var(--c-lunas)' }}>Semua Lunas!</div>
+            <div className="empty-sub">
+              {agingFilter === 'total' ? 'Tidak ada tunggakan sampai bulan ini'
+                : agingFilter === 'baru'   ? 'Tidak ada tunggakan 1 bulan'
+                : agingFilter === 'segera' ? 'Tidak ada tunggakan 2–3 bulan'
+                : 'Tidak ada tunggakan 4+ bulan'}
             </div>
-          ))
+          </div>
+        ) : (
+          filteredArrears.map((x, i) => {
+            // Tentukan warna aging per card
+            const agingColor = x.count >= 4 ? 'var(--c-belum)'
+              : x.count >= 2 ? '#F97316'
+              : '#FFC107';
+
+            return (
+              <div key={x.name} className="tcard" style={{
+                borderLeft: `3px solid ${agingColor}`,
+                borderRadius:'var(--r-md)',
+              }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+                  <span className="tcard-name">{i + 1}. {x.name}</span>
+                  <span style={{
+                    fontSize:10, fontWeight:600, color: agingColor,
+                    display:'flex', alignItems:'center', gap:4,
+                  }}>
+                    {x.count >= 4 ? <Flame size={11} /> : x.count >= 2 ? <AlertCircle size={11} /> : <Clock size={11} />}
+                    {x.count} bulan nunggak
+                  </span>
+                </div>
+                <div className="tcard-months">
+                  {x.unpaid.slice(0, 12).map(u => <span key={u.label} className="tmonth">{u.label}</span>)}
+                  {x.unpaid.length > 12 && <span className="tmonth" style={{ color:'var(--txt2)' }}>+{x.unpaid.length - 12} lagi</span>}
+                </div>
+              </div>
+            );
+          })
+        )
       )}
 
+      {/* Cards — mode rajin */}
       {mode === 'rajin' && (
-        rajin.length === 0
-          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🏅</div><div className="empty-title">Belum Ada</div><div className="empty-sub">Belum ada member yang lunas semua bulan</div></div>
-          : rajin.map((name, i) => (
-            <div key={name} className="tcard" style={{ borderColor:'#4CAF5033' }}>
+        rajin.length === 0 ? (
+          <div className="empty-state" style={{ padding:'24px' }}>
+            <div className="empty-icon"><Medal size={32} strokeWidth={1.2} /></div>
+            <div className="empty-title">Belum Ada</div>
+            <div className="empty-sub">Belum ada member yang lunas semua bulan</div>
+          </div>
+        ) : (
+          rajin.map((name, i) => (
+            <div key={name} className="tcard" style={{
+              borderLeft:'3px solid var(--c-lunas)',
+              borderColor:'rgba(34,197,94,0.2)',
+              borderRadius:'var(--r-md)',
+            }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <span className="tcard-name" style={{ color:'#4CAF50' }}>✅ {i + 1}. {name}</span>
-                <span style={{ fontSize:10, color:'#4CAF50' }}>Lunas semua</span>
+                <span className="tcard-name" style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:6 }}>
+                  <CheckCircle2 size={13} /> {i + 1}. {name}
+                </span>
+                <span style={{ fontSize:10, color:'var(--c-lunas)' }}>Lunas semua</span>
               </div>
             </div>
           ))
+        )
       )}
 
+      {/* Cards — mode free */}
       {mode === 'free' && (
-        freeList.length === 0
-          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon">🆓</div><div className="empty-title">Tidak Ada</div><div className="empty-sub">Tidak ada free member aktif bulan ini</div></div>
-          : freeList.map((name, i) => {
+        freeList.length === 0 ? (
+          <div className="empty-state" style={{ padding:'24px' }}>
+            <div className="empty-icon"><Gift size={32} strokeWidth={1.2} /></div>
+            <div className="empty-title">Tidak Ada</div>
+            <div className="empty-sub">Tidak ada free member aktif bulan ini</div>
+          </div>
+        ) : (
+          freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
               ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : ' (selamanya)';
             return (
-              <div key={name} className="tcard" style={{ borderColor:'#4CAF5022', background:'#0a1a10' }}>
+              <div key={name} className="tcard" style={{
+                borderLeft:'3px solid var(--c-free)',
+                borderColor:'rgba(59,130,246,0.15)',
+                background:'rgba(59,130,246,0.04)',
+                borderRadius:'var(--r-md)',
+              }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                  <span className="tcard-name" style={{ color:'#4CAF50' }}>🆓 {i + 1}. {name}</span>
-                  <span style={{ fontSize:10, color:'#4CAF50' }}>Gratis</span>
+                  <span className="tcard-name" style={{ color:'var(--c-free)', display:'flex', alignItems:'center', gap:6 }}>
+                    <Gift size={13} /> {i + 1}. {name}
+                  </span>
+                  <span style={{ fontSize:10, color:'var(--c-free)' }}>Gratis</span>
                 </div>
                 {fm && (
                   <div style={{ fontSize:10, color:'var(--txt4)', marginTop:3 }}>
@@ -121,6 +243,7 @@ export default function TunggakanView() {
               </div>
             );
           })
+        )
       )}
     </div>
   );

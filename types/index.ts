@@ -68,6 +68,7 @@ export interface AppSettings {
   autoDate:      boolean;         // true = otomatis hari ini, false = manual
   quickAmounts:  number[];        // custom quick pay amounts
   pinTimeoutMinutes: number;      // 0 = tidak pernah, idle timeout untuk PIN lock
+  language:      'id' | 'en';     // bahasa UI (v11.1)
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -76,4 +77,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoDate:     true,
   quickAmounts: [50, 80, 90, 100, 150, 200],
   pinTimeoutMinutes: 0,
+  language:     'id',
 };

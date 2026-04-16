@@ -1,14 +1,14 @@
-// components/views/RekapView.tsx — Sesi D: preview tabel sebelum download
+// components/views/RekapView.tsx — Sesi 5D: bersih dari export, batch kolom
 'use client';
 
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
-import { getPay, isFree, rp, getKey } from '@/lib/helpers';
+import { getPay, isFree, rp, getKey, fuzzyMatch } from '@/lib/helpers';
 import { saveDB } from '@/lib/db';
-import { generatePDF, generateExcel } from '@/lib/export';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
+import { Search, X, Gift, CheckCheck } from 'lucide-react';
 
 export default function RekapView() {
   const {
@@ -21,16 +21,17 @@ export default function RekapView() {
     settings,
   } = useAppStore();
 
-  // ── Sesi D: preview state ──
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewMonth, setPreviewMonth] = useState<number | null>(null); // null = tahunan
-
   const inputDirty   = useRef(false);
   const modalClosing = useRef(false);
 
-  const mems     = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
-  const filtered  = mems.filter(m => m.toLowerCase().includes(search.toLowerCase()));
-  const grand     = MONTHS.reduce((s, _, mi) =>
+  // Batch state — lokal, per kolom bulan
+  const [batchColIdx,   setBatchColIdx]   = useState<number | null>(null);
+  const [batchSelected, setBatchSelected] = useState<string[]>([]);
+  const longPressTimer                     = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const mems    = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
+  const filtered = mems.filter(m => fuzzyMatch(m, search));
+  const grand    = MONTHS.reduce((s, _, mi) =>
     s + mems.reduce((ss, m) => ss + (getPay(appData, activeZone, m, selYear, mi) || 0), 0), 0);
 
   async function persist(newData: typeof appData, action: string, detail: string) {
@@ -50,6 +51,11 @@ export default function RekapView() {
     inputDirty.current   = false;
     setRekapExpanded(null);
     setTimeout(() => { modalClosing.current = false; }, 200);
+  }
+
+  function exitBatch() {
+    setBatchColIdx(null);
+    setBatchSelected([]);
   }
 
   async function quickPay(name: string, amt: number, month: number) {
@@ -111,139 +117,72 @@ export default function RekapView() {
     );
   }
 
-  // ── Sesi D: download handlers ──
-  async function handleDownloadPDF() {
-    try {
-      showToast('Membuat PDF...', 'info');
-      const { blob, filename } = await generatePDF(appData, activeZone, selYear, previewMonth);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('✅ PDF berhasil didownload');
-    } catch { showToast('Gagal buat PDF', 'err'); }
+  function onCellPointerDown(name: string, mi: number) {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    // Long press 500ms → masuk batch mode kolom ini
+    longPressTimer.current = setTimeout(() => {
+      // Jika belum di batch mode, atau sudah di kolom lain → set batch di kolom mi
+      if (batchColIdx === null || batchColIdx !== mi) {
+        setBatchColIdx(mi);
+        setBatchSelected([name]);
+        closeModal();
+      }
+    }, 500);
   }
 
-  function handleDownloadExcel() {
-    try {
-      const { blob, filename } = generateExcel(appData, activeZone, selYear, previewMonth);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('✅ Excel berhasil didownload');
-    } catch { showToast('Gagal buat Excel', 'err'); }
+  function onCellPointerUp() {
+    if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
   }
 
-  // ── Sesi D: Preview tabel komponen ──
-  function PreviewTable() {
-    const pm = previewMonth;
-    const previewMems = mems;
-
-    if (pm !== null) {
-      // Preview bulanan
-      const rows = previewMems.map(name => {
-        const info   = appData.memberInfo?.[activeZone + '__' + name] || {};
-        const val    = getPay(appData, activeZone, name, selYear, pm);
-        const free   = isFree(appData, activeZone, name, selYear, pm);
-        const tgl    = (info[`date_${selYear}_${pm}`] as string) || '—';
-        const status = free ? 'Free' : val !== null ? 'Lunas' : 'Belum';
-        const color  = free ? '#4CAF50' : val !== null ? '#4CAF50' : '#e05c5c';
-        const nominal = free ? '🆓' : val !== null ? (val === 0 ? 'Akumulasi' : rp(val)) : '—';
-        return { name, tgl, status, color, nominal };
-      });
-      const totalBulanan = previewMems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, pm) || 0), 0);
-
-      return (
-        <div style={{ overflowX:'auto', borderRadius:8, border:'1px solid var(--border2)', marginTop:10 }}>
-          <table style={{ borderCollapse:'collapse', fontSize:11, width:'100%' }}>
-            <thead>
-              <tr style={{ background:'var(--bg3)' }}>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'left', whiteSpace:'nowrap' }}>#</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'left', whiteSpace:'nowrap' }}>NAMA</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'center', whiteSpace:'nowrap' }}>TGL BAYAR</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'right', whiteSpace:'nowrap' }}>NOMINAL</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'center', whiteSpace:'nowrap' }}>STATUS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={r.name} style={{ borderTop:'1px solid var(--border2)', background: i % 2 === 0 ? 'transparent' : 'var(--bg3)' }}>
-                  <td style={{ padding:'6px 8px', color:'var(--txt4)', fontSize:10 }}>{i + 1}</td>
-                  <td style={{ padding:'6px 8px', fontSize:12 }}>{r.name}</td>
-                  <td style={{ padding:'6px 8px', textAlign:'center', color:'var(--txt3)', fontSize:10 }}>{r.tgl}</td>
-                  <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:600, color:'var(--txt)' }}>{r.nominal}</td>
-                  <td style={{ padding:'6px 8px', textAlign:'center' }}>
-                    <span style={{ fontSize:9, padding:'2px 7px', borderRadius:10, background: r.color === '#4CAF50' ? '#0d2b1f' : '#1f0d0d', color: r.color, border:`1px solid ${r.color}22` }}>
-                      {r.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ borderTop:'2px solid var(--border)', background:'var(--bg3)' }}>
-                <td colSpan={3} style={{ padding:'7px 8px', fontSize:10, color:'var(--txt3)' }}>TOTAL</td>
-                <td style={{ padding:'7px 8px', textAlign:'right', fontFamily:"'Syne',sans-serif", fontWeight:800, color:'var(--zc)', fontSize:13 }}>
-                  {rp(totalBulanan)}
-                </td>
-                <td />
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+  function onCellClick(name: string, mi: number) {
+    // Dalam batch mode kolom yang sama → toggle member
+    if (batchColIdx !== null && batchColIdx === mi) {
+      setBatchSelected(prev =>
+        prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
       );
-    } else {
-      // Preview tahunan — ringkasan per member
-      const rows = previewMems.map(name => {
-        let total = 0; let lunas = 0;
-        for (let mi = 0; mi < 12; mi++) {
-          const v    = getPay(appData, activeZone, name, selYear, mi);
-          const free = isFree(appData, activeZone, name, selYear, mi);
-          if (v !== null || free) lunas++;
-          total += v || 0;
-        }
-        return { name, total, lunas };
-      });
-      const grandTotal = rows.reduce((s, r) => s + r.total, 0);
-
-      return (
-        <div style={{ overflowX:'auto', borderRadius:8, border:'1px solid var(--border2)', marginTop:10 }}>
-          <table style={{ borderCollapse:'collapse', fontSize:11, width:'100%' }}>
-            <thead>
-              <tr style={{ background:'var(--bg3)' }}>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'left' }}>#</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'left' }}>NAMA</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'center' }}>LUNAS</th>
-                <th style={{ padding:'7px 8px', fontSize:9, color:'var(--txt4)', letterSpacing:'.06em', textAlign:'right' }}>TOTAL {selYear}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={r.name} style={{ borderTop:'1px solid var(--border2)', background: i % 2 === 0 ? 'transparent' : 'var(--bg3)' }}>
-                  <td style={{ padding:'6px 8px', color:'var(--txt4)', fontSize:10 }}>{i + 1}</td>
-                  <td style={{ padding:'6px 8px', fontSize:12 }}>{r.name}</td>
-                  <td style={{ padding:'6px 8px', textAlign:'center', fontSize:11 }}>
-                    <span style={{ color: r.lunas === 12 ? '#4CAF50' : r.lunas > 6 ? '#FF9800' : '#e05c5c' }}>
-                      {r.lunas}/12
-                    </span>
-                  </td>
-                  <td style={{ padding:'6px 8px', textAlign:'right', fontWeight:600, color:'var(--txt)' }}>
-                    {r.total > 0 ? rp(r.total) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ borderTop:'2px solid var(--border)', background:'var(--bg3)' }}>
-                <td colSpan={3} style={{ padding:'7px 8px', fontSize:10, color:'var(--txt3)' }}>TOTAL {selYear}</td>
-                <td style={{ padding:'7px 8px', textAlign:'right', fontFamily:"'Syne',sans-serif", fontWeight:800, color:'var(--zc)', fontSize:13 }}>
-                  {rp(grandTotal)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      );
+      return;
     }
+    // Bukan batch mode atau kolom berbeda → buka modal
+    if (batchColIdx === null) {
+      inputDirty.current   = false;
+      modalClosing.current = false;
+      const isExp = rekapExpanded?.name === name && rekapExpanded?.month === mi;
+      setRekapExpanded(isExp ? null : { name, month: mi });
+    }
+  }
+
+  async function handleBatchPay() {
+    if (batchColIdx === null || batchSelected.length === 0) return;
+    const mi = batchColIdx;
+    const entries: { name: string; amt: number }[] = [];
+    for (const name of batchSelected) {
+      if (isLocked(name)) continue;
+      const info  = appData.memberInfo?.[`${activeZone}__${name}`] || {};
+      const tarif = info.tarif as number | undefined;
+      const amt   = tarif ?? (settings?.quickAmounts?.[0] ?? 100);
+      entries.push({ name, amt });
+    }
+    if (entries.length === 0) { showToast('Semua member terkunci', 'err'); return; }
+    const newData = { ...appData, payments: { ...appData.payments } };
+    const today   = new Date().toISOString().slice(0, 10);
+    for (const { name, amt } of entries) {
+      const k = getKey(activeZone, name, selYear, mi);
+      newData.payments[k] = amt;
+      if (settings?.autoDate) {
+        const infoKey = `${activeZone}__${name}`;
+        const dateKey = `date_${selYear}_${mi}`;
+        newData.memberInfo = {
+          ...(newData.memberInfo || {}),
+          [infoKey]: { ...(newData.memberInfo?.[infoKey] || {}), [dateKey]: today },
+        };
+      }
+    }
+    await persist(newData,
+      `💰 Batch Pay Rekap ${activeZone} - ${entries.length} member`,
+      `${MONTHS[mi]} ${selYear}`
+    );
+    showToast(`${entries.length} member berhasil ditandai lunas`);
+    exitBatch();
   }
 
   function RekapModal() {
@@ -258,25 +197,40 @@ export default function RekapView() {
 
     return (
       <div
-        style={{ position:'fixed', inset:0, zIndex:8000, display:'flex', alignItems:'flex-start', justifyContent:'center', paddingTop: Math.round(window.innerHeight * 0.18) }}
+        style={{ position:'fixed', inset:0, zIndex:8000, display:'flex', alignItems:'flex-start', justifyContent:'center', paddingTop: Math.round(window.innerHeight * 0.18), background:'rgba(0,0,0,0.5)', backdropFilter:'blur(4px)' }}
         onClick={closeModal}
       >
         <div
-          style={{ background:'var(--card)', border:'1px solid var(--zc)', borderRadius:14, width:'min(320px,90vw)', boxShadow:'var(--shadow-lg)', overflow:'hidden', animation:'modalScaleIn var(--t-base)' }}
+          style={{
+            background:'rgba(24,28,39,0.92)', backdropFilter:'blur(16px)',
+            border:'1px solid rgba(255,255,255,0.08)', borderRadius:'var(--r-lg)',
+            width:'min(320px,90vw)', boxShadow:'var(--shadow-lg)',
+            overflow:'hidden', animation:'modalScaleIn var(--t-base) var(--ease-spring)',
+          }}
           onClick={e => e.stopPropagation()}
         >
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 14px 10px', borderBottom:'1px solid var(--border2)' }}>
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:'var(--txt)' }}>{name}</div>
-              <div style={{ fontSize:10, color:'var(--zc)', marginTop:1 }}>{activeZone} · {MONTHS[month]} {selYear}</div>
-            </div>
-            <button onClick={closeModal} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:8, cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+          <div style={{ display:'flex', justifyContent:'center', paddingTop:10, paddingBottom:4 }}>
+            <div style={{ width:32, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)' }} />
           </div>
-          <div style={{ padding:'12px 14px 14px' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px 12px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+            <div>
+              <div style={{ fontSize:14, fontWeight:700, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{name}</div>
+              <div style={{ fontSize:10, color:'var(--zc)', marginTop:2 }}>{activeZone} · {MONTHS[month]} {selYear}</div>
+            </div>
+            <button onClick={closeModal} aria-label="Tutup" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <X size={14} />
+            </button>
+          </div>
+          <div style={{ padding:'14px 16px 16px' }}>
             {entryFree ? (
-              <div style={{ textAlign:'center', fontSize:12, color:'#4CAF50', padding:'12px 0' }}>🆓 Member Gratis periode ini</div>
+              <div style={{ textAlign:'center', fontSize:12, color:'var(--c-free)', padding:'12px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+                <Gift size={14} /> Member Gratis periode ini
+              </div>
             ) : locked ? (
-              <div style={{ textAlign:'center', fontSize:12, color:'#e05c5c', padding:'12px 0' }}>🔒 Data terkunci</div>
+              <div style={{ textAlign:'center', fontSize:12, color:'var(--c-belum)', padding:'12px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Data terkunci
+              </div>
             ) : (
               <>
                 <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:10 }}>
@@ -299,7 +253,9 @@ export default function RekapView() {
                     autoFocus
                   />
                   {entryVal !== null && (
-                    <button className="delbtn" onClick={e => clearPay(name, month, e)}>✕</button>
+                    <button className="delbtn" onClick={e => clearPay(name, month, e)} aria-label="Hapus">
+                      <X size={12} />
+                    </button>
                   )}
                 </div>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
@@ -320,17 +276,104 @@ export default function RekapView() {
     );
   }
 
+  function BatchSheet() {
+    if (batchColIdx === null || batchSelected.length === 0) return null;
+    const mi = batchColIdx;
+    const previewItems = batchSelected.map(name => {
+      const info  = appData.memberInfo?.[`${activeZone}__${name}`] || {};
+      const tarif = info.tarif as number | undefined;
+      const amt   = tarif ?? (settings?.quickAmounts?.[0] ?? 100);
+      return { name, amt, hasTarif: !!tarif };
+    });
+    const total = previewItems.reduce((s, p) => s + p.amt, 0);
+
+    return (
+      <div
+        style={{ position:'fixed', inset:0, zIndex:8500, display:'flex', alignItems:'flex-end', justifyContent:'center', background:'rgba(0,0,0,0.5)', backdropFilter:'blur(4px)' }}
+        onClick={exitBatch}
+      >
+        <div
+          style={{
+            background:'rgba(24,28,39,0.95)', backdropFilter:'blur(16px)',
+            border:'1px solid rgba(255,255,255,0.08)',
+            borderRadius:'var(--r-lg) var(--r-lg) 0 0',
+            width:'min(480px,100vw)', maxHeight:'60vh',
+            boxShadow:'var(--shadow-lg)',
+            animation:'slideUp var(--t-slow) var(--ease-spring)',
+            display:'flex', flexDirection:'column',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div style={{ display:'flex', justifyContent:'center', paddingTop:10, paddingBottom:6, flexShrink:0 }}>
+            <div style={{ width:32, height:4, borderRadius:2, background:'rgba(255,255,255,0.15)' }} />
+          </div>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 16px 12px', borderBottom:'1px solid rgba(255,255,255,0.06)', flexShrink:0 }}>
+            <div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:'var(--txt)' }}>
+                {batchSelected.length} Member Dipilih
+              </div>
+              <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>{MONTHS[mi]} {selYear} · {activeZone}</div>
+            </div>
+            <button onClick={exitBatch} aria-label="Tutup" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <X size={14} />
+            </button>
+          </div>
+          <div style={{ overflowY:'auto', flex:1, padding:'10px 16px' }}>
+            {previewItems.map(({ name, amt, hasTarif }) => (
+              <div key={name} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 0', borderBottom:'1px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:13, color:'var(--txt)' }}>{name}</div>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  {!hasTarif && <span style={{ fontSize:9, color:'var(--txt4)', background:'rgba(255,255,255,0.04)', padding:'2px 6px', borderRadius:'var(--r-xs)' }}>default</span>}
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:12, fontWeight:600, color:'var(--zc)' }}>{rp(amt)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding:'12px 16px 20px', borderTop:'1px solid rgba(255,255,255,0.06)', flexShrink:0 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+              <span style={{ fontSize:11, color:'var(--txt3)' }}>TOTAL</span>
+              <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:16, color:'var(--zc)' }}>{rp(total)}</span>
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={exitBatch} style={{ flex:1, padding:'10px', borderRadius:'var(--r-sm)', border:'1px solid rgba(255,255,255,0.1)', background:'transparent', color:'var(--txt2)', cursor:'pointer', fontSize:13, transition:'all var(--t-fast)' }}>
+                Batal
+              </button>
+              <button
+                onClick={handleBatchPay}
+                style={{ flex:2, padding:'10px', borderRadius:'var(--r-sm)', border:'none', background:'var(--zc)', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600, boxShadow:'var(--shadow-z)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
+              >
+                <CheckCheck size={14} />
+                Tandai Lunas Semua
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Controls */}
-      <div style={{ display:'flex', gap:7, marginBottom:10, alignItems:'center' }}>
+      <div style={{ display:'flex', gap:8, marginBottom:10, alignItems:'center' }}>
         <select className="cs" style={{ flex:'none', width:'auto' }} value={selYear}
-          onChange={e => { setSelYear(+e.target.value); closeModal(); setShowPreview(false); }}>
+          onChange={e => { setSelYear(+e.target.value); closeModal(); exitBatch(); }}>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
-        <div className="search-wrap" style={{ flex:1, margin:0 }}>
-          <input className="search-box" style={{ margin:0 }} placeholder="🔍 cari..." value={search} onChange={e => setSearch(e.target.value)} />
-          {search && <button className="search-clear" onClick={() => setSearch('')}>✕</button>}
+        <div className="search-wrap" style={{ flex:1, margin:0, position:'relative', display:'flex', alignItems:'center' }}>
+          <Search size={13} style={{ position:'absolute', left:10, color:'var(--txt4)', pointerEvents:'none' }} />
+          <input
+            className="search-box"
+            style={{ margin:0, paddingLeft:30 }}
+            placeholder="Cari member..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="search-clear" onClick={() => setSearch('')} aria-label="Hapus pencarian">
+              <X size={12} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -340,54 +383,17 @@ export default function RekapView() {
         <div className="sum-val">{rp(grand)}</div>
       </div>
 
-      {/* ── Sesi D: Preview + Download panel ── */}
-      <div style={{ background:'var(--bg2)', border:'1px solid var(--border2)', borderRadius:10, padding:12, marginBottom:10, boxShadow:'var(--shadow-xs)' }}>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:12, marginBottom:10, color:'var(--txt)' }}>
-          📄 Export & Preview
-        </div>
-
-        {/* Tipe preview */}
-        <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:6 }}>TIPE</div>
-        <div style={{ display:'flex', gap:6, marginBottom:10 }}>
-          <button
-            onClick={() => { setPreviewMonth(null); setShowPreview(false); }}
-            style={{ flex:1, padding:'7px', borderRadius:7, border:`1px solid ${previewMonth===null?'var(--zc)':'var(--border)'}`, background: previewMonth===null?'var(--zcdim)':'var(--bg3)', color: previewMonth===null?'var(--zc)':'var(--txt2)', cursor:'pointer', fontSize:11, fontWeight:600, transition:'all var(--t-fast)' }}
-          >Tahunan</button>
-          {MONTHS.map((m, i) => (
-            <button key={i}
-              onClick={() => { setPreviewMonth(i); setShowPreview(false); }}
-              style={{ flex:1, padding:'7px 4px', borderRadius:7, border:`1px solid ${previewMonth===i?'var(--zc)':'var(--border)'}`, background: previewMonth===i?'var(--zcdim)':'var(--bg3)', color: previewMonth===i?'var(--zc)':'var(--txt2)', cursor:'pointer', fontSize:9, fontWeight: previewMonth===i?700:400, transition:'all var(--t-fast)', whiteSpace:'nowrap' }}
-            >{m.slice(0,3)}</button>
-          ))}
-        </div>
-
-        {/* Tombol Preview */}
-        <button
-          onClick={() => setShowPreview(v => !v)}
-          style={{ width:'100%', padding:'9px', borderRadius:7, border:'1px solid var(--border)', background: showPreview?'var(--bg3)':'var(--bg4)', color:'var(--txt2)', cursor:'pointer', fontSize:12, marginBottom: showPreview?0:8, transition:'all var(--t-fast)' }}
-        >
-          {showPreview ? '▲ Tutup Preview' : '👁 Lihat Preview'} — {previewMonth !== null ? MONTHS[previewMonth] : 'Tahunan'} {selYear}
-        </button>
-
-        {/* Preview tabel */}
-        {showPreview && <PreviewTable />}
-
-        {/* Download buttons */}
-        <div style={{ display:'flex', gap:8, marginTop:10 }}>
-          <button
-            onClick={handleDownloadPDF}
-            style={{ flex:1, padding:'9px', borderRadius:7, border:'none', background:'var(--zc)', color:'#fff', fontWeight:600, fontSize:12, cursor:'pointer', boxShadow:'var(--shadow-z)', transition:'opacity var(--t-fast)' }}
-          >
-            ⬇ PDF
-          </button>
-          <button
-            onClick={handleDownloadExcel}
-            style={{ flex:1, padding:'9px', borderRadius:7, border:'none', background:'#1d6f42', color:'#fff', fontWeight:600, fontSize:12, cursor:'pointer', transition:'opacity var(--t-fast)' }}
-          >
-            ⬇ Excel
+      {/* Batch hint bar */}
+      {batchColIdx !== null && (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.25)', borderRadius:'var(--r-sm)', padding:'8px 12px', marginBottom:10 }}>
+          <div style={{ fontSize:12, color:'var(--zc)' }}>
+            Kolom <strong>{MONTHS[batchColIdx]}</strong> — tap sel untuk pilih/batal
+          </div>
+          <button onClick={exitBatch} style={{ background:'none', border:'none', color:'var(--txt3)', cursor:'pointer', padding:4, display:'flex' }}>
+            <X size={14} />
           </button>
         </div>
-      </div>
+      )}
 
       {/* Tabel rekap utama */}
       <div className="rekap-wrap">
@@ -396,7 +402,17 @@ export default function RekapView() {
             <tr>
               <th className="stk" style={{ left:0, minWidth:22 }}>#</th>
               <th className="stk" style={{ left:22, textAlign:'left', minWidth:95 }}>NAMA</th>
-              {MONTHS.map(m => <th key={m} style={{ minWidth:38 }}>{m}</th>)}
+              {MONTHS.map((m, mi) => (
+                <th key={m} style={{
+                  minWidth:38,
+                  color: batchColIdx === mi ? 'var(--zc)' : undefined,
+                  background: batchColIdx === mi ? 'rgba(59,130,246,0.1)' : undefined,
+                  borderBottom: batchColIdx === mi ? '2px solid var(--zc)' : undefined,
+                  transition:'all var(--t-base)',
+                }}>
+                  {m.slice(0, 3)}
+                </th>
+              ))}
               <th style={{ color:'var(--zc)', minWidth:52 }}>TOTAL</th>
             </tr>
           </thead>
@@ -408,21 +424,45 @@ export default function RekapView() {
                 const free = isFree(appData, activeZone, name, selYear, mi);
                 const v    = free ? 0 : raw;
                 rowTotal  += v || 0;
+
+                const isDimmed   = batchColIdx !== null && batchColIdx !== mi;
+                const isSelected = batchColIdx === mi && batchSelected.includes(name);
+                const isAnchorCol = batchColIdx === mi;
+
                 const cls  = v! > 0 ? 'cv' : v === 0 && !free ? 'cz' : 'cn';
                 const disp = free
-                  ? <span style={{ fontSize:8, opacity:.7 }}>🆓</span>
-                  : v === 0 ? <span style={{ fontSize:8, opacity:.8 }}>Akm</span>
+                  ? <Gift size={9} style={{ opacity:0.6 }} />
+                  : v === 0 ? <span style={{ fontSize:8, opacity:0.8 }}>Akm</span>
                   : v !== null ? (v * 1000).toLocaleString('id-ID') : '—';
+
                 const isExp = rekapExpanded?.name === name && rekapExpanded?.month === mi;
+
                 return (
-                  <td key={mi}
+                  <td
+                    key={mi}
                     className={`${cls}${isExp ? ' rekap-exp-cell' : ''}`}
-                    onClick={() => {
-                      inputDirty.current   = false;
-                      modalClosing.current = false;
-                      setRekapExpanded(isExp ? null : { name, month: mi });
+                    style={{
+                      opacity: isDimmed ? 0.2 : 1,
+                      pointerEvents: isDimmed ? 'none' : undefined,
+                      outline: isSelected ? '2px solid var(--zc)' : undefined,
+                      outlineOffset: '-2px',
+                      background: isSelected ? 'rgba(59,130,246,0.18)' : undefined,
+                      position: 'relative',
+                      transition: 'opacity var(--t-base), background var(--t-fast)',
+                      userSelect: 'none',
+                      cursor: 'pointer',
                     }}
-                    title={free ? 'Free Member' : `${MONTHS[mi]} ${selYear}`}>
+                    onPointerDown={() => onCellPointerDown(name, mi)}
+                    onPointerUp={onCellPointerUp}
+                    onPointerCancel={onCellPointerUp}
+                    onClick={() => onCellClick(name, mi)}
+                    title={free ? 'Free Member' : `${MONTHS[mi]} ${selYear}`}
+                  >
+                    {isSelected && (
+                      <span style={{ position:'absolute', top:2, right:2, color:'var(--zc)', lineHeight:1 }}>
+                        <CheckCheck size={8} />
+                      </span>
+                    )}
                     {disp}
                   </td>
                 );
@@ -442,7 +482,15 @@ export default function RekapView() {
               <td colSpan={2} className="stk" style={{ left:0, fontSize:10, color:'var(--txt4)', paddingLeft:8, background:'var(--bg3)' }}>TOTAL</td>
               {MONTHS.map((_, mi) => {
                 const t = mems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, mi) || 0), 0);
-                return <td key={mi} style={{ color:'#4CAF50', fontWeight:700 }}>{(t * 1000).toLocaleString('id-ID')}</td>;
+                return (
+                  <td key={mi} style={{
+                    color:'var(--c-lunas)', fontWeight:700,
+                    opacity: batchColIdx !== null && batchColIdx !== mi ? 0.2 : 1,
+                    transition:'opacity var(--t-base)',
+                  }}>
+                    {(t * 1000).toLocaleString('id-ID')}
+                  </td>
+                );
               })}
               <td style={{ color:'var(--zc)', fontFamily:"'Syne',sans-serif", fontWeight:800 }}>{rp(grand)}</td>
             </tr>
@@ -450,7 +498,12 @@ export default function RekapView() {
         </table>
       </div>
 
+      <div style={{ fontSize:10, color:'var(--txt4)', textAlign:'center', marginTop:6 }}>
+        ← geser kanan untuk lihat semua bulan →
+      </div>
+
       <RekapModal />
+      <BatchSheet />
     </div>
   );
 }

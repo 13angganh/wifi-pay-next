@@ -7,6 +7,7 @@ import { getZoneTotal, rp } from '@/lib/helpers';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
+import { X, Wallet, TrendingDown, TrendingUp } from 'lucide-react';
 import type { OpsItem } from '@/types';
 
 // Font dan ukuran konsisten untuk semua elemen
@@ -75,12 +76,12 @@ export default function OperasionalView() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
         padding: highlight ? '10px 12px' : '8px 0',
         borderBottom: highlight ? 'none' : '1px solid var(--border)',
-        background: highlight ? '#0a2010' : 'transparent',
-        borderRadius: highlight ? 8 : 0,
+        background: highlight ? 'rgba(34,197,94,0.06)' : 'transparent',
+        borderRadius: highlight ? 'var(--r-sm)' : 0,
         marginTop: highlight ? 6 : 0,
-        border: highlight ? '1px solid #4CAF5033' : undefined,
+        border: highlight ? '1px solid rgba(34,197,94,0.2)' : undefined,
       }}>
-        <span style={{ fontSize:FS_LBL, color: highlight ? '#4CAF50' : 'var(--txt3)', fontFamily:FONT, fontWeight: highlight ? 700 : 400 }}>
+        <span style={{ fontSize:FS_LBL, color: highlight ? 'var(--c-lunas)' : 'var(--txt3)', fontFamily:FONT, fontWeight: highlight ? 700 : 400 }}>
           {label}
         </span>
         <span style={{ fontSize:FS_VAL, color, fontFamily:FONT, fontWeight:600 }}>
@@ -130,29 +131,30 @@ export default function OperasionalView() {
               autoComplete="off"
             />
             <button onClick={() => deleteItem(i)}
-              style={{ background:'#1f0d0d', border:'1px solid #e05c5c55', color:'#e05c5c', padding:'7px 10px', borderRadius:6, cursor:'pointer', fontSize:FS_BODY, flexShrink:0, fontFamily:FONT }}>
-              ✕
+              aria-label={`Hapus item ${it.label || i + 1}`}
+              style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', color:'var(--c-belum)', padding:'7px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:FS_BODY, flexShrink:0, fontFamily:FONT, display:'flex', alignItems:'center', justifyContent:'center', minWidth:34, minHeight:34 }}>
+              <X size={13} strokeWidth={1.5} />
             </button>
           </div>
         ))}
 
         <button onClick={addItem}
-          style={{ width:'100%', background:'var(--bg3)', border:'1px dashed #1e3a5f', color:'#2196F3', padding:9, borderRadius:8, cursor:'pointer', fontSize:FS_BODY, marginTop:6, fontFamily:FONT }}>
+          style={{ width:'100%', background:'var(--bg3)', border:'1px dashed rgba(59,130,246,0.35)', color:'var(--zc-krs)', padding:9, borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:FS_BODY, marginTop:6, fontFamily:FONT }}>
           + Tambah Item
         </button>
       </div>
 
       {/* Result — semua font sama ukuran FS_VAL */}
       <div style={{ background:'var(--bg)', border:'1px solid var(--border)', borderRadius:10, padding:'4px 14px', marginTop:10 }}>
-        <ResultRow label="📥 Pendapatan KRS"    value={rp(krsTotal)}    color="#2196F3" />
-        <ResultRow label="📥 Pendapatan SLK"    value={rp(slkTotal)}    color="#e05c3a" />
+        <ResultRow label="Pendapatan KRS"    value={rp(krsTotal)}    color="var(--zc-krs)" />
+        <ResultRow label="Pendapatan SLK"    value={rp(slkTotal)}    color="var(--zc-slk)" />
         <div style={{ height:1, background:'var(--border)', margin:'4px 0' }} />
-        <ResultRow label="💰 Pendapatan Kotor"  value={rp(grossIncome)} color="#4CAF50" />
-        <ResultRow label="💸 Total Pengeluaran" value={rp(totalOps)}    color="#e05c5c" />
+        <ResultRow label="Pendapatan Kotor"  value={rp(grossIncome)} color="var(--c-lunas)" />
+        <ResultRow label="Total Pengeluaran" value={rp(totalOps)}    color="var(--c-belum)" />
         <ResultRow
-          label="✅ PENDAPATAN BERSIH"
+          label="PENDAPATAN BERSIH"
           value={rp(netIncome)}
-          color={netIncome >= 0 ? '#4CAF50' : '#e05c5c'}
+          color={netIncome >= 0 ? 'var(--c-lunas)' : 'var(--c-belum)'}
           highlight
         />
       </div>
