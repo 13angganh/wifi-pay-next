@@ -390,7 +390,7 @@ export default function SettingsView() {
         <div style={cardCritStyle}>
           <SectionHeader
             icon={<Shield size={16} strokeWidth={1.5} />}
-            title="PIN Security"
+            title={t('settings.pin')}
             desc={settings.pinEnabled ? 'Aktif — app terkunci saat dibuka' : 'Nonaktif — app langsung terbuka'}
           />
           <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:12, marginTop:-8 }}>
@@ -620,7 +620,7 @@ export default function SettingsView() {
       <div style={cardStyle}>
         <SectionHeader
           icon={<Globe size={16} strokeWidth={1.5} />}
-          title="Bahasa / Language"
+          title={t('settings.language')}
         />
         <div style={{ display:'flex', gap:8 }}>
           <ToggleChip label="Indonesia" active={(settings as any).language !== 'en'} onClick={() => { updateSettings({ ...(settings as any), language: 'id' }); showToast('Bahasa: Indonesia'); }} />
@@ -632,7 +632,7 @@ export default function SettingsView() {
           PREFERENSI: EXPORT DATA
       ═══════════════════════════════ */}
       <div style={cardStyle}>
-        <SectionHeader icon={<Download size={16} strokeWidth={1.5} />} title="Export Data" />
+        <SectionHeader icon={<Download size={16} strokeWidth={1.5} />} title={t('settings.export')} />
 
         {/* JSON Backup */}
         <button

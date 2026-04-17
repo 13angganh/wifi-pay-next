@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { getPay, isLunas, isFree, rp, fuzzyMatch } from '@/lib/helpers';
+import { useT } from '@/hooks/useT';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import MemberCard from './MemberCard';
@@ -60,14 +61,14 @@ export default function EntryView() {
   }, [setEntryScrollTop]);
 
   const chips: { key: FilterType; icon: React.ReactNode; label: string; count?: number }[] = [
-    { key: 'all',    icon: <ClipboardList size={12} />, label: 'Semua' },
-    { key: 'paid',   icon: <CheckCircle2  size={12} />, label: 'Lunas',  count: paid },
-    { key: 'unpaid', icon: <Clock         size={12} />, label: 'Belum',  count: unpaid },
-    { key: 'free',   icon: <Gift          size={12} />, label: 'Free',   count: freeCount },
+    { key: 'all',    icon: <ClipboardList size={12} />, label: t('common.all') },
+    { key: 'paid',   icon: <CheckCircle2  size={12} />, label: t('status.lunas'),  count: paid },
+    { key: 'unpaid', icon: <Clock         size={12} />, label: t('status.belum'),  count: unpaid },
+    { key: 'free',   icon: <Gift          size={12} />, label: t('status.free'),   count: freeCount },
   ];
 
   function startBatch(name: string) {
-    if (globalLocked) { showToast('Data terkunci! Unlock dulu', 'err'); return; }
+    if (globalLocked) { showToast(t('entry.locked'), 'err'); return; }
     setBatchMode(true);
     setBatchPeriod(selYear, selMonth);
     toggleBatchMember(name);
@@ -75,7 +76,7 @@ export default function EntryView() {
 
   async function executeBatch() {
     if (batchSelected.length === 0) return;
-    if (globalLocked) { showToast('Data terkunci! Unlock dulu', 'err'); return; }
+    if (globalLocked) { showToast(t('entry.locked'), 'err'); return; }
 
     const newData = { ...appData, payments: { ...appData.payments } };
     const details: string[] = [];
@@ -95,7 +96,7 @@ export default function EntryView() {
     });
 
     if (details.length === 0) {
-      showToast('Tidak ada member dengan tarif terdaftar', 'err');
+      showToast(t('entry.noTarif'), 'err');
       return;
     }
 
@@ -110,9 +111,9 @@ export default function EntryView() {
         setSyncStatus('ok');
       } catch { setSyncStatus('err'); }
     }
-    showToast(`✓ ${details.length} member berhasil ditandai lunas`);
+    showToast(`✓ ${details.length} ${t('entry.batchSuccess')}`);
     if (skipped.length > 0) {
-      setTimeout(() => showToast(`${skipped.length} member dilewati (belum ada tarif)`, 'info'), 800);
+      setTimeout(() => showToast(`${skipped.length} ${t('entry.batchSkipped')}`, 'info'), 800);
     }
     clearBatch();
   }
@@ -127,6 +128,7 @@ export default function EntryView() {
     return { name, tarif };
   });
 
+  const t = useT();
   const zc = activeZone === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)';
 
   return (
@@ -180,7 +182,7 @@ export default function EntryView() {
             }}
           >
             <Users size={12} />
-            Pilih Semua
+            {t('entry.selectAll')}
           </button>
         </div>
       ) : (
@@ -214,7 +216,7 @@ export default function EntryView() {
           display:'flex', justifyContent:'space-between', alignItems:'center',
         }}>
           <div>
-            <div style={{ fontSize:9, color:'rgba(239,68,68,0.6)', letterSpacing:'.06em', textTransform:'uppercase' }}>Potensi Belum Masuk</div>
+            <div style={{ fontSize:9, color:'rgba(239,68,68,0.6)', letterSpacing:'.06em', textTransform:'uppercase' }}>{t('entry.potentialUnpaid')}</div>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:16, fontWeight:800, color:'var(--c-belum)' }}>
               {rp(potensiUnpaid)}
             </div>
@@ -263,7 +265,7 @@ export default function EntryView() {
             <Search size={14} style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:'var(--txt4)', pointerEvents:'none' }} />
             <input
               className="search-box"
-              placeholder={`Cari nama di ${activeZone}...`}
+              placeholder={`${t('entry.searchPlaceholder')} ${activeZone}...`}
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ paddingLeft:32 }}
@@ -331,7 +333,7 @@ export default function EntryView() {
               }}>
                 <span style={{ fontSize:13, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{name}</span>
                 <span style={{ fontSize:12, fontWeight:600, color: tarif ? 'var(--c-lunas)' : 'var(--txt4)' }}>
-                  {tarif ? rp(tarif) : <span style={{ fontSize:10 }}>Belum ada tarif</span>}
+                  {tarif ? rp(tarif) : <span style={{ fontSize:10 }}>{t('entry.noTarifShort')}</span>}
                 </span>
               </div>
             ))}

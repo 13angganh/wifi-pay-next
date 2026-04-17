@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { showToast } from '@/components/ui/Toast';
-import { getZoneTotal, isLunas, isFree, getPay, getArrears, rp } from '@/lib/helpers';
+import { getZoneTotal, isLunas, isFree, getPay, getArrears, rp } from '@/lib/helpers'
+import { useT } from '@/hooks/useT';;
 import { doJSONBackup, doWASummary } from '@/lib/export';
 import type { ViewName } from '@/types';
 import {
@@ -20,6 +21,7 @@ export default function DashboardView() {
   const router = useRouter();
   const { appData, selYear, selMonth, setSelYear, setSelMonth, setView } = useAppStore();
   const dy = selYear; const dm = selMonth;
+  const t = useT();
 
   // ── Income ──
   const krsTotal    = getZoneTotal(appData, 'KRS', dy, dm);
@@ -117,7 +119,7 @@ export default function DashboardView() {
         marginBottom:10,
       }}>
         <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', textTransform:'uppercase', marginBottom:4 }}>
-          Pendapatan Bulan Ini
+          {t('dashboard.thisMonth')}
         </div>
         <div style={{
           fontFamily:"'Syne',sans-serif",
@@ -135,7 +137,7 @@ export default function DashboardView() {
             <span style={{ fontSize:10, color:'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
               <Minus size={10} /> Ops: {rp(totalOps)} →
               <span style={{ color: netIncome >= 0 ? 'var(--c-lunas)' : 'var(--c-belum)', fontWeight:600, marginLeft:2 }}>
-                Bersih: {rp(netIncome)}
+                {t('dashboard.net')}: {rp(netIncome)}
               </span>
             </span>
           )}
@@ -175,7 +177,7 @@ export default function DashboardView() {
                   borderRadius:3, transition:'width .4s var(--ease-smooth)',
                 }} />
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:4 }}>{lunas}/{allLen} lunas ({pct}%)</div>
+              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:4 }}>{lunas}/{allLen} {t('status.lunas')} ({pct}%)</div>
             </div>
           </div>
         ))}
@@ -185,9 +187,9 @@ export default function DashboardView() {
       <div style={card}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
           <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)' }}>
-            <Clock size={14} style={{ color:'var(--c-belum)' }} /> Belum Bayar {bulanLbl}
+            <Clock size={14} style={{ color:'var(--c-belum)' }} /> {t('dashboard.unpaidTitle')} {bulanLbl}
           </div>
-          <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{krsBelum + slkBelum} pelanggan</div>
+          <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{krsBelum + slkBelum} {t('common.members')}</div>
         </div>
         <div style={{ display:'flex', gap:8, marginBottom: totalFree > 0 ? 8 : 0 }}>
           {([
@@ -208,7 +210,7 @@ export default function DashboardView() {
             borderRadius:'var(--r-sm)', padding:'7px 10px',
           }}>
             <span style={{ fontSize:10, color:'var(--c-free)', display:'flex', alignItems:'center', gap:5 }}>
-              <Gift size={12} /> Free member {bulanLbl}
+              <Gift size={12} /> {t('status.free')} {bulanLbl}
             </span>
             <span style={{ fontSize:12, fontWeight:700, color:'var(--c-free)' }}>
               {totalFree} member <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span>
@@ -220,27 +222,27 @@ export default function DashboardView() {
       {/* Top tunggakan — tanpa aging widget */}
       <div style={card}>
         <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)', marginBottom:10 }}>
-          <AlertTriangle size={14} style={{ color:'var(--c-belum)' }} /> Tunggakan Terbanyak
+          <AlertTriangle size={14} style={{ color:'var(--c-belum)' }} /> {t('dashboard.topArrears')}
         </div>
         {top5.length === 0 ? (
           <div style={{ textAlign:'center', padding:'16px 0', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
             <CheckCircle2 size={24} style={{ color:'var(--c-lunas)' }} />
-            <span style={{ color:'var(--c-lunas)', fontSize:12 }}>Semua lunas!</span>
+            <span style={{ color:'var(--c-lunas)', fontSize:12 }}>{t('dashboard.allPaid')}</span>
           </div>
         ) : (
-          top5.map((t, i) => (
+          top5.map((t2, i) => (
             <div key={i} style={{
               display:'flex', justifyContent:'space-between', alignItems:'center',
               padding:'8px 0',
               borderBottom: i < top5.length - 1 ? '1px solid var(--border2)' : 'none',
             }}>
               <div>
-                <span style={{ fontSize:13, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{t.name}</span>
-                <span style={{ fontSize:9, color:'var(--txt4)', marginLeft:6 }}>{t.z}</span>
+                <span style={{ fontSize:13, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{t2.name}</span>
+                <span style={{ fontSize:9, color:'var(--txt4)', marginLeft:6 }}>{t2.z}</span>
               </div>
               <div style={{ textAlign:'right' }}>
-                <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{t.count} bulan</div>
-                <div style={{ fontSize:9, color:'var(--txt4)' }}>sejak {t.oldest}</div>
+                <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{t2.count} bulan</div>
+                <div style={{ fontSize:9, color:'var(--txt4)' }}>sejak {t2.oldest}</div>
               </div>
             </div>
           ))
@@ -250,7 +252,7 @@ export default function DashboardView() {
             style={{ fontSize:10, color:'var(--txt3)', textAlign:'center', marginTop:10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
             onClick={() => nav('tunggakan')}
           >
-            +{topTunggak.length - 5} lainnya
+            +{topTunggak.length - 5} {t('common.more')}
             <ChevronRight size={12} />
           </div>
         )}
@@ -269,10 +271,10 @@ export default function DashboardView() {
       >
         <div>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Wallet size={14} style={{ color:'var(--txt3)' }} /> Operasional {bulanLbl}
+            <Wallet size={14} style={{ color:'var(--txt3)' }} /> {t('nav.operasional')} {bulanLbl}
           </div>
           <div style={{ fontSize:11, color: totalOps > 0 ? 'var(--c-belum)' : 'var(--txt4)', marginTop:3 }}>
-            {totalOps > 0 ? rp(totalOps) : 'Belum ada data'}
+            {totalOps > 0 ? rp(totalOps) : '{t('common.noData')}'}
           </div>
         </div>
         <ChevronRight size={16} style={{ color:'var(--txt4)', flexShrink:0 }} />
@@ -282,7 +284,7 @@ export default function DashboardView() {
       <div style={{ ...card, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Database size={14} style={{ color:'var(--txt3)' }} /> Backup Terakhir
+            <Database size={14} style={{ color:'var(--txt3)' }} /> {t('dashboard.lastBackup')}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)', marginTop:2 }}>{backupLbl}</div>
         </div>
@@ -294,7 +296,7 @@ export default function DashboardView() {
           }}
           onClick={(e) => { e.stopPropagation(); doJSONBackup(appData); showToast('Backup JSON berhasil!'); }}
         >
-          Backup Sekarang
+          {t('dashboard.backupNow')}
         </button>
       </div>
 
@@ -302,7 +304,7 @@ export default function DashboardView() {
       <div style={card}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Share2 size={14} style={{ color:'var(--txt3)' }} /> Ringkasan WA
+            <Share2 size={14} style={{ color:'var(--txt3)' }} /> {t('dashboard.waSummary')}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)' }}>{bulanLbl}</div>
         </div>
@@ -318,10 +320,10 @@ export default function DashboardView() {
           onClick={() => { doWASummary(appData, dy, dm); }}
         >
           <Share2 size={15} />
-          Kirim Ringkasan {bulanLbl} ke WA
+          {t('dashboard.sendWA')} {bulanLbl}
         </button>
         <div style={{ fontSize:9, color:'var(--txt4)', marginTop:6, textAlign:'center' }}>
-          Periode sesuai selector di atas
+          {t('dashboard.periodNote')}
         </div>
       </div>
     </div>

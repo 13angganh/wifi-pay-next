@@ -36,6 +36,7 @@ export default function MembersView() {
   const [freeZone, setFreeZone] = useState<Zone>('KRS');
   const [riwOpen,  setRiwOpen]  = useState(false);
 
+  const t = useT();
   const zone = newMemberZone;
   const zc   = zone === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)';
 
@@ -65,15 +66,15 @@ export default function MembersView() {
     const id    = addRef.id.current?.value.trim()   || '';
     const ip    = addRef.ip.current?.value.trim()   || '';
     const tarif = addRef.tarif.current?.value.trim() || '';
-    if (!name) { showToast('Nama wajib diisi','err'); return; }
+    if (!name) { showToast(t('members.nameRequired'),'err'); return; }
     const list = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
-    if (list.includes(name)) { showToast('Nama sudah ada!','err'); return; }
+    if (list.includes(name)) { showToast(t('members.nameDuplicate'),'err'); return; }
     list.push(name); list.sort();
     const infoKey = `${zone}__${name}`;
     const newInfo = { ...(appData.memberInfo||{}), [infoKey]: { id, ip, ...(tarif ? { tarif:+tarif } : {}) } };
     const newData = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']: list, memberInfo: newInfo };
     await persist(newData, `➕ Tambah member ${zone} - ${name}`, `ID:${id} IP:${ip}`);
-    showToast(`✅ ${name} ditambahkan!`);
+    showToast(`${name} ${t('members.added')}`);
     ['name','id','ip','tarif'].forEach(f => { const el = addRef[f as keyof typeof addRef].current; if(el) el.value=''; });
   }
 
@@ -86,11 +87,11 @@ export default function MembersView() {
   async function saveEdit() {
     const { zone, origName, name, id, ip, tarif } = editData;
     const newName = name.trim().toUpperCase();
-    if (!newName) { showToast('Nama tidak boleh kosong','err'); return; }
+    if (!newName) { showToast(t('members.nameRequired'),'err'); return; }
     const list = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
     const idx  = list.indexOf(origName);
-    if (idx === -1) { showToast('Member tidak ditemukan','err'); return; }
-    if (newName !== origName && list.includes(newName)) { showToast('Nama sudah ada!','err'); return; }
+    if (idx === -1) { showToast(t('members.notFound'),'err'); return; }
+    if (newName !== origName && list.includes(newName)) { showToast(t('members.nameDuplicate'),'err'); return; }
     let newPayments   = { ...appData.payments };
     let newMemberInfo = { ...(appData.memberInfo||{}) };
     if (newName !== origName) {
@@ -109,7 +110,7 @@ export default function MembersView() {
     }
     const newData = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']:list, payments:newPayments, memberInfo:newMemberInfo };
     await persist(newData, `✏️ Edit member ${zone}`, `${origName} → ${newName}`);
-    showToast(`${newName} berhasil diupdate!`); setEditOpen(false);
+    showToast(`${newName} ${t('members.updated')}`); setEditOpen(false);
   }
 
   async function deleteMember(name: string) {
@@ -215,7 +216,7 @@ export default function MembersView() {
       {/* DELETED TAB */}
       {memberTab === 'deleted' ? (
         deletedList.length === 0
-          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Trash2 size={28} color="var(--txt5)" /></div><div className="empty-title">Recycle Bin Kosong</div><div className="empty-sub">Tidak ada member yang dihapus</div></div>
+          ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Trash2 size={28} color="var(--txt5)" /></div><div className="empty-title">{t('members.recycleBinEmpty')}</div><div className="empty-sub">{t('members.recycleBinDesc')}</div></div>
           : deletedList.map(([k,d]) => (
             <div key={k} className="del-card">
               <div>
@@ -225,7 +226,7 @@ export default function MembersView() {
                 <div style={{ fontSize:10, color:'var(--txt4)' }}>Dihapus: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
               </div>
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
-                <button className="restore-btn" onClick={() => restoreMember(k)}>Kembalikan</button>
+                <button className="restore-btn" onClick={() => restoreMember(k)}>{t('members.restore')}</button>
                 <button onClick={() => permanentDelete(k)} aria-label={`Hapus permanen ${d.name}`}
                   style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', color:'var(--c-belum)', padding:'5px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                   <Trash2 size={12} strokeWidth={1.5} />
@@ -238,23 +239,23 @@ export default function MembersView() {
           {/* Add form */}
           {!membersLocked && (
             <div className="add-form">
-              <div className="af-title">TAMBAH MEMBER BARU KE {zone}</div>
+              <div className="af-title">{t('members.addTitle')} {zone}</div>
               <div className="af-grid">
                 <div>
-                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>NAMA</div>
-                  <input ref={addRef.name} className="af-input" placeholder="Nama member" autoComplete="off"
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('common.name').toUpperCase()}</div>
+                  <input ref={addRef.name} className="af-input" placeholder="{t('members.namePlaceholder')}" autoComplete="off"
                     style={{ textTransform:'uppercase' }} onKeyDown={e=>e.key==='Enter'&&addMember()} />
                 </div>
                 <div>
-                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>ID PELANGGAN</div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.customerId').toUpperCase()}</div>
                   <input ref={addRef.id} className="af-input" placeholder="Opsional" autoComplete="off" />
                 </div>
                 <div style={{ gridColumn:'span 2' }}>
-                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>IP / LINK ROUTER</div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.ipLabel').toUpperCase()}</div>
                   <input ref={addRef.ip} className="af-input" placeholder="192.168.x.x atau http://..." autoComplete="off" />
                 </div>
                 <div>
-                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>TARIF (×1000)</div>
+                  <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.tarifShort').toUpperCase()}</div>
                   <input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="Contoh: 100" autoComplete="off" />
                 </div>
               </div>
@@ -283,7 +284,7 @@ export default function MembersView() {
           {/* Member rows */}
           <div id="member-rows">
             {filteredMems.length === 0
-              ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Users size={28} color="var(--txt5)" /></div><div className="empty-title">Belum Ada Member</div><div className="empty-sub">Tambahkan member baru di atas</div></div>
+              ? <div className="empty-state" style={{padding:'24px'}}><div className="empty-icon"><Users size={28} color="var(--txt5)" /></div><div className="empty-title">{t('members.empty')}</div><div className="empty-sub">{t('members.emptyDesc')}</div></div>
               : filteredMems.map((name, i) => {
                 const info      = getInfo(name);
                 const isFreeNow = isFree(appData, zone, name, selYear, selMonth);
@@ -372,7 +373,7 @@ export default function MembersView() {
                 />
               </div>
             ))}
-            <button className="modal-action" onClick={saveEdit}>Simpan Perubahan</button>
+            <button className="modal-action" onClick={saveEdit}>{t('members.saveChanges')}</button>
           </div>
         </div>
       )}

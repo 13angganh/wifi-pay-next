@@ -5,6 +5,7 @@ import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { getPay, isFree, rp, getKey, fuzzyMatch } from '@/lib/helpers';
+import { useT } from '@/hooks/useT';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';

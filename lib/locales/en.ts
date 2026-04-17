@@ -143,6 +143,106 @@ const en: Record<string, string> = {
   'error.loadFailed'         : 'Failed to load data',
   'error.saveFailed'         : 'Failed to save',
   'error.deleteFailed'       : 'Failed to delete',
+  // Dashboard tambahan
+  'dashboard.thisMonth'  : 'Monthly Income',
+  'dashboard.net'        : 'Net',
+  'dashboard.unpaidTitle': 'Unpaid',
+  'dashboard.topArrears' : 'Most Arrears',
+  'dashboard.allPaid'    : 'All Paid!',
+  'dashboard.lastBackup' : 'Last Backup',
+  'dashboard.backupNow'  : 'Backup Now',
+  'dashboard.waSummary'  : 'WA Summary',
+  'dashboard.sendWA'     : 'Send Summary',
+  'dashboard.periodNote' : 'Period follows selector above',
+
+  // Common tambahan
+  'common.members'    : 'customers',
+  'common.more'       : 'more',
+  'common.months'     : 'months',
+  'common.since'      : 'since',
+  'common.optional'   : 'Optional',
+
+  // Tunggakan tambahan
+  'tunggakan.nakal'        : 'Overdue',
+  'tunggakan.rajin'        : 'On-time',
+  'tunggakan.sumLabel'     : 'ARREARS UNTIL',
+  'tunggakan.sumLunas'     : 'PAID UNTIL',
+  'tunggakan.sumFree'      : 'FREE MEMBER',
+  'tunggakan.emptyTotal'   : 'No arrears up to this month',
+  'tunggakan.emptyNew'     : 'No 1-month arrears',
+  'tunggakan.emptySoon'    : 'No 2-3 month arrears',
+  'tunggakan.emptyCritical': 'No 4+ month arrears',
+  'tunggakan.paidAll'      : 'All paid',
+  'tunggakan.emptyRajin'   : 'No members fully paid yet',
+  'tunggakan.emptyFree'    : 'No active free members this month',
+  'tunggakan.forever'      : 'forever',
+
+  // Log tambahan
+  'log.payOnly'           : 'Payments Only',
+  'log.searchPlaceholder' : 'Search name / action...',
+  'log.filterName'        : 'Filter member name...',
+  'log.allYears'          : 'All Years',
+  'log.allMonths'         : 'All Months',
+  'log.autoDelete'        : 'LOG · Auto-deleted after 30 days',
+  'log.emptyDesc'         : 'No activity recorded yet',
+
+  // Entry tambahan
+  'entry.locked'           : 'Data locked! Unlock first',
+  'entry.lockedShort'      : 'locked',
+  'entry.noTarif'          : 'No members with registered rates',
+  'entry.noTarifShort'     : 'No rate set',
+  'entry.selectAll'        : 'Select All',
+  'entry.potentialUnpaid'  : 'Potential Unpaid',
+  'entry.from'             : 'from',
+  'entry.membersUnpaid'    : 'members unpaid',
+  'entry.searchPlaceholder': 'Search in',
+  'entry.batchSkipped'     : 'members skipped (no rate)',
+
+  // Rekap tambahan
+  'rekap.batchCancel' : 'Cancel All',
+
+  // Members tambahan
+  'members.nameRequired'   : 'Name is required',
+  'members.nameDuplicate'  : 'Name already exists!',
+  'members.notFound'       : 'Member not found',
+  'members.added'          : 'added!',
+  'members.updated'        : 'updated successfully!',
+  'members.deleted'        : 'deleted',
+  'members.restored'       : 'restored successfully!',
+  'members.emptyDesc'      : 'Add a new member above',
+  'members.recycleBinEmpty': 'Recycle Bin Empty',
+  'members.recycleBinDesc' : 'No deleted members',
+  'members.saveChanges'    : 'Save Changes',
+  'members.editTitle'      : 'Edit Member',
+  'members.customerId'     : 'Customer ID',
+  'members.ipLabel'        : 'IP / Router Link',
+  'members.tarifLabel'     : 'Monthly Rate (×1000)',
+  'members.tarifShort'     : 'Rate (×1000)',
+  'members.namePlaceholder': 'Member name',
+  'members.addTitle'       : 'ADD NEW MEMBER TO',
+  'members.addTo'          : 'Add to',
+
+  // Ops tambahan
+  'ops.expenseTitle'   : 'OPERATIONAL EXPENSES',
+  'ops.itemPlaceholder': 'Description (electricity, internet...)',
+  'ops.addItem'        : '+ Add Item',
+  'ops.incomeKRS'      : 'KRS Income',
+  'ops.incomeSLK'      : 'SLK Income',
+  'ops.grossIncome'    : 'Gross Income',
+  'ops.totalExpense'   : 'Total Expenses',
+  'ops.netIncome'      : 'NET INCOME',
+
+  // Settings tambahan
+  'settings.pinEnable' : 'Enable PIN',
+  'settings.pinDisable': 'Disable PIN',
+  'settings.pinChange' : 'Change PIN',
+  'settings.pinSave'   : 'Save & Enable',
+  'settings.addZone'   : 'Add New Zone',
+  'settings.zonesNote' : 'Hiding a zone does not delete data. Hidden zones do not appear in the header.',
+
+  // Action tambahan
+  'action.reset'  : 'Reset',
+
 };
 
 export default en;

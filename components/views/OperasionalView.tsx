@@ -3,7 +3,8 @@
 
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
-import { getZoneTotal, rp } from '@/lib/helpers';
+import { getZoneTotal, rp } from '@/lib/helpers'
+import { useT } from '@/hooks/useT';;
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
@@ -20,6 +21,7 @@ export default function OperasionalView() {
   const { appData, setAppData, uid, userEmail, opsYear, opsMonth, setOpsYear, setOpsMonth, setSyncStatus } = useAppStore();
 
   const opsKey  = `${opsYear}_${opsMonth}`;
+  const t = useT();
   const opsData = appData.operasional?.[opsKey] || { items: [] };
   const items   = opsData.items || [];
 
@@ -107,7 +109,7 @@ export default function OperasionalView() {
       {/* Items */}
       <div className="ops-card">
         <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10, fontFamily:FONT }}>
-          PENGELUARAN OPERASIONAL
+          {t('ops.expenseTitle')}
         </div>
 
         {items.map((it, i) => (
@@ -115,7 +117,7 @@ export default function OperasionalView() {
             {/* Label keterangan */}
             <input
               style={{ ...inputBaseStyle, flex:1 }}
-              placeholder="Keterangan (listrik, internet...)"
+              placeholder="{t('ops.itemPlaceholder')}"
               defaultValue={it.label}
               onBlur={e => updateItem(i, 'label', e.target.value)}
               autoComplete="off"
@@ -140,19 +142,19 @@ export default function OperasionalView() {
 
         <button onClick={addItem}
           style={{ width:'100%', background:'var(--bg3)', border:'1px dashed rgba(59,130,246,0.35)', color:'var(--zc-krs)', padding:9, borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:FS_BODY, marginTop:6, fontFamily:FONT }}>
-          + Tambah Item
+          {t('ops.addItem')}
         </button>
       </div>
 
       {/* Result — semua font sama ukuran FS_VAL */}
       <div style={{ background:'var(--bg)', border:'1px solid var(--border)', borderRadius:10, padding:'4px 14px', marginTop:10 }}>
-        <ResultRow label="Pendapatan KRS"    value={rp(krsTotal)}    color="var(--zc-krs)" />
-        <ResultRow label="Pendapatan SLK"    value={rp(slkTotal)}    color="var(--zc-slk)" />
+        <ResultRow label="{t('ops.incomeKRS')}"    value={rp(krsTotal)}    color="var(--zc-krs)" />
+        <ResultRow label="{t('ops.incomeSLK')}"    value={rp(slkTotal)}    color="var(--zc-slk)" />
         <div style={{ height:1, background:'var(--border)', margin:'4px 0' }} />
-        <ResultRow label="Pendapatan Kotor"  value={rp(grossIncome)} color="var(--c-lunas)" />
-        <ResultRow label="Total Pengeluaran" value={rp(totalOps)}    color="var(--c-belum)" />
+        <ResultRow label="{t('ops.grossIncome')}"  value={rp(grossIncome)} color="var(--c-lunas)" />
+        <ResultRow label="{t('ops.totalExpense')}" value={rp(totalOps)}    color="var(--c-belum)" />
         <ResultRow
-          label="PENDAPATAN BERSIH"
+          label="{t('ops.netIncome')}"
           value={rp(netIncome)}
           color={netIncome >= 0 ? 'var(--c-lunas)' : 'var(--c-belum)'}
           highlight

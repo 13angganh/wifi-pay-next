@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
-import { getArrears, isFree } from '@/lib/helpers';
+import { getArrears, isFree } from '@/lib/helpers'
+import { useT } from '@/hooks/useT';;
 import {
   AlertTriangle, Star, Gift, CheckCircle2,
   AlertCircle, Flame, Clock, Medal,
@@ -19,6 +20,7 @@ export default function TunggakanView() {
   const { appData, activeZone, selYear, selMonth, setSelYear, setSelMonth } = useAppStore();
   const [mode, setMode] = useState<TMode>('nakal');
   const [agingFilter, setAgingFilter] = useState<AgingFilter>('total');
+  const t = useT();
 
   const mems = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
 
@@ -52,7 +54,7 @@ export default function TunggakanView() {
 
   const count = mode === 'nakal' ? filteredArrears.length : mode === 'rajin' ? rajin.length : freeList.length;
   const sumColor = mode === 'nakal' ? 'var(--c-belum)' : mode === 'rajin' ? 'var(--c-lunas)' : 'var(--c-free)';
-  const sumLabel = mode === 'nakal' ? 'TUNGGAKAN S/D' : mode === 'rajin' ? 'LUNAS S/D' : 'FREE MEMBER';
+  const sumLabel = mode === 'nakal' ? {t('tunggakan.sumLabel')} : mode === 'rajin' ? {t('tunggakan.sumLunas')} : {t('tunggakan.sumFree')};
 
   return (
     <div>
@@ -69,9 +71,9 @@ export default function TunggakanView() {
       {/* Mode tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:10, background:'var(--bg3)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
         {([
-          ['nakal', <AlertCircle size={12} />, 'Nunggak', allArrears.length, 'var(--c-belum)'],
-          ['rajin', <Star size={12} />,        'Rajin',   rajin.length,       'var(--c-lunas)'],
-          ['free',  <Gift size={12} />,         'Free',    freeList.length,    'var(--c-free)'],
+          ['nakal', <AlertCircle size={12} />, {t('tunggakan.nakal')}, allArrears.length, 'var(--c-belum)'],
+          ['rajin', <Star size={12} />,        {t('tunggakan.rajin')},   rajin.length,       'var(--c-lunas)'],
+          ['free',  <Gift size={12} />,         {t('status.free')},    freeList.length,    'var(--c-free)'],
         ] as const).map(([m, icon, label, cnt, color]) => (
           <button
             key={m}
@@ -97,10 +99,10 @@ export default function TunggakanView() {
           overflowX:'auto', paddingBottom:2,
         }}>
           {([
-            ['total',  <AlertTriangle size={11} />, 'Total',   allArrears.length,  'var(--txt2)',   'var(--bg3)', 'var(--border)'],
-            ['baru',   <Clock size={11} />,          'Baru',    agingBaru.length,   '#FFC107',       '#1a1500',   '#FFC10733'],
-            ['segera', <AlertCircle size={11} />,    'Segera',  agingSegera.length, '#F97316',       '#1a0d00',   '#F9731633'],
-            ['kritis', <Flame size={11} />,           'Kritis',  agingKritis.length, 'var(--c-belum)','rgba(239,68,68,0.08)', 'rgba(239,68,68,0.25)'],
+            ['total',  <AlertTriangle size={11} />, {t('tunggakan.filter.total')},   allArrears.length,  'var(--txt2)',   'var(--bg3)', 'var(--border)'],
+            ['baru',   <Clock size={11} />,          {t('tunggakan.filter.new')},    agingBaru.length,   '#FFC107',       '#1a1500',   '#FFC10733'],
+            ['segera', <AlertCircle size={11} />,    {t('tunggakan.filter.soon')},  agingSegera.length, '#F97316',       '#1a0d00',   '#F9731633'],
+            ['kritis', <Flame size={11} />,           {t('tunggakan.filter.critical')},  agingKritis.length, 'var(--c-belum)','rgba(239,68,68,0.08)', 'rgba(239,68,68,0.25)'],
           ] as const).map(([key, icon, label, cnt, textColor, bgColor, borderColor]) => (
             <button
               key={key}
@@ -135,7 +137,7 @@ export default function TunggakanView() {
       {/* Summary bar */}
       <div className="sum-bar" style={{ marginBottom:10 }}>
         <div className="sum-lbl">{sumLabel} {MONTHS[selMonth].toUpperCase()} {selYear} · {activeZone}</div>
-        <div className="sum-val" style={{ color: sumColor }}>{count} pelanggan</div>
+        <div className="sum-val" style={{ color: sumColor }}>{count} {t('common.members')}</div>
       </div>
 
       {/* Cards — mode nakal */}
@@ -143,12 +145,12 @@ export default function TunggakanView() {
         filteredArrears.length === 0 ? (
           <div className="empty-state" style={{ padding:'28px 24px' }}>
             <div className="empty-icon"><CheckCircle2 size={32} strokeWidth={1.2} style={{ color:'var(--c-lunas)' }} /></div>
-            <div className="empty-title" style={{ color:'var(--c-lunas)' }}>Semua Lunas!</div>
+            <div className="empty-title" style={{ color:'var(--c-lunas)' }}>{t('dashboard.allPaid')}</div>
             <div className="empty-sub">
-              {agingFilter === 'total' ? 'Tidak ada tunggakan sampai bulan ini'
-                : agingFilter === 'baru'   ? 'Tidak ada tunggakan 1 bulan'
-                : agingFilter === 'segera' ? 'Tidak ada tunggakan 2–3 bulan'
-                : 'Tidak ada tunggakan 4+ bulan'}
+              {agingFilter === 'total' ? '{t('tunggakan.emptyTotal')}'
+                : agingFilter === 'baru'   ? '{t('tunggakan.emptyNew')}'
+                : agingFilter === 'segera' ? '{t('tunggakan.emptySoon')}'
+                : '{t('tunggakan.emptyCritical')}'}
             </div>
           </div>
         ) : (
@@ -170,7 +172,7 @@ export default function TunggakanView() {
                     display:'flex', alignItems:'center', gap:4,
                   }}>
                     {x.count >= 4 ? <Flame size={11} /> : x.count >= 2 ? <AlertCircle size={11} /> : <Clock size={11} />}
-                    {x.count} bulan nunggak
+                    {x.count} {t('tunggakan.months')}
                   </span>
                 </div>
                 <div className="tcard-months">
@@ -188,8 +190,8 @@ export default function TunggakanView() {
         rajin.length === 0 ? (
           <div className="empty-state" style={{ padding:'24px' }}>
             <div className="empty-icon"><Medal size={32} strokeWidth={1.2} /></div>
-            <div className="empty-title">Belum Ada</div>
-            <div className="empty-sub">Belum ada member yang lunas semua bulan</div>
+            <div className="empty-title">{t('common.noData')}</div>
+            <div className="empty-sub">{t('tunggakan.emptyRajin')}</div>
           </div>
         ) : (
           rajin.map((name, i) => (
@@ -202,7 +204,7 @@ export default function TunggakanView() {
                 <span className="tcard-name" style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:6 }}>
                   <CheckCircle2 size={13} /> {i + 1}. {name}
                 </span>
-                <span style={{ fontSize:10, color:'var(--c-lunas)' }}>Lunas semua</span>
+                <span style={{ fontSize:10, color:'var(--c-lunas)' }}>{t('tunggakan.paidAll')}</span>
               </div>
             </div>
           ))
@@ -214,14 +216,14 @@ export default function TunggakanView() {
         freeList.length === 0 ? (
           <div className="empty-state" style={{ padding:'24px' }}>
             <div className="empty-icon"><Gift size={32} strokeWidth={1.2} /></div>
-            <div className="empty-title">Tidak Ada</div>
-            <div className="empty-sub">Tidak ada free member aktif bulan ini</div>
+            <div className="empty-title">{t('common.noData')}</div>
+            <div className="empty-sub">{t('tunggakan.emptyFree')}</div>
           </div>
         ) : (
           freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
-              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : ' (selamanya)';
+              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : ' ({t('tunggakan.forever')})';
             return (
               <div key={name} className="tcard" style={{
                 borderLeft:'3px solid var(--c-free)',
@@ -233,7 +235,7 @@ export default function TunggakanView() {
                   <span className="tcard-name" style={{ color:'var(--c-free)', display:'flex', alignItems:'center', gap:6 }}>
                     <Gift size={13} /> {i + 1}. {name}
                   </span>
-                  <span style={{ fontSize:10, color:'var(--c-free)' }}>Gratis</span>
+                  <span style={{ fontSize:10, color:'var(--c-free)' }}>{t('status.free')}</span>
                 </div>
                 {fm && (
                   <div style={{ fontSize:10, color:'var(--txt4)', marginTop:3 }}>

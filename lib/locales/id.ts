@@ -143,6 +143,106 @@ const id: Record<string, string> = {
   'error.loadFailed'         : 'Gagal memuat data',
   'error.saveFailed'         : 'Gagal menyimpan',
   'error.deleteFailed'       : 'Gagal menghapus',
+  // Dashboard tambahan
+  'dashboard.thisMonth'  : 'Pendapatan Bulan Ini',
+  'dashboard.net'        : 'Bersih',
+  'dashboard.unpaidTitle': 'Belum Bayar',
+  'dashboard.topArrears' : 'Tunggakan Terbanyak',
+  'dashboard.allPaid'    : 'Semua Lunas!',
+  'dashboard.lastBackup' : 'Backup Terakhir',
+  'dashboard.backupNow'  : 'Backup Sekarang',
+  'dashboard.waSummary'  : 'Ringkasan WA',
+  'dashboard.sendWA'     : 'Kirim Ringkasan',
+  'dashboard.periodNote' : 'Periode sesuai selector di atas',
+
+  // Common tambahan
+  'common.members'    : 'pelanggan',
+  'common.more'       : 'lainnya',
+  'common.months'     : 'bulan',
+  'common.since'      : 'sejak',
+  'common.optional'   : 'Opsional',
+
+  // Tunggakan tambahan
+  'tunggakan.nakal'        : 'Nunggak',
+  'tunggakan.rajin'        : 'Rajin',
+  'tunggakan.sumLabel'     : 'TUNGGAKAN S/D',
+  'tunggakan.sumLunas'     : 'LUNAS S/D',
+  'tunggakan.sumFree'      : 'FREE MEMBER',
+  'tunggakan.emptyTotal'   : 'Tidak ada tunggakan sampai bulan ini',
+  'tunggakan.emptyNew'     : 'Tidak ada tunggakan 1 bulan',
+  'tunggakan.emptySoon'    : 'Tidak ada tunggakan 2-3 bulan',
+  'tunggakan.emptyCritical': 'Tidak ada tunggakan 4+ bulan',
+  'tunggakan.paidAll'      : 'Lunas semua',
+  'tunggakan.emptyRajin'   : 'Belum ada member yang lunas semua bulan',
+  'tunggakan.emptyFree'    : 'Tidak ada free member aktif bulan ini',
+  'tunggakan.forever'      : 'selamanya',
+
+  // Log tambahan
+  'log.payOnly'           : 'Hanya Bayar',
+  'log.searchPlaceholder' : 'Cari nama / aksi...',
+  'log.filterName'        : 'Filter nama member...',
+  'log.allYears'          : 'Semua Tahun',
+  'log.allMonths'         : 'Semua Bulan',
+  'log.autoDelete'        : 'LOG · Log dihapus otomatis 30 hari',
+  'log.emptyDesc'         : 'Belum ada aktivitas yang tercatat',
+
+  // Entry tambahan
+  'entry.locked'           : 'Data terkunci! Unlock dulu',
+  'entry.lockedShort'      : 'terkunci',
+  'entry.noTarif'          : 'Tidak ada member dengan tarif terdaftar',
+  'entry.noTarifShort'     : 'Belum ada tarif',
+  'entry.selectAll'        : 'Pilih Semua',
+  'entry.potentialUnpaid'  : 'Potensi Belum Masuk',
+  'entry.from'             : 'dari',
+  'entry.membersUnpaid'    : 'member belum bayar',
+  'entry.searchPlaceholder': 'Cari nama di',
+  'entry.batchSkipped'     : 'member dilewati (belum ada tarif)',
+
+  // Rekap tambahan
+  'rekap.batchCancel' : 'Batalkan Semua',
+
+  // Members tambahan
+  'members.nameRequired'   : 'Nama wajib diisi',
+  'members.nameDuplicate'  : 'Nama sudah ada!',
+  'members.notFound'       : 'Member tidak ditemukan',
+  'members.added'          : 'ditambahkan!',
+  'members.updated'        : 'berhasil diupdate!',
+  'members.deleted'        : 'dihapus',
+  'members.restored'       : 'berhasil dikembalikan!',
+  'members.emptyDesc'      : 'Tambahkan member baru di atas',
+  'members.recycleBinEmpty': 'Recycle Bin Kosong',
+  'members.recycleBinDesc' : 'Tidak ada member yang dihapus',
+  'members.saveChanges'    : 'Simpan Perubahan',
+  'members.editTitle'      : 'Edit Member',
+  'members.customerId'     : 'ID Pelanggan',
+  'members.ipLabel'        : 'IP / Link Router',
+  'members.tarifLabel'     : 'Tarif Bulanan (×1000)',
+  'members.tarifShort'     : 'Tarif (×1000)',
+  'members.namePlaceholder': 'Nama member',
+  'members.addTitle'       : 'TAMBAH MEMBER BARU KE',
+  'members.addTo'          : 'Tambah ke',
+
+  // Ops tambahan
+  'ops.expenseTitle'   : 'PENGELUARAN OPERASIONAL',
+  'ops.itemPlaceholder': 'Keterangan (listrik, internet...)',
+  'ops.addItem'        : '+ Tambah Item',
+  'ops.incomeKRS'      : 'Pendapatan KRS',
+  'ops.incomeSLK'      : 'Pendapatan SLK',
+  'ops.grossIncome'    : 'Pendapatan Kotor',
+  'ops.totalExpense'   : 'Total Pengeluaran',
+  'ops.netIncome'      : 'PENDAPATAN BERSIH',
+
+  // Settings tambahan
+  'settings.pinEnable' : 'Aktifkan PIN',
+  'settings.pinDisable': 'Nonaktifkan PIN',
+  'settings.pinChange' : 'Ganti PIN',
+  'settings.pinSave'   : 'Simpan & Aktifkan',
+  'settings.addZone'   : 'Tambah Zona Baru',
+  'settings.zonesNote' : 'Menyembunyikan zona tidak menghapus data. Zona tersembunyi tidak tampil di header.',
+
+  // Action tambahan
+  'action.reset'  : 'Reset',
+
 };
 
 export default id;
