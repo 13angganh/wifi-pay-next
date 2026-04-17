@@ -239,6 +239,8 @@ const en: Record<string, string> = {
   'settings.pinSave'   : 'Save & Enable',
   'settings.addZone'   : 'Add New Zone',
   'settings.zonesNote' : 'Hiding a zone does not delete data. Hidden zones do not appear in the header.',
+  'Aktif — app terkunci saat dibuka' : 'Enabled — app locks when opened',
+  'Nonaktif — app langsung terbuka' : 'Disabled — app opens immediately',
 
   // Action tambahan
   'action.reset'  : 'Reset',

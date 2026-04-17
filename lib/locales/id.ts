@@ -239,6 +239,8 @@ const id: Record<string, string> = {
   'settings.pinSave'   : 'Simpan & Aktifkan',
   'settings.addZone'   : 'Tambah Zona Baru',
   'settings.zonesNote' : 'Menyembunyikan zona tidak menghapus data. Zona tersembunyi tidak tampil di header.',
+  'Aktif — app terkunci saat dibuka' : 'Aktif — app terkunci saat dibuka',
+  'Nonaktif — app langsung terbuka' : 'Nonaktif — app langsung terbuka',
 
   // Action tambahan
   'action.reset'  : 'Reset',

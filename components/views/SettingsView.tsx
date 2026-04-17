@@ -391,7 +391,7 @@ export default function SettingsView() {
           <SectionHeader
             icon={<Shield size={16} strokeWidth={1.5} />}
             title={t('settings.pin')}
-            desc={settings.pinEnabled ? 'Aktif — app terkunci saat dibuka' : 'Nonaktif — app langsung terbuka'}
+            desc={settings.pinEnabled ? t('Aktif — app terkunci saat dibuka') : t('Nonaktif — app langsung terbuka')}
           />
           <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:12, marginTop:-8 }}>
             <span style={{ fontSize:11, fontWeight:700, color: settings.pinEnabled ? 'var(--c-lunas)' : 'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
