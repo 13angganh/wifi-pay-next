@@ -241,13 +241,6 @@ const en: Record<string, string> = {
   'settings.zonesNote' : 'Hiding a zone does not delete data. Hidden zones do not appear in the header.',
   'Aktif — app terkunci saat dibuka' : 'Enabled — app locks when opened',
   'Nonaktif — app langsung terbuka' : 'Disabled — app opens immediately',
-  'Aktif' : 'Active',
-  'Nonaktif' : 'Nonactive',
-  'Ubah PIN' : 'Change PIN',
-  'Nonaktifkan PIN' : 'Disable PIN',
-  'Aktifkan PIN' : 'Enable PIN',
-  'Pengaturan' : 'Setting',
-  'Manajemen Zona' : 'Zone Management',
 
   // Action tambahan
   'action.reset'  : 'Reset',

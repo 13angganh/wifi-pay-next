@@ -241,13 +241,6 @@ const id: Record<string, string> = {
   'settings.zonesNote' : 'Menyembunyikan zona tidak menghapus data. Zona tersembunyi tidak tampil di header.',
   'Aktif — app terkunci saat dibuka' : 'Aktif — app terkunci saat dibuka',
   'Nonaktif — app langsung terbuka' : 'Nonaktif — app langsung terbuka',
-  'Aktif' : 'Actif',
-  'Nonaktif' : 'Nonaktif',
-  'Ubah PIN' : 'Ubah PIN',
-  'Nonaktifkan PIN' : 'Nonaktifkan PIN',
-  'Aktifkan PIN' : 'Aktifkan PIN',
-  'Pengaturan' : 'Pengaturan',
-  'Manajemen Zona' : 'Manajemen Zona',
 
   // Action tambahan
   'action.reset'  : 'Reset',

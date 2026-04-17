@@ -380,7 +380,7 @@ export default function SettingsView() {
   return (
     <div>
       <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'var(--fs-display)', marginBottom:16, color:'var(--txt)', display:'flex', alignItems:'center', gap:8 }}>
-        <Settings size={18} strokeWidth={1.5} /> {t('Pengaturan')}
+        <Settings size={18} strokeWidth={1.5} /> Pengaturan
       </div>
 
       {/* ═══════════════════════════════
@@ -391,22 +391,22 @@ export default function SettingsView() {
           <SectionHeader
             icon={<Shield size={16} strokeWidth={1.5} />}
             title={t('settings.pin')}
-            desc={t('settings.pinEnabled') ? t('Aktif — app terkunci saat dibuka') : t('Nonaktif — app langsung terbuka')}
+            desc={settings.pinEnabled ? t('Aktif — app terkunci saat dibuka') : t('Nonaktif — app langsung terbuka')}
           />
           <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:12, marginTop:-8 }}>
-            <span style={{ fontSize:11, fontWeight:700, color: t('settings.pinEnabled') ? 'var(--c-lunas)' : 'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
-              {t('settings.pinEnabled') ? <Check size={12} /> : null}
-              {t('settings.pinEnabled') ? 'Aktif' : 'Nonaktif'}
+            <span style={{ fontSize:11, fontWeight:700, color: settings.pinEnabled ? 'var(--c-lunas)' : 'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
+              {settings.pinEnabled ? <Check size={12} /> : null}
+              {settings.pinEnabled ? 'Aktif' : 'Nonaktif'}
             </span>
           </div>
-          {!t('settings.pinEnabled')
-            ? <Btn label=" {t('Aktifkan PIN')} " onClick={startEnable} icon={<Shield size={13} />} />
+          {!settings.pinEnabled
+            ? <Btn label="Aktifkan PIN" onClick={startEnable} icon={<Shield size={13} />} />
             : <>
-                <Btn label={t('Ubah PIN')} onClick={startChange} secondary />
-                <Btn label={t('Nonaktifkan PIN')} onClick={startDisable} danger />
+                <Btn label="Ubah PIN" onClick={startChange} secondary />
+                <Btn label="Nonaktifkan PIN" onClick={startDisable} danger />
               </>
           }
-          {t('settings.pinEnabled') && (
+          {settings.pinEnabled && (
             <div style={{ marginTop:14, paddingTop:12, borderTop:'1px solid var(--border2)' }}>
               <div style={{ ...labelStyle, marginBottom:10 }}>AUTO-LOCK PIN</div>
               <div style={{ fontSize:11, color:'var(--txt4)', marginBottom:8, lineHeight:1.5 }}>
@@ -487,7 +487,7 @@ export default function SettingsView() {
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <div style={{ color:'var(--zc)' }}><Settings size={16} strokeWidth={1.5} /></div>
             <div style={{ textAlign:'left' }}>
-              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13 }}>{t('Manajemen Zona')}</div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13 }}>Manajemen Zona</div>
               <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>Edit nama, sembunyikan zona</div>
             </div>
           </div>
