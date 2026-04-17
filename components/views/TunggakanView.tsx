@@ -220,10 +220,11 @@ export default function TunggakanView() {
             <div className="empty-sub">t('tunggakan.emptyFree')</div>
           </div>
         ) : (
+          {
           freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
-              ?  s/d ${MONTHS[fm.toMonth!]} fm.toYear‘:‘(t('tunggakan.forever'));
+              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}`:`(${t('tunggakan.forever')})`;
             return (
               <div key={name} className="tcard" style={{
                 borderLeft:'3px solid var(--c-free)',
@@ -239,14 +240,15 @@ export default function TunggakanView() {
                 </div>
                 {fm && (
                   <div style={{ fontSize:10, color:'var(--txt4)', marginTop:3 }}>
-                    Dari {MONTHS[fm.fromMonth]} {fm.fromYear}toStr
+                    Dari ${MONTHS[fm.fromMonth]} ${fm.fromYear} toStr
                   </div>
                 )}
               </div>
             );
           })
+         }
         )
-      )}
+      )
     </div>
   );
 }

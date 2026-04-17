@@ -61,10 +61,10 @@ export default function EntryView() {
   }, [setEntryScrollTop]);
 
   const chips: { key: FilterType; icon: React.ReactNode; label: string; count?: number }[] = [
-    { key: 'all',    icon: <ClipboardList size={12} />, label: t('common.all') },
-    { key: 'paid',   icon: <CheckCircle2  size={12} />, label: t('status.lunas'),  count: paid },
-    { key: 'unpaid', icon: <Clock         size={12} />, label: t('status.belum'),  count: unpaid },
-    { key: 'free',   icon: <Gift          size={12} />, label: t('status.free'),   count: freeCount },
+    { key: 'all',    icon: <ClipboardList size={12} />, label: ('common.all') },
+    { key: 'paid',   icon: <CheckCircle2  size={12} />, label: ('status.lunas'),  count: paid },
+    { key: 'unpaid', icon: <Clock         size={12} />, label: ('status.belum'),  count: unpaid },
+    { key: 'free',   icon: <Gift          size={12} />, label: ('status.free'),   count: freeCount },
   ];
 
   function startBatch(name: string) {

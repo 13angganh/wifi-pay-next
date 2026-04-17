@@ -1,6 +1,7 @@
 // components/views/MembersView.tsx — FIXED: IP tampil, layout 2 baris rapi
 'use client';
 
+import { useT } from '@/hooks/useT';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
