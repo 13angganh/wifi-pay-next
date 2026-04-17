@@ -25,6 +25,7 @@ export default function MembersView() {
     selYear, selMonth,
     setSyncStatus,
     setRiwayatZone, setRiwayatName, setRiwayatYear,
+    settings,
   } = useAppStore();
 
   const [sortMode, setSortMode] = useState<SortMode>('name-asc');
@@ -148,7 +149,7 @@ export default function MembersView() {
 
   // Sort
   const getInfo = (n: string) => appData.memberInfo?.[zone+'__'+n] || {};
-  let mems = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
+  let mems = zone==='KRS' ? [...appData.krsMembers] : zone==='SLK' ? [...appData.slkMembers] : [...(appData.zoneMembers?.[zone] ?? [])];
   const sortFns: Record<SortMode,(a:string,b:string)=>number> = {
     'name-asc':  (a,b) => a.localeCompare(b),
     'name-desc': (a,b) => b.localeCompare(a),
@@ -171,14 +172,28 @@ export default function MembersView() {
       {/* Zone tabs + lock */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
         <div style={{ display:'flex', gap:3, background:'var(--bg3)', padding:3, borderRadius:24, border:'1px solid var(--border)' }}>
-          {(['KRS','SLK'] as Zone[]).map(z => (
-            <button key={z} onClick={() => { setNewMemberZone(z); setSearch(''); setMemberTab('active'); }}
-              style={{ padding:'6px 16px', borderRadius:20, border:'none', cursor:'pointer', fontSize:11, fontWeight:600,
-                background: zone===z ? (z==='KRS'?'var(--zc-krs)':'var(--zc-slk)') : 'transparent',
-                color: zone===z ? '#fff' : 'var(--txt3)', minHeight:32 }}>
-              {z} <span style={{ opacity:.6, fontSize:10 }}>({z==='KRS'?appData.krsMembers.length:appData.slkMembers.length})</span>
-            </button>
-          ))}
+          {(() => {
+            const hiddenZones: string[] = (settings as any).hiddenZones ?? [];
+            const customZones: { key: string; color: string }[] = (settings as any).customZones ?? [];
+            const allZ = [
+              { key:'KRS', color:'var(--zc-krs)' },
+              { key:'SLK', color:'var(--zc-slk)' },
+              ...customZones.map(c => ({ key: c.key, color: c.color })),
+            ].filter(z => !hiddenZones.includes(z.key));
+            return allZ.map(({ key: z, color: zColor }) => {
+              const mCount = z === 'KRS' ? appData.krsMembers.length
+                           : z === 'SLK' ? appData.slkMembers.length
+                           : (appData.zoneMembers?.[z] ?? []).length;
+              return (
+                <button key={z} onClick={() => { setNewMemberZone(z); setSearch(''); setMemberTab('active'); }}
+                  style={{ padding:'6px 12px', borderRadius:20, border:'none', cursor:'pointer', fontSize:11, fontWeight:600,
+                    background: zone===z ? zColor : 'transparent',
+                    color: zone===z ? '#fff' : 'var(--txt3)', minHeight:32 }}>
+                  {z} <span style={{ opacity:.6, fontSize:10 }}>({mCount})</span>
+                </button>
+              );
+            });
+          })()}
         </div>
         <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'Dibuka':'Dikunci'); }}
           aria-label={membersLocked ? 'Buka kunci daftar member' : 'Kunci daftar member'}
@@ -288,19 +303,21 @@ export default function MembersView() {
 
                     {/* Baris 2: IP + action buttons */}
                     <div style={{ display:'flex', alignItems:'center', gap:6, paddingLeft:24 }}>
-                      {/* IP tampil sebagai teks dengan link */}
+                      {/* IP — hanya selebar teksnya, bukan flex:1 agar area klik tidak melebar */}
                       {ipStr ? (
                         <a
                           href={ipStr.startsWith('http') ? ipStr : 'http://'+ipStr}
                           target="_blank" rel="noreferrer"
                           onClick={e => e.stopPropagation()}
-                          style={{ fontSize:10, color:'var(--zc-krs)', textDecoration:'none', fontFamily:"'DM Mono',monospace", flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}
+                          style={{ fontSize:10, color:'var(--zc-krs)', textDecoration:'none', fontFamily:"'DM Mono',monospace", flexShrink:0, maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', display:'block' }}
                         >
                           {ipStr}
                         </a>
                       ) : (
-                        <span style={{ flex:1, fontSize:10, color:'var(--txt5)', fontStyle:'italic' }}>—</span>
+                        <span style={{ flexShrink:0, fontSize:10, color:'var(--txt5)', fontStyle:'italic' }}>—</span>
                       )}
+                      {/* Spacer — mengisi sisa ruang, bukan area klik */}
+                      <span style={{ flex:1 }} />
 
                       {/* Action buttons — selalu di baris bawah */}
                       {!membersLocked && (

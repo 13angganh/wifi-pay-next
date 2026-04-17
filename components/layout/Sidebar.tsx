@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { doLogout, switchAccount } from '@/hooks/useAuth';
 import { PAGE_TITLES } from '@/lib/constants';
+import { useT } from '@/hooks/useT';
 import type { ViewName } from '@/types';
 import {
   Wifi,
@@ -20,15 +21,15 @@ import {
   LogOut,
 } from 'lucide-react';
 
-const NAV_ITEMS: { v: ViewName; icon: React.ReactNode }[] = [
-  { v:'dashboard',   icon: <LayoutDashboard size={16} strokeWidth={1.5} /> },
-  { v:'entry',       icon: <CreditCard      size={16} strokeWidth={1.5} /> },
-  { v:'rekap',       icon: <BarChart3       size={16} strokeWidth={1.5} /> },
-  { v:'tunggakan',   icon: <AlertCircle     size={16} strokeWidth={1.5} /> },
-  { v:'grafik',      icon: <TrendingUp      size={16} strokeWidth={1.5} /> },
-  { v:'log',         icon: <ScrollText      size={16} strokeWidth={1.5} /> },
-  { v:'members',     icon: <Users           size={16} strokeWidth={1.5} /> },
-  { v:'operasional', icon: <Briefcase       size={16} strokeWidth={1.5} /> },
+const NAV_ITEMS: { v: ViewName; icon: React.ReactNode; labelKey: string }[] = [
+  { v:'dashboard',   icon: <LayoutDashboard size={16} strokeWidth={1.5} />, labelKey:'nav.dashboard'   },
+  { v:'entry',       icon: <CreditCard      size={16} strokeWidth={1.5} />, labelKey:'nav.entry'       },
+  { v:'rekap',       icon: <BarChart3       size={16} strokeWidth={1.5} />, labelKey:'nav.rekap'       },
+  { v:'tunggakan',   icon: <AlertCircle     size={16} strokeWidth={1.5} />, labelKey:'nav.tunggakan'   },
+  { v:'grafik',      icon: <TrendingUp      size={16} strokeWidth={1.5} />, labelKey:'nav.grafik'      },
+  { v:'log',         icon: <ScrollText      size={16} strokeWidth={1.5} />, labelKey:'nav.log'         },
+  { v:'members',     icon: <Users           size={16} strokeWidth={1.5} />, labelKey:'nav.members'     },
+  { v:'operasional', icon: <Briefcase       size={16} strokeWidth={1.5} />, labelKey:'nav.operasional' },
 ];
 
 interface Props { onNavigate: (v: ViewName) => void; }
@@ -42,6 +43,7 @@ function getInitials(name: string | null, email: string | null): string {
 
 export default function Sidebar({ onNavigate }: Props) {
   const router = useRouter();
+  const t = useT();
   const { activeZone, currentView, userName, userEmail, setSidebar } = useAppStore();
 
   async function handleSwitchAccount() {
@@ -73,7 +75,7 @@ export default function Sidebar({ onNavigate }: Props) {
         </div>
         <div>
           <div className="sb-app-name">WiFi Pay</div>
-          <div style={{ fontSize:8, color:'var(--txt5)', letterSpacing:'.06em' }}>v11.1 Next</div>
+          <div style={{ fontSize:8, color:'var(--txt5)', letterSpacing:'.06em' }}>v11.2 Next</div>
         </div>
       </div>
 
@@ -83,11 +85,11 @@ export default function Sidebar({ onNavigate }: Props) {
           <button key={item.v}
             className={`sb-item ${currentView === item.v ? 'on' : ''}`}
             onClick={() => onNavigate(item.v)}
-            aria-label={PAGE_TITLES[item.v]}
+            aria-label={t(item.labelKey)}
             aria-current={currentView === item.v ? 'page' : undefined}
           >
             <span className="si" aria-hidden="true">{item.icon}</span>
-            {PAGE_TITLES[item.v]}
+            {t(item.labelKey)}
           </button>
         ))}
 
@@ -101,7 +103,7 @@ export default function Sidebar({ onNavigate }: Props) {
           aria-current={currentView === 'settings' ? 'page' : undefined}
         >
           <span className="si" aria-hidden="true"><Settings size={16} strokeWidth={1.5} /></span>
-          Pengaturan
+          {t('nav.settings')}
         </button>
       </nav>
 
@@ -138,7 +140,7 @@ export default function Sidebar({ onNavigate }: Props) {
             style={{ flex:1 }}
           >
             <LogOut size={13} strokeWidth={1.5} />
-            <span>Ganti Akun</span>
+            <span>{t('action.changeAccount')}</span>
           </button>
           <button
             className="sb-user-btn danger"
@@ -147,7 +149,7 @@ export default function Sidebar({ onNavigate }: Props) {
             style={{ flex:1 }}
           >
             <LogOut size={13} strokeWidth={1.5} />
-            <span>Keluar</span>
+            <span>{t('action.logout')}</span>
           </button>
         </div>
       </div>
@@ -160,7 +162,7 @@ export default function Sidebar({ onNavigate }: Props) {
         letterSpacing:'.04em',
         textAlign:'center',
       }}>
-        WiFi Pay v11.1 Next
+        WiFi Pay v11.2 Next
       </div>
     </>
   );

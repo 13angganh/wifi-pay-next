@@ -7,6 +7,8 @@ import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
 import { doJSONBackup, doWASummary, generatePDF, generateExcel } from '@/lib/export';
 import { saveDB } from '@/lib/db';
+import type { CustomZone } from '@/types';
+import { useT } from '@/hooks/useT';
 import { MONTHS, YEARS } from '@/lib/constants';
 import {
   Shield, Settings, Globe, Download, Calendar, Zap, Info,
@@ -60,6 +62,10 @@ export default function SettingsView() {
   const [zonaOpen,    setZonaOpen]    = useState(false);
   const [editingZona, setEditingZona] = useState<string | null>(null);
   const [editZonaVal, setEditZonaVal] = useState('');
+  const [addZonaOpen, setAddZonaOpen] = useState(false);
+  const [newZonaKey,  setNewZonaKey]  = useState('');
+  const [newZonaColor, setNewZonaColor] = useState('#8B5CF6');
+  const t = useT();
 
   async function persistData(newData: typeof appData, action: string, detail: string) {
     setAppData(newData);
@@ -167,8 +173,14 @@ export default function SettingsView() {
   }
 
   // ── Zona management ──
-  const zones = ['KRS', 'SLK'];
-  const zonaHidden: string[] = (settings as any).hiddenZones ?? [];
+  const zonaHidden: string[]    = (settings as any).hiddenZones ?? [];
+  const customZones: CustomZone[] = (settings as any).customZones ?? [];
+  // Semua zona: KRS + SLK + custom
+  const allZones: { key: string; color: string; isCustom: boolean }[] = [
+    { key: 'KRS', color: 'var(--zc-krs)', isCustom: false },
+    { key: 'SLK', color: 'var(--zc-slk)', isCustom: false },
+    ...customZones.map(z => ({ key: z.key, color: z.color, isCustom: true })),
+  ];
 
   function saveHiddenZones(arr: string[]) {
     updateSettings({ ...(settings as any), hiddenZones: arr });
@@ -188,7 +200,6 @@ export default function SettingsView() {
       `Ganti nama zona <b>${oldZone}</b> → <b>${newName}</b>?<br><span style="font-size:11px;color:var(--txt3)">Ini hanya mengubah nama tampilan, tidak mengubah data Firebase.</span>`,
       'Ya, Ganti Nama',
       () => {
-        // Simpan mapping nama display di settings
         const zoneNames = (settings as any).zoneNames ?? {};
         updateSettings({ ...(settings as any), zoneNames: { ...zoneNames, [oldZone]: newName } });
         showToast(`Zona ${oldZone} diubah ke ${newName} (display)`);
@@ -199,28 +210,58 @@ export default function SettingsView() {
 
   function toggleHideZona(z: string) {
     const isHidden = zonaHidden.includes(z);
-    const mems = z === 'KRS' ? appData.krsMembers : appData.slkMembers;
-    if (!isHidden && mems.length > 0) {
-      showConfirm(
-        '⚠️',
-        `Sembunyikan zona <b>${z}</b>?<br><span style="font-size:11px;color:var(--txt3)">${z} masih punya ${mems.length} member. Data tetap aman, zona tidak tampil di header.</span>`,
-        'Ya, Sembunyikan',
-        () => {
-          saveHiddenZones([...zonaHidden, z]);
-          showToast(`Zona ${z} disembunyikan`);
-        }
-      );
+    const memCount = z === 'KRS' ? appData.krsMembers.length
+                   : z === 'SLK' ? appData.slkMembers.length
+                   : (appData.zoneMembers?.[z] ?? []).length;
+    if (!isHidden && memCount > 0) {
+      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?<br><span style="font-size:11px;color:var(--txt3)">${z} masih punya ${memCount} member. Data tetap aman.</span>`, 'Ya, Sembunyikan', () => {
+        saveHiddenZones([...zonaHidden, z]);
+        showToast(`Zona ${z} disembunyikan`);
+      });
     } else if (!isHidden) {
-      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?<br><span style="font-size:11px;color:var(--txt3)">Zona tidak akan tampil di header. Data tetap aman.</span>`, 'Ya, Sembunyikan', () => {
+      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?`, 'Ya, Sembunyikan', () => {
         saveHiddenZones([...zonaHidden, z]);
         showToast(`Zona ${z} disembunyikan`);
       });
     } else {
-      showConfirm('🔄', `Tampilkan kembali zona <b>${z}</b>?`, 'Ya, Tampilkan', () => {
+      showConfirm('⚠️', `Tampilkan kembali zona <b>${z}</b>?`, 'Ya, Tampilkan', () => {
         saveHiddenZones(zonaHidden.filter(h => h !== z));
         showToast(`Zona ${z} ditampilkan kembali`);
       });
     }
+  }
+
+  function addZona() {
+    const key = newZonaKey.trim().toUpperCase();
+    if (!key) { showToast('Nama zona wajib diisi', 'err'); return; }
+    if (key.length > 6) { showToast('Maks 6 karakter', 'err'); return; }
+    if (['KRS','SLK',...customZones.map(z=>z.key)].includes(key)) {
+      showToast('Zona sudah ada', 'err'); return;
+    }
+    const newZona: CustomZone = { key, name: key, color: newZonaColor };
+    updateSettings({ ...(settings as any), customZones: [...customZones, newZona] });
+    showToast(`Zona ${key} ditambahkan`);
+    setNewZonaKey('');
+    setNewZonaColor('#8B5CF6');
+    setAddZonaOpen(false);
+  }
+
+  function deleteCustomZona(key: string) {
+    const memCount = (appData.zoneMembers?.[key] ?? []).length;
+    showConfirm(
+      '⚠️',
+      `Hapus zona <b>${key}</b>?${memCount > 0 ? `<br><span style="font-size:11px;color:var(--c-belum)">${memCount} member akan ikut terhapus!</span>` : ''}`,
+      'Ya, Hapus Zona',
+      () => {
+        updateSettings({ ...(settings as any), customZones: customZones.filter(z => z.key !== key) });
+        // Hapus member data zona custom
+        if (appData.zoneMembers?.[key]) {
+          const { [key]: _, ...rest } = appData.zoneMembers;
+          persistData({ ...appData, zoneMembers: rest }, `🗑️ Hapus zona ${key}`, '');
+        }
+        showToast(`Zona ${key} dihapus`);
+      }
+    );
   }
 
   // ── Reusable styles ──
@@ -455,9 +496,11 @@ export default function SettingsView() {
 
         {zonaOpen && (
           <div style={{ marginTop:14, paddingTop:12, borderTop:'1px solid var(--border2)' }}>
-            {zones.map(z => {
+            {allZones.map(({ key: z, color: zColor, isCustom }) => {
               const isHidden  = zonaHidden.includes(z);
-              const memCount  = z === 'KRS' ? appData.krsMembers.length : appData.slkMembers.length;
+              const memCount  = z === 'KRS' ? appData.krsMembers.length
+                              : z === 'SLK' ? appData.slkMembers.length
+                              : (appData.zoneMembers?.[z] ?? []).length;
               const isEditing = editingZona === z;
 
               return (
@@ -470,16 +513,11 @@ export default function SettingsView() {
                   transition:'all var(--t-base)',
                 }}>
                   {/* Zona color dot */}
-                  <div style={{
-                    width:8, height:8, borderRadius:'50%', flexShrink:0,
-                    background: z === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)',
-                  }} />
+                  <div style={{ width:8, height:8, borderRadius:'50%', flexShrink:0, background: zColor }} />
 
                   {/* Nama / edit input */}
                   {isEditing ? (
-                    <input
-                      autoFocus
-                      value={editZonaVal}
+                    <input autoFocus value={editZonaVal}
                       onChange={e => setEditZonaVal(e.target.value.toUpperCase())}
                       onKeyDown={e => { if (e.key === 'Enter') saveEditZona(z); if (e.key === 'Escape') setEditingZona(null); }}
                       style={{ flex:1, background:'var(--bg4)', border:'1px solid var(--zc)', color:'var(--txt)', padding:'4px 8px', borderRadius:'var(--r-xs)', fontSize:13, fontFamily:"'DM Mono',monospace" }}
@@ -489,9 +527,8 @@ export default function SettingsView() {
                     <div style={{ flex:1 }}>
                       <div style={{ fontFamily:"'DM Mono',monospace", fontSize:13, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
                         {z}
-                        {isHidden && (
-                          <span style={{ fontSize:9, background:'rgba(255,255,255,0.06)', color:'var(--txt4)', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>Tersembunyi</span>
-                        )}
+                        {isCustom && <span style={{ fontSize:9, background:'rgba(139,92,246,0.15)', color:'#A78BFA', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>Custom</span>}
+                        {isHidden && <span style={{ fontSize:9, background:'rgba(255,255,255,0.06)', color:'var(--txt4)', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>Tersembunyi</span>}
                       </div>
                       <div style={{ fontSize:10, color:'var(--txt4)', marginTop:1 }}>{memCount} member</div>
                     </div>
@@ -501,29 +538,77 @@ export default function SettingsView() {
                   <div style={{ display:'flex', gap:4 }}>
                     {isEditing ? (
                       <>
-                        <button onClick={() => saveEditZona(z)} aria-label="Simpan nama zona" style={{ background:'var(--zc)', border:'none', color:'#fff', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <button onClick={() => saveEditZona(z)} aria-label="Simpan" style={{ background:'var(--zc)', border:'none', color:'#fff', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                           <Check size={12} />
                         </button>
-                        <button onClick={() => setEditingZona(null)} aria-label="Batal edit" style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <button onClick={() => setEditingZona(null)} aria-label="Batal" style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                           <X size={12} />
                         </button>
                       </>
                     ) : (
                       <>
-                        <button onClick={() => startEditZona(z)} aria-label={`Edit nama zona ${z}`} style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}>
+                        <button onClick={() => startEditZona(z)} aria-label={`Edit zona ${z}`} style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}>
                           <Edit2 size={12} />
                         </button>
-                        <button onClick={() => toggleHideZona(z)} aria-label={isHidden ? `Tampilkan zona ${z}` : `Sembunyikan zona ${z}`} style={{ background:'var(--bg4)', border:'1px solid var(--border)', color: isHidden ? 'var(--c-lunas)' : 'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}>
+                        <button onClick={() => toggleHideZona(z)} aria-label={isHidden ? `Tampilkan ${z}` : `Sembunyikan ${z}`} style={{ background:'var(--bg4)', border:'1px solid var(--border)', color: isHidden ? 'var(--c-lunas)' : 'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}>
                           {isHidden ? <Eye size={12} /> : <EyeOff size={12} />}
                         </button>
+                        {isCustom && (
+                          <button onClick={() => deleteCustomZona(z)} aria-label={`Hapus zona ${z}`} style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)', color:'var(--c-belum)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}>
+                            <X size={12} />
+                          </button>
+                        )}
                       </>
                     )}
                   </div>
                 </div>
               );
             })}
+
+            {/* Form tambah zona baru */}
+            {addZonaOpen ? (
+              <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'var(--r-sm)', padding:'12px', marginTop:8 }}>
+                <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10 }}>TAMBAH ZONA BARU</div>
+                <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:10 }}>
+                  <input
+                    autoFocus
+                    value={newZonaKey}
+                    onChange={e => setNewZonaKey(e.target.value.toUpperCase())}
+                    onKeyDown={e => { if (e.key === 'Enter') addZona(); if (e.key === 'Escape') setAddZonaOpen(false); }}
+                    placeholder="Nama zona (maks 6 huruf)"
+                    maxLength={6}
+                    style={{ flex:1, background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt)', padding:'8px 10px', borderRadius:'var(--r-xs)', fontSize:13, fontFamily:"'DM Mono',monospace", outline:'none' }}
+                  />
+                  <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
+                    <label style={{ fontSize:10, color:'var(--txt3)' }}>Warna:</label>
+                    <input
+                      type="color"
+                      value={newZonaColor}
+                      onChange={e => setNewZonaColor(e.target.value)}
+                      style={{ width:32, height:28, border:'1px solid var(--border)', borderRadius:'var(--r-xs)', cursor:'pointer', padding:2, background:'var(--bg4)' }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button onClick={addZona}
+                    style={{ flex:1, background:'var(--zc)', color:'#fff', border:'none', borderRadius:'var(--r-sm)', padding:'8px', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
+                    <Check size={13} /> Tambah Zona
+                  </button>
+                  <button onClick={() => { setAddZonaOpen(false); setNewZonaKey(''); }}
+                    style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', borderRadius:'var(--r-sm)', padding:'8px 14px', fontSize:12, cursor:'pointer' }}>
+                    Batal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setAddZonaOpen(true)}
+                style={{ width:'100%', background:'var(--bg3)', border:'1px dashed rgba(139,92,246,0.4)', color:'#A78BFA', borderRadius:'var(--r-sm)', padding:'9px', fontSize:12, cursor:'pointer', marginTop:8, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+                <Plus size={13} strokeWidth={1.5} /> Tambah Zona Baru
+              </button>
+            )}
+
             <div style={{ fontSize:10, color:'var(--txt4)', marginTop:8, lineHeight:1.6, padding:'8px 10px', background:'rgba(255,255,255,0.02)', borderRadius:'var(--r-xs)' }}>
-              Menyembunyikan zona tidak menghapus data. Zona tersembunyi tidak tampil di header zone switch.
+              Zona baru dapat digunakan di menu Member, Entry, dan Rekap. Menyembunyikan zona tidak menghapus data.
             </div>
           </div>
         )}
@@ -687,7 +772,7 @@ export default function SettingsView() {
           <div style={{ color:'var(--zc)', marginBottom:6 }}><Wifi size={22} strokeWidth={1.5} /></div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:'var(--txt)' }}>WiFi Pay</div>
           <div style={{ fontSize:11, color:'var(--txt4)', lineHeight:2 }}>
-            <div>Versi v11.1 Next</div>
+            <div>Versi v11.2 Next</div>
             <div>Firebase: wifi-pay-online</div>
             <div>Server: Singapore</div>
           </div>

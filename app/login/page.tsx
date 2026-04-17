@@ -104,7 +104,7 @@ export default function LoginPage() {
         WiFi Pay
       </div>
       <div style={{ fontSize:10, color:'var(--txt4)', letterSpacing:'.12em', marginBottom:28 }}>
-        v11.1 Next
+        v11.2 Next
       </div>
 
       <div style={{

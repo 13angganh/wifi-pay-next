@@ -6,6 +6,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import GlobalSearch from '@/components/modals/GlobalSearch';
+import { useT } from '@/hooks/useT';
 import {
   Wifi, Menu, Lock, LockOpen, Search, Sun, Moon,
   Cloud, RotateCw, AlertTriangle, WifiOff,
@@ -19,16 +20,25 @@ export default function Header({ onToggleSidebar }: Props) {
     globalLocked, setGlobalLocked,
     syncStatus, darkMode, toggleTheme,
     appData, uid, setSyncStatus,
+    settings,
   } = useAppStore();
 
   const [searchOpen, setSearchOpen] = useState(false);
+  const t = useT();
 
-  function handleZone(z: 'KRS' | 'SLK') {
+  function handleZone(z: string) {
     setZone(z);
-    const color  = z === 'KRS' ? '#3B82F6' : '#F97316';
-    const colorR = z === 'KRS' ? '59,130,246' : '249,115,22';
+    // Cari color dari customZones jika bukan KRS/SLK
+    const customZones: { key: string; color: string }[] = (settings as any).customZones ?? [];
+    const color = z === 'KRS' ? '#3B82F6'
+                : z === 'SLK' ? '#F97316'
+                : (customZones.find(c => c.key === z)?.color ?? '#8B5CF6');
+    // Parse hex ke RGB
+    const r = parseInt(color.slice(1,3),16);
+    const g = parseInt(color.slice(3,5),16);
+    const b = parseInt(color.slice(5,7),16);
     document.documentElement.style.setProperty('--zc', color);
-    document.documentElement.style.setProperty('--zc-rgb', colorR);
+    document.documentElement.style.setProperty('--zc-rgb', `${r},${g},${b}`);
     document.documentElement.style.setProperty('--zcdim', color + '22');
   }
 
@@ -47,10 +57,10 @@ export default function Header({ onToggleSidebar }: Props) {
 
   // Sync pill config
   const syncConfigs = {
-    ok:      { icon: <Cloud size={12} strokeWidth={1.5} />,         label: 'Tersimpan',  cls: 'sync-pill ok'      },
-    loading: { icon: <RotateCw size={12} strokeWidth={1.5} />,      label: 'Menyimpan',  cls: 'sync-pill loading' },
-    err:     { icon: <AlertTriangle size={12} strokeWidth={1.5} />, label: 'Gagal sync', cls: 'sync-pill err'     },
-    offline: { icon: <WifiOff size={12} strokeWidth={1.5} />,       label: 'Offline',    cls: 'sync-pill offline' },
+    ok:      { icon: <Cloud size={12} strokeWidth={1.5} />,         label: t('common.saved'),   cls: 'sync-pill ok'      },
+    loading: { icon: <RotateCw size={12} strokeWidth={1.5} />,      label: t('common.saving'),  cls: 'sync-pill loading' },
+    err:     { icon: <AlertTriangle size={12} strokeWidth={1.5} />, label: t('sync.error'),     cls: 'sync-pill err'     },
+    offline: { icon: <WifiOff size={12} strokeWidth={1.5} />,       label: t('common.offline'), cls: 'sync-pill offline' },
   };
   const syncCfg = syncConfigs[syncStatus as keyof typeof syncConfigs] ?? syncConfigs.ok;
 
@@ -82,22 +92,33 @@ export default function Header({ onToggleSidebar }: Props) {
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, letterSpacing:'-.02em' }}>
                 WiFi Pay
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)' }}>v11.1 Next</div>
+              <div style={{ fontSize:9, color:'var(--txt4)' }}>v11.2 Next</div>
             </div>
           </div>
 
-          {/* Zone switch */}
+          {/* Zone switch — KRS + SLK + zona custom, filter hidden */}
           <div className="zone-sw" style={{ marginLeft:'auto' }}>
-            <button
-              className={`zbtn ${activeZone === 'KRS' ? 'krs' : ''}`}
-              onClick={() => handleZone('KRS')}
-              aria-label="Zona KRS"
-            >KRS</button>
-            <button
-              className={`zbtn ${activeZone === 'SLK' ? 'slk' : ''}`}
-              onClick={() => handleZone('SLK')}
-              aria-label="Zona SLK"
-            >SLK</button>
+            {(() => {
+              const hiddenZones: string[] = (settings as any).hiddenZones ?? [];
+              const customZones: { key: string; color: string }[] = (settings as any).customZones ?? [];
+              const allZ = [
+                { key: 'KRS', cls: 'krs' },
+                { key: 'SLK', cls: 'slk' },
+                ...customZones.map(c => ({ key: c.key, cls: 'custom' })),
+              ].filter(z => !hiddenZones.includes(z.key));
+              return allZ.map(z => (
+                <button
+                  key={z.key}
+                  className={`zbtn ${activeZone === z.key ? z.cls : ''}`}
+                  onClick={() => handleZone(z.key)}
+                  aria-label={`Zona ${z.key}`}
+                  style={activeZone === z.key && z.cls === 'custom' ? {
+                    background: (customZones.find(c=>c.key===z.key)?.color ?? '#8B5CF6'),
+                    color: '#fff', borderColor: 'transparent',
+                  } : {}}
+                >{z.key}</button>
+              ));
+            })()}
           </div>
         </div>
 
@@ -134,7 +155,7 @@ export default function Header({ onToggleSidebar }: Props) {
               ? <Lock size={14} strokeWidth={1.5} />
               : <LockOpen size={14} strokeWidth={1.5} />
             }
-            <span style={{ fontSize:9 }}>{globalLocked ? 'KUNCI' : 'BUKA'}</span>
+            <span style={{ fontSize:9 }}>{globalLocked ? t('header.lock') : t('header.unlock')}</span>
           </button>
 
           {/* Pencarian */}

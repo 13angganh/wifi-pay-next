@@ -51,9 +51,17 @@ export interface AppData {
   operasional: Record<string, OpsData>;
   _globalLocked?: boolean;
   _lockedEntries?: Record<string, boolean>;
+  // v11.2: zona custom — key = zoneKey, value = array nama member
+  zoneMembers?: Record<string, string[]>;
 }
 
-export type Zone = 'KRS' | 'SLK';
+export type Zone = string; // v11.2: zona dinamis, tidak lagi terbatas KRS|SLK
+
+export interface CustomZone {
+  key:   string;  // uppercase, maks 6 char, e.g. 'KRS', 'SLK', 'TIMUR'
+  name:  string;  // nama display (bisa berbeda dari key)
+  color: string;  // hex color, e.g. '#3B82F6'
+}
 export type ViewName = 'dashboard' | 'entry' | 'rekap' | 'tunggakan' | 'grafik' | 'log' | 'members' | 'operasional' | 'settings';
 export type FilterStatus = 'all' | 'paid' | 'unpaid';
 export type ShareType = 'monthly' | 'yearly';
@@ -69,6 +77,10 @@ export interface AppSettings {
   quickAmounts:  number[];        // custom quick pay amounts
   pinTimeoutMinutes: number;      // 0 = tidak pernah, idle timeout untuk PIN lock
   language:      'id' | 'en';     // bahasa UI (v11.1)
+  // v11.2: zona dinamis
+  customZones:   CustomZone[];    // zona tambahan selain KRS & SLK
+  hiddenZones:   string[];        // zona yang disembunyikan dari header
+  zoneNames:     Record<string, string>; // override nama display zona
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -78,4 +90,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   quickAmounts: [50, 80, 90, 100, 150, 200],
   pinTimeoutMinutes: 0,
   language:     'id',
+  customZones:  [],
+  hiddenZones:  [],
+  zoneNames:    {},
 };

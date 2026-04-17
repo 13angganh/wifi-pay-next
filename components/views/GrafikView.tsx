@@ -81,10 +81,11 @@ export default function GrafikView() {
     instances.current = {};
 
     // Navy palette
-    const gridColor  = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-    const tickColor  = darkMode ? 'var(--txt3)' : '#6B7280';
+    const gridColor     = darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)';
+    const tickColor     = darkMode ? '#6B7494' : '#6B7280';
+    const legendColor   = darkMode ? '#A1A8C1' : '#374151';
     const tooltipBg  = darkMode ? '#181C27' : '#FFFFFF';
-    const tooltipBorder = darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+    const tooltipBorder = darkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.1)';
 
     const baseScales = {
       x: {
@@ -159,7 +160,7 @@ export default function GrafikView() {
           plugins: {
             legend: {
               display: true,
-              labels: { color: tickColor, font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 14 },
+              labels: { color: legendColor, font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 14 },
             },
             tooltip: baseTooltip,
           },
