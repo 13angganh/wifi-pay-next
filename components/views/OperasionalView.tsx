@@ -109,7 +109,7 @@ export default function OperasionalView() {
       {/* Items */}
       <div className="ops-card">
         <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10, fontFamily:FONT }}>
-          {t('ops.expenseTitle')}
+          t('ops.expenseTitle')
         </div>
 
         {items.map((it, i) => (
@@ -117,7 +117,7 @@ export default function OperasionalView() {
             {/* Label keterangan */}
             <input
               style={{ ...inputBaseStyle, flex:1 }}
-              placeholder="{t('ops.itemPlaceholder')}"
+              placeholder="t('ops.itemPlaceholder')"
               defaultValue={it.label}
               onBlur={e => updateItem(i, 'label', e.target.value)}
               autoComplete="off"
@@ -142,7 +142,7 @@ export default function OperasionalView() {
 
         <button onClick={addItem}
           style={{ width:'100%', background:'var(--bg3)', border:'1px dashed rgba(59,130,246,0.35)', color:'var(--zc-krs)', padding:9, borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:FS_BODY, marginTop:6, fontFamily:FONT }}>
-          {t('ops.addItem')}
+          t('ops.addItem')
         </button>
       </div>
 
