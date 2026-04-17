@@ -222,7 +222,7 @@ export default function EntryView() {
             </div>
           </div>
           <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:10, color:'var(--txt4)' }}>dari {unpaid} member belum bayar</div>
+            <div style={{ fontSize:10, color:'var(--txt4)' }}>t(dari) {unpaid} t(member belum bayar)</div>
             <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>berdasarkan tarif terdaftar</div>
           </div>
         </div>
