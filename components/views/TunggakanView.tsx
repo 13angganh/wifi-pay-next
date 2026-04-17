@@ -54,7 +54,7 @@ export default function TunggakanView() {
 
   const count = mode === 'nakal' ? filteredArrears.length : mode === 'rajin' ? rajin.length : freeList.length;
   const sumColor = mode === 'nakal' ? 'var(--c-belum)' : mode === 'rajin' ? 'var(--c-lunas)' : 'var(--c-free)';
-  const sumLabel = mode === 'nakal' ? {t('tunggakan.sumLabel')} : mode === 'rajin' ? {t('tunggakan.sumLunas')} : {t('tunggakan.sumFree')};
+  const sumLabel = mode === 'nakal' ? t('tunggakan.sumLabel') : mode === 'rajin' ? t('tunggakan.sumLunas') : t('tunggakan.sumFree');
 
   return (
     <div>
@@ -147,10 +147,10 @@ export default function TunggakanView() {
             <div className="empty-icon"><CheckCircle2 size={32} strokeWidth={1.2} style={{ color:'var(--c-lunas)' }} /></div>
             <div className="empty-title" style={{ color:'var(--c-lunas)' }}>{t('dashboard.allPaid')}</div>
             <div className="empty-sub">
-              {agingFilter === 'total' ? '{t('tunggakan.emptyTotal')}'
-                : agingFilter === 'baru'   ? '{t('tunggakan.emptyNew')}'
-                : agingFilter === 'segera' ? '{t('tunggakan.emptySoon')}'
-                : '{t('tunggakan.emptyCritical')}'}
+              {agingFilter === 'total' ? t('tunggakan.emptyTotal')
+                : agingFilter === 'baru'   ? t('tunggakan.emptyNew')
+                : agingFilter === 'segera' ? t('tunggakan.emptySoon')
+                : t('tunggakan.emptyCritical')}
             </div>
           </div>
         ) : (
@@ -223,7 +223,7 @@ export default function TunggakanView() {
           freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
-              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : ' ({t('tunggakan.forever')})';
+              ?  s/d ${MONTHS[fm.toMonth!]} fm.toYear‘:‘({t('tunggakan.forever')});
             return (
               <div key={name} className="tcard" style={{
                 borderLeft:'3px solid var(--c-free)',

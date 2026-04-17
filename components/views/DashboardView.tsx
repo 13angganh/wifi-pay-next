@@ -274,7 +274,7 @@ export default function DashboardView() {
             <Wallet size={14} style={{ color:'var(--txt3)' }} /> {t('nav.operasional')} {bulanLbl}
           </div>
           <div style={{ fontSize:11, color: totalOps > 0 ? 'var(--c-belum)' : 'var(--txt4)', marginTop:3 }}>
-            {totalOps > 0 ? rp(totalOps) : '{t('common.noData')}'}
+            {totalOps > 0 ? rp(totalOps) : t('common.noData')}
           </div>
         </div>
         <ChevronRight size={16} style={{ color:'var(--txt4)', flexShrink:0 }} />
