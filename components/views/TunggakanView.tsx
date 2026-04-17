@@ -71,9 +71,9 @@ export default function TunggakanView() {
       {/* Mode tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:10, background:'var(--bg3)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
         {([
-          ['nakal', <AlertCircle size={12} />, {t('tunggakan.nakal')}, allArrears.length, 'var(--c-belum)'],
-          ['rajin', <Star size={12} />,        {t('tunggakan.rajin')},   rajin.length,       'var(--c-lunas)'],
-          ['free',  <Gift size={12} />,         {t('status.free')},    freeList.length,    'var(--c-free)'],
+          ['nakal', <AlertCircle size={12} />, t('tunggakan.nakal'), allArrears.length, 'var(--c-belum)'],
+          ['rajin', <Star size={12} />,        t('tunggakan.rajin'),   rajin.length,       'var(--c-lunas)'],
+          ['free',  <Gift size={12} />,         t('status.free'),    freeList.length,    'var(--c-free)'],
         ] as const).map(([m, icon, label, cnt, color]) => (
           <button
             key={m}
