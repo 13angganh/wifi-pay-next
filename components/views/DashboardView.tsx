@@ -119,7 +119,7 @@ export default function DashboardView() {
         marginBottom:10,
       }}>
         <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', textTransform:'uppercase', marginBottom:4 }}>
-          {t('dashboard.thisMonth')}
+          {('dashboard.thisMonth')}
         </div>
         <div style={{
           fontFamily:"'Syne',sans-serif",
@@ -137,7 +137,7 @@ export default function DashboardView() {
             <span style={{ fontSize:10, color:'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
               <Minus size={10} /> Ops: {rp(totalOps)} →
               <span style={{ color: netIncome >= 0 ? 'var(--c-lunas)' : 'var(--c-belum)', fontWeight:600, marginLeft:2 }}>
-                {t('dashboard.net')}: {rp(netIncome)}
+                {('dashboard.net')}: {rp(netIncome)}
               </span>
             </span>
           )}
@@ -177,7 +177,7 @@ export default function DashboardView() {
                   borderRadius:3, transition:'width .4s var(--ease-smooth)',
                 }} />
               </div>
-              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:4 }}>{lunas}/{allLen} {t('status.lunas')} ({pct}%)</div>
+              <div style={{ fontSize:9, color:'var(--txt4)', marginTop:4 }}>{lunas}/{allLen} {('status.lunas')} ({pct}%)</div>
             </div>
           </div>
         ))}
@@ -187,9 +187,9 @@ export default function DashboardView() {
       <div style={card}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
           <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)' }}>
-            <Clock size={14} style={{ color:'var(--c-belum)' }} /> {t('dashboard.unpaidTitle')} {bulanLbl}
+            <Clock size={14} style={{ color:'var(--c-belum)' }} /> {('dashboard.unpaidTitle')} {bulanLbl}
           </div>
-          <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{krsBelum + slkBelum} {t('common.members')}</div>
+          <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{krsBelum + slkBelum} {('common.members')}</div>
         </div>
         <div style={{ display:'flex', gap:8, marginBottom: totalFree > 0 ? 8 : 0 }}>
           {([
@@ -210,7 +210,7 @@ export default function DashboardView() {
             borderRadius:'var(--r-sm)', padding:'7px 10px',
           }}>
             <span style={{ fontSize:10, color:'var(--c-free)', display:'flex', alignItems:'center', gap:5 }}>
-              <Gift size={12} /> {t('status.free')} {bulanLbl}
+              <Gift size={12} /> {('status.free')} {bulanLbl}
             </span>
             <span style={{ fontSize:12, fontWeight:700, color:'var(--c-free)' }}>
               {totalFree} member <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span>
@@ -222,12 +222,12 @@ export default function DashboardView() {
       {/* Top tunggakan — tanpa aging widget */}
       <div style={card}>
         <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, fontWeight:700, color:'var(--txt)', marginBottom:10 }}>
-          <AlertTriangle size={14} style={{ color:'var(--c-belum)' }} /> {t('dashboard.topArrears')}
+          <AlertTriangle size={14} style={{ color:'var(--c-belum)' }} /> {('dashboard.topArrears')}
         </div>
         {top5.length === 0 ? (
           <div style={{ textAlign:'center', padding:'16px 0', display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
             <CheckCircle2 size={24} style={{ color:'var(--c-lunas)' }} />
-            <span style={{ color:'var(--c-lunas)', fontSize:12 }}>{t('dashboard.allPaid')}</span>
+            <span style={{ color:'var(--c-lunas)', fontSize:12 }}>{('dashboard.allPaid')}</span>
           </div>
         ) : (
           top5.map((t2, i) => (
@@ -252,7 +252,7 @@ export default function DashboardView() {
             style={{ fontSize:10, color:'var(--txt3)', textAlign:'center', marginTop:10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}
             onClick={() => nav('tunggakan')}
           >
-            +{topTunggak.length - 5} {t('common.more')}
+            +{topTunggak.length - 5} {('common.more')}
             <ChevronRight size={12} />
           </div>
         )}
@@ -271,10 +271,10 @@ export default function DashboardView() {
       >
         <div>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Wallet size={14} style={{ color:'var(--txt3)' }} /> {t('nav.operasional')} {bulanLbl}
+            <Wallet size={14} style={{ color:'var(--txt3)' }} /> {('nav.operasional')} {bulanLbl}
           </div>
           <div style={{ fontSize:11, color: totalOps > 0 ? 'var(--c-belum)' : 'var(--txt4)', marginTop:3 }}>
-            {totalOps > 0 ? rp(totalOps) : t('common.noData')}
+            {totalOps > 0 ? rp(totalOps) : ('common.noData')}
           </div>
         </div>
         <ChevronRight size={16} style={{ color:'var(--txt4)', flexShrink:0 }} />
@@ -284,7 +284,7 @@ export default function DashboardView() {
       <div style={{ ...card, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
         <div>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Database size={14} style={{ color:'var(--txt3)' }} /> {t('dashboard.lastBackup')}
+            <Database size={14} style={{ color:'var(--txt3)' }} /> {('dashboard.lastBackup')}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)', marginTop:2 }}>{backupLbl}</div>
         </div>
@@ -296,7 +296,7 @@ export default function DashboardView() {
           }}
           onClick={(e) => { e.stopPropagation(); doJSONBackup(appData); showToast('Backup JSON berhasil!'); }}
         >
-          {t('dashboard.backupNow')}
+          {('dashboard.backupNow')}
         </button>
       </div>
 
@@ -304,7 +304,7 @@ export default function DashboardView() {
       <div style={card}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
-            <Share2 size={14} style={{ color:'var(--txt3)' }} /> {t('dashboard.waSummary')}
+            <Share2 size={14} style={{ color:'var(--txt3)' }} /> {('dashboard.waSummary')}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)' }}>{bulanLbl}</div>
         </div>
@@ -320,10 +320,10 @@ export default function DashboardView() {
           onClick={() => { doWASummary(appData, dy, dm); }}
         >
           <Share2 size={15} />
-          {t('dashboard.sendWA')} {bulanLbl}
+          {('dashboard.sendWA')} {bulanLbl}
         </button>
         <div style={{ fontSize:9, color:'var(--txt4)', marginTop:6, textAlign:'center' }}>
-          {t('dashboard.periodNote')}
+          {('dashboard.periodNote')}
         </div>
       </div>
     </div>
