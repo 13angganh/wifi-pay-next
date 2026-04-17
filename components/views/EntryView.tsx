@@ -5,7 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { getPay, isLunas, isFree, rp, fuzzyMatch } from '@/lib/helpers';
-import { useT } from '@/hooks/useT';
+import { useT } from '@/hooks/useT';;
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import MemberCard from './MemberCard';
@@ -60,6 +60,7 @@ export default function EntryView() {
     setEntryScrollTop((e.target as HTMLDivElement).scrollTop);
   }, [setEntryScrollTop]);
 
+  const t = useT();
   const chips: { key: FilterType; icon: React.ReactNode; label: string; count?: number }[] = [
     { key: 'all',    icon: <ClipboardList size={12} />, label: t('common.all') },
     { key: 'paid',   icon: <CheckCircle2  size={12} />, label: t('status.lunas'),  count: paid },
@@ -128,7 +129,6 @@ export default function EntryView() {
     return { name, tarif };
   });
 
-  const t = useT();
   const zc = activeZone === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)';
 
   return (
