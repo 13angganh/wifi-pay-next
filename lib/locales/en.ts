@@ -37,7 +37,6 @@ const en: Record<string, string> = {
   'common.saved'     : 'Saved',
   'common.error'     : 'Error',
   'common.offline'   : 'Offline',
-  'sync.error'       : 'Sync failed',
   'header.lock'      : 'LOCK',
   'header.unlock'    : 'OPEN',
   'common.noData'    : 'No data',
