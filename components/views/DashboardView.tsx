@@ -66,7 +66,7 @@ export default function DashboardView() {
 
   // ── Misc ──
   const lastBackup = typeof window !== 'undefined' ? localStorage.getItem('wp_last_backup') : null;
-  const backupLbl  = lastBackup ? new Date(+lastBackup).toLocaleDateString('id-ID') : 'Belum pernah';
+  const backupLbl  = lastBackup ? new Date(+lastBackup).toLocaleDateString('id-ID') : t('common.noData');
   const bulanLbl   = `${MONTHS[dm]} ${dy}`;
 
   function nav(v: ViewName) { setView(v); router.push('/' + v); }
@@ -213,7 +213,7 @@ export default function DashboardView() {
               <Gift size={12} /> {t('status.free')} {bulanLbl}
             </span>
             <span style={{ fontSize:12, fontWeight:700, color:'var(--c-free)' }}>
-              {totalFree} member <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span>
+              {totalFree} {t('common.members')} <span style={{ fontSize:9, opacity:.7 }}>(KRS:{krsFree} SLK:{slkFree})</span>
             </span>
           </div>
         )}
@@ -241,8 +241,8 @@ export default function DashboardView() {
                 <span style={{ fontSize:9, color:'var(--txt4)', marginLeft:6 }}>{t2.z}</span>
               </div>
               <div style={{ textAlign:'right' }}>
-                <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{t2.count} bulan</div>
-                <div style={{ fontSize:9, color:'var(--txt4)' }}>sejak {t2.oldest}</div>
+                <div style={{ fontSize:12, color:'var(--c-belum)', fontWeight:700 }}>{t2.count} {t('common.months')}</div>
+                <div style={{ fontSize:9, color:'var(--txt4)' }}>{t('common.since')} {t2.oldest}</div>
               </div>
             </div>
           ))
@@ -267,7 +267,7 @@ export default function DashboardView() {
         }}
         onClick={() => nav('operasional')}
         role="button"
-        aria-label="Buka menu Operasional"
+        aria-label={t('nav.operasional')}
       >
         <div>
           <div style={{ fontSize:12, fontWeight:700, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>

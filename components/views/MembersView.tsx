@@ -200,17 +200,17 @@ export default function MembersView() {
         <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'Dibuka':'Dikunci'); }}
           aria-label={membersLocked ? 'Buka kunci daftar member' : 'Kunci daftar member'}
           style={{ background:membersLocked?'rgba(34,197,94,0.06)':'rgba(239,68,68,0.06)', border:`1px solid ${membersLocked?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'}`, color:membersLocked?'var(--c-lunas)':'var(--c-belum)', padding:'6px 14px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, minHeight:34, display:'flex', alignItems:'center', gap:5 }}>
-          {membersLocked ? <><Lock size={12} strokeWidth={1.5} /> Terkunci</> : <><LockOpen size={12} strokeWidth={1.5} /> Buka</>}
+          {membersLocked ? <><Lock size={12} strokeWidth={1.5} /> {t('header.lock')}</> : <><LockOpen size={12} strokeWidth={1.5} /> {t('header.unlock')}</>}
         </button>
       </div>
 
       {/* Active / Deleted tabs */}
       <div style={{ display:'flex', gap:4, marginBottom:10, background:'var(--bg2)', padding:3, borderRadius:20, border:'1px solid var(--border)' }}>
         <button onClick={() => setMemberTab('active')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='active'?zc:'transparent', color:memberTab==='active'?'#fff':'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
-          <Users size={12} strokeWidth={1.5} /> Aktif ({mems.length})
+          <Users size={12} strokeWidth={1.5} /> {t('common.all')} ({mems.length})
         </button>
         <button onClick={() => setMemberTab('deleted')} style={{ flex:1, padding:6, borderRadius:16, border:'none', cursor:'pointer', fontSize:11, fontWeight:600, background:memberTab==='deleted'?'var(--zc-slk)':'transparent', color:memberTab==='deleted'?'#fff':'var(--txt3)', display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
-          <Trash2 size={12} strokeWidth={1.5} /> Terhapus ({deletedList.length})
+          <Trash2 size={12} strokeWidth={1.5} /> {t('action.delete')} ({deletedList.length})
         </button>
       </div>
 
@@ -224,7 +224,7 @@ export default function MembersView() {
                 <div className="del-card-name" style={{ display:'flex', alignItems:'center', gap:5 }}>
                   <Trash2 size={12} strokeWidth={1.5} color="var(--c-belum)" /> {d.name}
                 </div>
-                <div style={{ fontSize:10, color:'var(--txt4)' }}>Dihapus: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
+                <div style={{ fontSize:10, color:'var(--txt4)' }}>{t('action.delete')}: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
               </div>
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <button className="restore-btn" onClick={() => restoreMember(k)}>{t('members.restore')}</button>
@@ -244,12 +244,12 @@ export default function MembersView() {
               <div className="af-grid">
                 <div>
                   <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('common.name').toUpperCase()}</div>
-                  <input ref={addRef.name} className="af-input" placeholder="{t('members.namePlaceholder')}" autoComplete="off"
+                  <input ref={addRef.name} className="af-input" placeholder={t('members.namePlaceholder')} autoComplete="off"
                     style={{ textTransform:'uppercase' }} onKeyDown={e=>e.key==='Enter'&&addMember()} />
                 </div>
                 <div>
                   <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.customerId').toUpperCase()}</div>
-                  <input ref={addRef.id} className="af-input" placeholder="Opsional" autoComplete="off" />
+                  <input ref={addRef.id} className="af-input" placeholder={t('common.optional')} autoComplete="off" />
                 </div>
                 <div style={{ gridColumn:'span 2' }}>
                   <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.ipLabel').toUpperCase()}</div>
@@ -261,7 +261,7 @@ export default function MembersView() {
                 </div>
               </div>
               <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:'var(--r-sm)', fontSize:13, fontWeight:600, cursor:'pointer', minHeight:40 }} onClick={addMember}>
-                + Tambah ke {zone}
+                + {t('members.addTo')} {zone}
               </button>
             </div>
           )}
@@ -277,10 +277,10 @@ export default function MembersView() {
 
           {/* Search */}
           <div className="search-wrap">
-            <input className="search-box" placeholder={`Cari nama di ${zone}...`} value={search} onChange={e=>setSearch(e.target.value)} />
-            {search && <button className="search-clear" onClick={()=>setSearch('')} aria-label="Hapus pencarian"><X size={12} /></button>}
+            <input className="search-box" placeholder={`${t('entry.searchPlaceholder')} ${zone}...`} value={search} onChange={e=>setSearch(e.target.value)} />
+            {search && <button className="search-clear" onClick={()=>setSearch('')} aria-label={t('action.search')}><X size={12} /></button>}
           </div>
-          <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>{filteredMems.length} member{search?' ditemukan':''} · {zone}</div>
+          <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>{filteredMems.length} {t('common.members')}{search ? ` ${t('common.noResult').toLowerCase()}` : ''} · {zone}</div>
 
           {/* Member rows */}
           <div id="member-rows">
@@ -354,12 +354,12 @@ export default function MembersView() {
       {editOpen && (
         <div className="modal-bg center" onClick={() => setEditOpen(false)}>
           <div className="modal center" onClick={e => e.stopPropagation()}>
-            <div className="modal-title">Edit Member <button className="modal-close" aria-label="Tutup modal edit" onClick={() => setEditOpen(false)}><X size={13} strokeWidth={1.5} /></button></div>
+            <div className="modal-title">{t('members.editTitle')} <button className="modal-close" aria-label={t('action.close')} onClick={() => setEditOpen(false)}><X size={13} strokeWidth={1.5} /></button></div>
             {([
-              { label:'NAMA',                   field:'name',  type:'text',   ph:''                             },
-              { label:'ID PELANGGAN',            field:'id',    type:'text',   ph:'Opsional'                     },
-              { label:'IP / LINK ROUTER',        field:'ip',    type:'text',   ph:'192.168.x.x atau http://...'  },
-              { label:'TARIF BULANAN (×1000)',   field:'tarif', type:'number', ph:'Contoh: 100 = Rp 100.000'    },
+              { label: t('common.name').toUpperCase(),                   field:'name',  type:'text',   ph:''                             },
+              { label: t('members.customerId').toUpperCase(),            field:'id',    type:'text',   ph: t('common.optional')          },
+              { label: t('members.ipLabel').toUpperCase(),               field:'ip',    type:'text',   ph:'192.168.x.x'                  },
+              { label: t('members.tarifLabel').toUpperCase(),            field:'tarif', type:'number', ph:'100'                          },
             ] as const).map(({ label, field, type, ph }) => (
               <div key={field} className="modal-row">
                 <div className="modal-label">{label}</div>

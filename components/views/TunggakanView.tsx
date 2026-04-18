@@ -137,7 +137,7 @@ export default function TunggakanView() {
       {/* Summary bar */}
       <div className="sum-bar" style={{ marginBottom:10 }}>
         <div className="sum-lbl">{sumLabel} {MONTHS[selMonth].toUpperCase()} {selYear} · {activeZone}</div>
-        <div className="sum-val" style={{ color: sumColor }}>{count} t('common.members')</div>
+        <div className="sum-val" style={{ color: sumColor }}>{count} {t('common.members')}</div>
       </div>
 
       {/* Cards — mode nakal */}
@@ -145,7 +145,7 @@ export default function TunggakanView() {
         filteredArrears.length === 0 ? (
           <div className="empty-state" style={{ padding:'28px 24px' }}>
             <div className="empty-icon"><CheckCircle2 size={32} strokeWidth={1.2} style={{ color:'var(--c-lunas)' }} /></div>
-            <div className="empty-title" style={{ color:'var(--c-lunas)' }}>t('dashboard.allPaid')</div>
+            <div className="empty-title" style={{ color:'var(--c-lunas)' }}>{t('dashboard.allPaid')}</div>
             <div className="empty-sub">
               {agingFilter === 'total' ? t('tunggakan.emptyTotal')
                 : agingFilter === 'baru'   ? t('tunggakan.emptyNew')
@@ -172,7 +172,7 @@ export default function TunggakanView() {
                     display:'flex', alignItems:'center', gap:4,
                   }}>
                     {x.count >= 4 ? <Flame size={11} /> : x.count >= 2 ? <AlertCircle size={11} /> : <Clock size={11} />}
-                    {x.count} t('tunggakan.months')
+                    {x.count} {t('tunggakan.months')}
                   </span>
                 </div>
                 <div className="tcard-months">
@@ -190,8 +190,8 @@ export default function TunggakanView() {
         rajin.length === 0 ? (
           <div className="empty-state" style={{ padding:'24px' }}>
             <div className="empty-icon"><Medal size={32} strokeWidth={1.2} /></div>
-            <div className="empty-title">t('common.noData')</div>
-            <div className="empty-sub">t('tunggakan.emptyRajin')</div>
+            <div className="empty-title">{t('common.noData')}</div>
+            <div className="empty-sub">{t('tunggakan.emptyRajin')}</div>
           </div>
         ) : (
           rajin.map((name, i) => (
@@ -204,7 +204,7 @@ export default function TunggakanView() {
                 <span className="tcard-name" style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:6 }}>
                   <CheckCircle2 size={13} /> {i + 1}. {name}
                 </span>
-                <span style={{ fontSize:10, color:'var(--c-lunas)' }}>t('tunggakan.paidAll')</span>
+                <span style={{ fontSize:10, color:'var(--c-lunas)' }}>{t('tunggakan.paidAll')}</span>
               </div>
             </div>
           ))
@@ -212,19 +212,18 @@ export default function TunggakanView() {
       )}
 
       {/* Cards — mode free */}
-      mode === 'free' && (
+      {mode === 'free' && (
         freeList.length === 0 ? (
           <div className="empty-state" style={{ padding:'24px' }}>
             <div className="empty-icon"><Gift size={32} strokeWidth={1.2} /></div>
-            <div className="empty-title">t('common.noData')</div>
-            <div className="empty-sub">t('tunggakan.emptyFree')</div>
+            <div className="empty-title">{t('common.noData')}</div>
+            <div className="empty-sub">{t('tunggakan.emptyFree')}</div>
           </div>
         ) : (
-          {
           freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
-              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}`:`(${t('tunggakan.forever')})`;
+              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : `(${t('tunggakan.forever')})`;
             return (
               <div key={name} className="tcard" style={{
                 borderLeft:'3px solid var(--c-free)',
@@ -236,19 +235,18 @@ export default function TunggakanView() {
                   <span className="tcard-name" style={{ color:'var(--c-free)', display:'flex', alignItems:'center', gap:6 }}>
                     <Gift size={13} /> {i + 1}. {name}
                   </span>
-                  <span style={{ fontSize:10, color:'var(--c-free)' }}>t('status.free')</span>
+                  <span style={{ fontSize:10, color:'var(--c-free)' }}>{t('status.free')}</span>
                 </div>
                 {fm && (
                   <div style={{ fontSize:10, color:'var(--txt4)', marginTop:3 }}>
-                    Dari ${MONTHS[fm.fromMonth]} ${fm.fromYear} toStr
+                    Dari {MONTHS[fm.fromMonth]} {fm.fromYear}{toStr}
                   </div>
                 )}
               </div>
             );
           })
-         }
         )
-      )
+      )}
     </div>
   );
 }

@@ -138,7 +138,7 @@ export default function EntryView() {
         <div className="inst-banner">
           <div className="inst-txt" style={{ display:'flex', alignItems:'center', gap:6 }}>
             <Smartphone size={14} />
-            Install WiFi Pay ke layar beranda!
+            {t('entry.title')} — Install
           </div>
           <button className="inst-btn" onClick={() => { (deferredPrompt as any).prompt(); }}>Install</button>
         </div>
@@ -156,13 +156,13 @@ export default function EntryView() {
             <button
               onClick={clearBatch}
               style={{ background:'none', border:'none', cursor:'pointer', color:'var(--txt2)', display:'flex', padding:4, borderRadius:6 }}
-              aria-label="Keluar batch mode"
+              aria-label={t('action.cancel')}
             >
               <X size={18} />
             </button>
             <div>
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:14, color:'var(--txt)' }}>
-                {batchSelected.length} Member Dipilih
+                {batchSelected.length} {t('nav.members')}
               </div>
               <div style={{ fontSize:10, color:'var(--txt3)' }}>
                 {MONTHS[batchMonth]} {batchYear} · {activeZone}
@@ -222,8 +222,8 @@ export default function EntryView() {
             </div>
           </div>
           <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:10, color:'var(--txt4)' }}>dari {unpaid} member belum bayar</div>
-            <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>berdasarkan tarif terdaftar</div>
+            <div style={{ fontSize:10, color:'var(--txt4)' }}>{t('entry.from')} {unpaid} {t('entry.membersUnpaid')}</div>
+            <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>{t('common.since')} tarif</div>
           </div>
         </div>
       )}
@@ -277,7 +277,7 @@ export default function EntryView() {
             )}
           </div>
           <div style={{ fontSize:10, color:'var(--txt4)', marginBottom:8 }}>
-            {filtered.length} member{search ? ' ditemukan' : ''} · {activeZone}
+            {filtered.length} {t('common.members')}{search ? ` ${t('common.noResult').toLowerCase()}` : ''} · {activeZone}
           </div>
         </>
       )}
@@ -289,8 +289,8 @@ export default function EntryView() {
             <div className="empty-icon">
               <ClipboardList size={32} strokeWidth={1.2} />
             </div>
-            <div className="empty-title">Tidak Ada Member</div>
-            <div className="empty-sub">Tambahkan member di menu Member</div>
+            <div className="empty-title">{t('members.empty')}</div>
+            <div className="empty-sub">{t('onboarding.step1')}</div>
           </div>
         ) : (
           filtered.map((name, i) => (
@@ -353,7 +353,7 @@ export default function EntryView() {
                 cursor:'pointer', fontSize:13, fontWeight:600, minHeight:44,
               }}
             >
-              Batal
+              {t('action.cancel')}
             </button>
             <button
               onClick={executeBatch}
@@ -366,7 +366,7 @@ export default function EntryView() {
               }}
             >
               <CheckCheck size={16} />
-              Tandai Lunas Semua
+              {t('entry.batchPay')}
             </button>
           </div>
         </div>

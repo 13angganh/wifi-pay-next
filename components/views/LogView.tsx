@@ -56,14 +56,14 @@ export default function LogView() {
       {/* Search aksi */}
       <div className="search-wrap" style={{ marginBottom:8, position:'relative', display:'flex', alignItems:'center' }}>
         <Search size={13} style={{ position:'absolute', left:10, color:'var(--txt4)', pointerEvents:'none' }} />
-        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder="{t('log.searchPlaceholder')}" value={logSearch} onChange={e => setLogSearch(e.target.value)} />
+        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder={t('log.searchPlaceholder')} value={logSearch} onChange={e => setLogSearch(e.target.value)} />
         {logSearch && <button className="search-clear" onClick={() => setLogSearch('')} aria-label="Hapus pencarian"><X size={12} /></button>}
       </div>
 
       {/* Filter nama */}
       <div className="search-wrap" style={{ marginBottom:8, position:'relative', display:'flex', alignItems:'center' }}>
         <User size={13} style={{ position:'absolute', left:10, color:'var(--txt4)', pointerEvents:'none' }} />
-        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder="{t('log.filterName')}" value={logName} onChange={e => setLogName(e.target.value)} />
+        <input className="search-box" style={{ margin:0, paddingLeft:30 }} placeholder={t('log.filterName')} value={logName} onChange={e => setLogName(e.target.value)} />
         {logName && <button className="search-clear" onClick={() => setLogName('')} aria-label="Hapus filter"><X size={12} /></button>}
       </div>
 
@@ -77,7 +77,7 @@ export default function LogView() {
           <option value="">{t('common.all')} Bulan</option>
           {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
-        <button onClick={reset} aria-label="{t('action.reset')} filter" style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, transition:'all var(--t-fast)' }}>
+        <button onClick={reset} aria-label={`${t('action.reset')} filter`} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, transition:'all var(--t-fast)' }}>
           <RotateCcw size={12} /> {t('action.reset')}
         </button>
       </div>
