@@ -22,6 +22,8 @@ export default function RekapView() {
     settings,
   } = useAppStore();
 
+  const t = useT();
+
   const inputDirty   = useRef(false);
   const modalClosing = useRef(false);
 
