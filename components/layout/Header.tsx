@@ -52,7 +52,7 @@ export default function Header({ onToggleSidebar }: Props) {
         setSyncStatus('ok');
       } catch { setSyncStatus('err'); }
     }
-    showToast(next ? 'Entry dikunci' : 'Entry dibuka', next ? 'info' : 'ok');
+    showToast(next ? t('header.entryLocked') : t('header.entryUnlocked'), next ? 'info' : 'ok');
   }
 
   // Sync pill config

@@ -60,7 +60,7 @@ export default function RekapView() {
   }
 
   async function quickPay(name: string, amt: number, month: number) {
-    if (isLocked(name)) { showToast('Data terkunci!', 'err'); return; }
+    if (isLocked(name)) { showToast(t('rekap.dateLocked'), 'err'); return; }
     const k       = getKey(activeZone, name, selYear, month);
     const newData = { ...appData, payments: { ...appData.payments, [k]: amt } };
     if (settings?.autoDate) {
@@ -81,7 +81,7 @@ export default function RekapView() {
     if (!inputDirty.current) return;
     if (modalClosing.current) return;
     inputDirty.current = false;
-    if (isLocked(name)) { showToast('Data terkunci!', 'err'); return; }
+    if (isLocked(name)) { showToast(t('rekap.dateLocked'), 'err'); return; }
     const k       = getKey(activeZone, name, selYear, month);
     const newData = { ...appData, payments: { ...appData.payments } };
     if (val === '') {
@@ -93,19 +93,19 @@ export default function RekapView() {
       if (isNaN(amt)) { showToast('Nominal tidak valid', 'err'); return; }
       newData.payments[k] = amt;
       await persist(newData, `💰 Bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear} → ${rp(amt)}`);
-      showToast(`${name} ${MONTHS[month]} → ${amt === 0 ? 'Akumulasi' : rp(amt)}`);
+      showToast(`${name} ${MONTHS[month]} → ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
     }
     closeModal();
   }
 
   async function clearPay(name: string, month: number, e: React.MouseEvent) {
     e.stopPropagation();
-    if (isLocked(name)) { showToast('Data terkunci!', 'err'); return; }
+    if (isLocked(name)) { showToast(t('rekap.dateLocked'), 'err'); return; }
     const curVal = getPay(appData, activeZone, name, selYear, month);
     if (curVal === null) return;
     showConfirm(
       '🗑️',
-      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : 'Akumulasi'}</span>`,
+      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : t('rekap.accumulation')}</span>`,
       'Ya, Hapus',
       async () => {
         const k       = getKey(activeZone, name, selYear, month);
@@ -163,7 +163,7 @@ export default function RekapView() {
       const amt   = tarif ?? (settings?.quickAmounts?.[0] ?? 100);
       entries.push({ name, amt });
     }
-    if (entries.length === 0) { showToast('Semua member terkunci', 'err'); return; }
+    if (entries.length === 0) { showToast(t('rekap.allLocked'), 'err'); return; }
     const newData = { ...appData, payments: { ...appData.payments } };
     const today   = new Date().toISOString().slice(0, 10);
     for (const { name, amt } of entries) {
@@ -182,7 +182,7 @@ export default function RekapView() {
       `💰 Batch Pay Rekap ${activeZone} - ${entries.length} member`,
       `${MONTHS[mi]} ${selYear}`
     );
-    showToast(`${entries.length} member berhasil ditandai lunas`);
+    showToast(`${entries.length} ${t('rekap.batchSuccess')}`);
     exitBatch();
   }
 
@@ -225,12 +225,12 @@ export default function RekapView() {
           <div style={{ padding:'14px 16px 16px' }}>
             {entryFree ? (
               <div style={{ textAlign:'center', fontSize:12, color:'var(--c-free)', padding:'12px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <Gift size={14} /> Member Gratis periode ini
+                <Gift size={14} /> {t('rekap.freeMember')}
               </div>
             ) : locked ? (
               <div style={{ textAlign:'center', fontSize:12, color:'var(--c-belum)', padding:'12px 0', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Data terkunci
+                {t('rekap.dataLocked')}
               </div>
             ) : (
               <>
@@ -311,7 +311,7 @@ export default function RekapView() {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'6px 16px 12px', borderBottom:'1px solid rgba(255,255,255,0.06)', flexShrink:0 }}>
             <div>
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:'var(--txt)' }}>
-                {batchSelected.length} Member Dipilih
+                {batchSelected.length} {t('rekap.batchSelected')}
               </div>
               <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>{MONTHS[mi]} {selYear} · {activeZone}</div>
             </div>
@@ -332,19 +332,19 @@ export default function RekapView() {
           </div>
           <div style={{ padding:'12px 16px 20px', borderTop:'1px solid rgba(255,255,255,0.06)', flexShrink:0 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <span style={{ fontSize:11, color:'var(--txt3)' }}>TOTAL</span>
+              <span style={{ fontSize:11, color:'var(--txt3)' }}>{t('common.total')}</span>
               <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:16, color:'var(--zc)' }}>{rp(total)}</span>
             </div>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={exitBatch} style={{ flex:1, padding:'10px', borderRadius:'var(--r-sm)', border:'1px solid rgba(255,255,255,0.1)', background:'transparent', color:'var(--txt2)', cursor:'pointer', fontSize:13, transition:'all var(--t-fast)' }}>
-                Batal
+                {t('action.cancel')}
               </button>
               <button
                 onClick={handleBatchPay}
                 style={{ flex:2, padding:'10px', borderRadius:'var(--r-sm)', border:'none', background:'var(--zc)', color:'#fff', cursor:'pointer', fontSize:13, fontWeight:600, boxShadow:'var(--shadow-z)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}
               >
                 <CheckCheck size={14} />
-                Tandai Lunas Semua
+                {t('rekap.batchConfirm')}
               </button>
             </div>
           </div>
@@ -366,7 +366,7 @@ export default function RekapView() {
           <input
             className="search-box"
             style={{ margin:0, paddingLeft:30 }}
-            placeholder="Cari member..."
+            placeholder={t("common.search") + " member..."}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -414,7 +414,7 @@ export default function RekapView() {
                   {m.slice(0, 3)}
                 </th>
               ))}
-              <th style={{ color:'var(--zc)', minWidth:52 }}>TOTAL</th>
+              <th style={{ color:'var(--zc)', minWidth:52 }}>{t('common.total')}</th>
             </tr>
           </thead>
           <tbody>
@@ -480,7 +480,7 @@ export default function RekapView() {
           </tbody>
           <tfoot>
             <tr style={{ background:'var(--bg3)', borderTop:'2px solid var(--border)' }}>
-              <td colSpan={2} className="stk" style={{ left:0, fontSize:10, color:'var(--txt4)', paddingLeft:8, background:'var(--bg3)', maxWidth:117 }}>TOTAL</td>
+              <td colSpan={2} className="stk" style={{ left:0, fontSize:10, color:'var(--txt4)', paddingLeft:8, background:'var(--bg3)', maxWidth:117 }}>{t('common.total')}</td>
               {MONTHS.map((_, mi) => {
                 const t = mems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, mi) || 0), 0);
                 return (
@@ -500,7 +500,7 @@ export default function RekapView() {
       </div>
 
       <div style={{ fontSize:10, color:'var(--txt4)', textAlign:'center', marginTop:6 }}>
-        ← geser kanan untuk lihat semua bulan →
+        {t('rekap.scrollHint')}
       </div>
 
       <RekapModal />

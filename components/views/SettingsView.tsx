@@ -194,15 +194,15 @@ export default function SettingsView() {
   function saveEditZona(oldZone: string) {
     const newName = editZonaVal.trim().toUpperCase();
     if (!newName || newName === oldZone) { setEditingZona(null); return; }
-    if (newName.length > 6) { showToast('Nama zona maks 6 karakter', 'err'); return; }
+    if (newName.length > 6) { showToast(t('zona.nameTooLong'), 'err'); return; }
     showConfirm(
       '⚠️',
-      `Ganti nama zona <b>${oldZone}</b> → <b>${newName}</b>?<br><span style="font-size:11px;color:var(--txt3)">Ini hanya mengubah nama tampilan, tidak mengubah data Firebase.</span>`,
-      'Ya, Ganti Nama',
+      `Ganti nama zona <b>${oldZone}</b> → <b>${newName}</b>?<br><span style="font-size:11px;color:var(--txt3)">'+t('zona.renameNote')+'</span>`,
+      t('zona.renameYes'),
       () => {
         const zoneNames = (settings as any).zoneNames ?? {};
         updateSettings({ ...(settings as any), zoneNames: { ...zoneNames, [oldZone]: newName } });
-        showToast(`Zona ${oldZone} diubah ke ${newName} (display)`);
+        showToast(`Zona ${oldZone} ${t('zona.renamed')} ${newName}`);
         setEditingZona(null);
       }
     );
@@ -214,33 +214,33 @@ export default function SettingsView() {
                    : z === 'SLK' ? appData.slkMembers.length
                    : (appData.zoneMembers?.[z] ?? []).length;
     if (!isHidden && memCount > 0) {
-      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?<br><span style="font-size:11px;color:var(--txt3)">${z} masih punya ${memCount} member. Data tetap aman.</span>`, 'Ya, Sembunyikan', () => {
+      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?<br><span style="font-size:11px;color:var(--txt3)">${z} ${memCount} ${t('zona.hideConfirmWithMembers')}</span>`, t('zona.hideYes'), () => {
         saveHiddenZones([...zonaHidden, z]);
-        showToast(`Zona ${z} disembunyikan`);
+        showToast(`Zona ${z} ${t('zona.hidden')}`);
       });
     } else if (!isHidden) {
-      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?`, 'Ya, Sembunyikan', () => {
+      showConfirm('⚠️', `Sembunyikan zona <b>${z}</b>?`, t('zona.hideYes'), () => {
         saveHiddenZones([...zonaHidden, z]);
-        showToast(`Zona ${z} disembunyikan`);
+        showToast(`Zona ${z} ${t('zona.hidden')}`);
       });
     } else {
-      showConfirm('⚠️', `Tampilkan kembali zona <b>${z}</b>?`, 'Ya, Tampilkan', () => {
+      showConfirm('⚠️', `Tampilkan kembali zona <b>${z}</b>?`, t('zona.showYes'), () => {
         saveHiddenZones(zonaHidden.filter(h => h !== z));
-        showToast(`Zona ${z} ditampilkan kembali`);
+        showToast(`Zona ${z} ${t('zona.shown')}`);
       });
     }
   }
 
   function addZona() {
     const key = newZonaKey.trim().toUpperCase();
-    if (!key) { showToast('Nama zona wajib diisi', 'err'); return; }
-    if (key.length > 6) { showToast('Maks 6 karakter', 'err'); return; }
+    if (!key) { showToast(t('zona.nameRequired'), 'err'); return; }
+    if (key.length > 6) { showToast(t('zona.nameTooLong'), 'err'); return; }
     if (['KRS','SLK',...customZones.map(z=>z.key)].includes(key)) {
-      showToast('Zona sudah ada', 'err'); return;
+      showToast(t('zona.duplicate'), 'err'); return;
     }
     const newZona: CustomZone = { key, name: key, color: newZonaColor };
     updateSettings({ ...(settings as any), customZones: [...customZones, newZona] });
-    showToast(`Zona ${key} ditambahkan`);
+    showToast(`Zona ${key} ${t('zona.added')}`);
     setNewZonaKey('');
     setNewZonaColor('#8B5CF6');
     setAddZonaOpen(false);
@@ -250,8 +250,8 @@ export default function SettingsView() {
     const memCount = (appData.zoneMembers?.[key] ?? []).length;
     showConfirm(
       '⚠️',
-      `Hapus zona <b>${key}</b>?${memCount > 0 ? `<br><span style="font-size:11px;color:var(--c-belum)">${memCount} member akan ikut terhapus!</span>` : ''}`,
-      'Ya, Hapus Zona',
+      `Hapus zona <b>${key}</b>?${memCount > 0 ? `<br><span style="font-size:11px;color:var(--c-belum)">${memCount} '+t('zona.deleteHasMembers'))+'</span>` : ''}`,
+      t('zona.deleteYes'),
       () => {
         updateSettings({ ...(settings as any), customZones: customZones.filter(z => z.key !== key) });
         // Hapus member data zona custom
@@ -259,7 +259,7 @@ export default function SettingsView() {
           const { [key]: _, ...rest } = appData.zoneMembers;
           persistData({ ...appData, zoneMembers: rest }, `🗑️ Hapus zona ${key}`, '');
         }
-        showToast(`Zona ${key} dihapus`);
+        showToast(`Zona ${key} ${t('zona.deleted')}`);
       }
     );
   }
@@ -380,7 +380,7 @@ export default function SettingsView() {
   return (
     <div>
       <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:'var(--fs-display)', marginBottom:16, color:'var(--txt)', display:'flex', alignItems:'center', gap:8 }}>
-        <Settings size={18} strokeWidth={1.5} /> Pengaturan
+        <Settings size={18} strokeWidth={1.5} /> {t('settings.pageTitle')}
       </div>
 
       {/* ═══════════════════════════════
@@ -636,13 +636,13 @@ export default function SettingsView() {
 
         {/* JSON Backup */}
         <button
-          onClick={() => { doJSONBackup(appData); showToast('Backup JSON didownload'); }}
+          onClick={() => { doJSONBackup(appData); showToast(t('settings.jsonBackupDone')); }}
           style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', padding:'10px 12px', borderRadius:'var(--r-sm)', border:'1px solid var(--border)', background:'var(--bg3)', color:'var(--txt2)', cursor:'pointer', fontSize:12, marginBottom:6, transition:'all var(--t-fast)' }}
         >
           <span style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <Download size={13} /> JSON Backup
+            <Download size={13} /> {t('settings.jsonBackup')}
           </span>
-          <span style={{ fontSize:10, color:'var(--txt4)' }}>Download langsung</span>
+          <span style={{ fontSize:10, color:'var(--txt4)' }}>{t('settings.jsonBackupDesc')}</span>
         </button>
 
         {/* PDF */}
@@ -700,19 +700,19 @@ export default function SettingsView() {
 
         {/* Share PDF/Excel */}
         <button onClick={() => setSfOpen(v => !v)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', padding:'10px 12px', borderRadius:'var(--r-sm)', border:`1px solid ${sfOpen ? 'var(--zc)' : 'var(--border)'}`, background: sfOpen ? 'var(--zcdim)' : 'var(--bg3)', color: sfOpen ? 'var(--zc)' : 'var(--txt2)', cursor:'pointer', fontSize:12, marginBottom:6, transition:'all var(--t-fast)' }}>
-          <span style={{ display:'flex', alignItems:'center', gap:8 }}><Share2 size={13} /> Share PDF / Excel</span>
+          <span style={{ display:'flex', alignItems:'center', gap:8 }}><Share2 size={13} /> {t('settings.sharePdfExcel')}</span>
           {sfOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
         {sfOpen && (
           <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'var(--r-sm)', padding:12, marginBottom:6 }}>
-            <div style={{ ...labelStyle, marginBottom:8 }}>FORMAT</div>
+            <div style={{ ...labelStyle, marginBottom:8 }}>{t('settings.format')}</div>
             <div style={{ display:'flex', gap:6, marginBottom:10 }}>
               <ToggleChip label="PDF" active={sfFmt==='pdf'} onClick={() => setSfFmt('pdf')} />
               <ToggleChip label="Excel" active={sfFmt==='excel'} onClick={() => setSfFmt('excel')} />
             </div>
             <ExportSelectors zone={sfZone} setZone={setSfZone} type={sfType} setType={setSfType} year={sfYear} setYear={setSfYear} month={sfMonth} setMonth={setSfMonth} showAll={sfFmt==='pdf'} />
             <button onClick={handleShareFile} style={{ width:'100%', marginTop:10, padding:'9px', borderRadius:'var(--r-sm)', border:'none', background:'var(--zc)', color:'#fff', fontWeight:600, fontSize:12, cursor:'pointer', boxShadow:'var(--shadow-z)', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-              <Share2 size={13} /> Generate & Share
+              <Share2 size={13} /> {t('settings.generateShare')}
             </button>
           </div>
         )}

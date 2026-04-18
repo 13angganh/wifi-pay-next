@@ -317,6 +317,64 @@ const id: Record<string, string> = {
   'settings.export.fileDownloaded': 'File didownload (share tidak didukung)',
   'settings.export.fileError'    : 'Gagal membuat file',
 
+  // Settings page title
+  'settings.pageTitle'           : 'Pengaturan',
+
+  // Settings JSON Backup
+  'settings.jsonBackup'          : 'JSON Backup',
+  'settings.jsonBackupDesc'      : 'Download langsung',
+  'settings.jsonBackupDone'      : 'Backup JSON didownload',
+
+  // Settings Share
+  'settings.sharePdfExcel'       : 'Share PDF / Excel',
+  'settings.format'              : 'FORMAT',
+  'settings.generateShare'       : 'Generate & Share',
+
+  // Zona management toasts & confirms
+  'zona.nameRequired'            : 'Nama zona wajib diisi',
+  'zona.nameTooLong'             : 'Nama zona maks 6 karakter',
+  'zona.duplicate'               : 'Zona sudah ada',
+  'zona.added'                   : 'Zona ditambahkan',
+  'zona.deleted'                 : 'Zona dihapus',
+  'zona.hidden'                  : 'Zona disembunyikan',
+  'zona.shown'                   : 'Zona ditampilkan kembali',
+  'zona.renameNote'              : 'Ini hanya mengubah nama tampilan, tidak mengubah data Firebase.',
+  'zona.renameYes'               : 'Ya, Ganti Nama',
+  'zona.renamed'                 : 'diubah ke (display)',
+  'zona.hideConfirmWithMembers'  : 'member. Data tetap aman.',
+  'zona.hideYes'                 : 'Ya, Sembunyikan',
+  'zona.showYes'                 : 'Ya, Tampilkan',
+  'zona.deleteHasMembers'        : 'member akan ikut terhapus!',
+  'zona.deleteYes'               : 'Ya, Hapus Zona',
+
+  // AppShell error boundary
+  'app.errorTitle'               : 'Oops, ada yang error',
+  'app.errorDesc'                : 'Aplikasi mengalami error tidak terduga. Coba muat ulang halaman.',
+  'app.reload'                   : 'Muat Ulang',
+
+  // AppShell offline/update banners
+  'app.offline'                  : 'Offline — data tersimpan lokal',
+  'app.backOnline'               : 'Kembali online',
+  'app.updateAvailable'          : 'Ada versi terbaru WiFi Pay!',
+  'app.updateNow'                : 'Update Sekarang',
+
+  // Header entry lock
+  'header.entryLocked'           : 'Entry dikunci',
+  'header.entryUnlocked'         : 'Entry dibuka',
+
+  // RekapView
+  'rekap.dateLocked'             : 'Data terkunci!',
+  'rekap.accumulation'           : 'Akumulasi',
+  'rekap.freeMember'             : 'Member Gratis periode ini',
+  'rekap.dataLocked'             : 'Data terkunci',
+  'rekap.allLocked'              : 'Semua member terkunci',
+  'rekap.batchSuccess'           : 'member berhasil ditandai lunas',
+  'rekap.scrollHint'             : '← geser kanan untuk lihat semua bulan →',
+  'rekap.deletePayment'          : 'Hapus pembayaran',
+  'rekap.batchSelected'          : 'Member Dipilih',
+
+  'common.search' : 'Cari',
+
 };
 
 export default id;

@@ -317,6 +317,66 @@ const en: Record<string, string> = {
   'settings.export.fileDownloaded': 'File downloaded (share not supported)',
   'settings.export.fileError'    : 'Failed to generate file',
 
+  // Settings page title
+  'settings.pageTitle'           : 'Settings',
+
+  // Settings JSON Backup
+  'settings.jsonBackup'          : 'JSON Backup',
+  'settings.jsonBackupDesc'      : 'Direct download',
+  'settings.jsonBackupDone'      : 'JSON backup downloaded',
+
+  // Settings Share
+  'settings.sharePdfExcel'       : 'Share PDF / Excel',
+  'settings.format'              : 'FORMAT',
+  'settings.generateShare'       : 'Generate & Share',
+
+  // Zona management toasts & confirms
+  'zona.nameRequired'            : 'Zone name is required',
+  'zona.nameTooLong'             : 'Zone name max 6 characters',
+  'zona.duplicate'               : 'Zone already exists',
+  'zona.added'                   : 'Zone added',
+  'zona.deleted'                 : 'Zone deleted',
+  'zona.hidden'                  : 'Zone hidden',
+  'zona.shown'                   : 'Zone visible again',
+  'zona.renameNote'              : 'This only changes the display name, not Firebase data.',
+  'zona.renameYes'               : 'Yes, Rename',
+  'zona.renamed'                 : 'renamed (display)',
+  'zona.hideConfirmWithMembers'  : 'members. Data stays safe.',
+  'zona.hideYes'                 : 'Yes, Hide',
+  'zona.showYes'                 : 'Yes, Show',
+  'zona.deleteHasMembers'        : 'members will also be deleted!',
+  'zona.deleteYes'               : 'Yes, Delete Zone',
+
+  // AppShell error boundary
+  'app.errorTitle'               : 'Oops, something went wrong',
+  'app.errorDesc'                : 'The app encountered an unexpected error. Try reloading the page.',
+  'app.reload'                   : 'Reload',
+
+  // AppShell offline/update banners
+  'app.offline'                  : 'Offline — data saved locally',
+  'app.backOnline'               : 'Back online',
+  'app.updateAvailable'          : 'New version of WiFi Pay available!',
+  'app.updateNow'                : 'Update Now',
+
+  // Header entry lock
+  'header.entryLocked'           : 'Entry locked',
+  'header.entryUnlocked'         : 'Entry unlocked',
+
+  // RekapView
+  'rekap.dateLocked'             : 'Data locked!',
+  'rekap.accumulation'           : 'Accum.',
+  'rekap.freeMember'             : 'Free Member this period',
+  'rekap.dataLocked'             : 'Data locked',
+  'rekap.allLocked'              : 'All members locked',
+  'rekap.batchSuccess'           : 'members marked as paid',
+  'rekap.scrollHint'             : '← scroll right to see all months →',
+  'rekap.deletePayment'          : 'Delete payment',
+  'rekap.batchSelected'          : 'Members Selected',
+
+  'common.search' : 'Search',
+
 };
 
 export default en;
+
+// (appended)

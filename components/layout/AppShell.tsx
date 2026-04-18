@@ -16,6 +16,21 @@ import PinLock       from '@/components/ui/PinLock';
 import OnboardingHint from '@/components/ui/OnboardingHint';
 import { WifiOff, RotateCcw } from 'lucide-react';
 import type { ViewName } from '@/types';
+import { useT } from '@/hooks/useT';
+
+// ─── Static i18n helper for class components ────────────────────────────────────
+function tStatic(key: string): string {
+  if (typeof window === 'undefined') return key;
+  try {
+    const s = localStorage.getItem('wp-settings');
+    const lang = s ? JSON.parse(s)?.language : 'id';
+    const msgs: Record<string, Record<string, string>> = {
+      en: { 'app.errorTitle': 'Oops, something went wrong', 'app.errorDesc': 'The app encountered an unexpected error. Try reloading the page.', 'app.reload': 'Reload' },
+      id: { 'app.errorTitle': 'Oops, ada yang error', 'app.errorDesc': 'Aplikasi mengalami error tidak terduga. Coba muat ulang halaman.', 'app.reload': 'Muat Ulang' },
+    };
+    return msgs[lang]?.[key] ?? msgs['id'][key] ?? key;
+  } catch { return key; }
+}
 
 // ─── Error Boundary ────────────────────────────────────────────────────────────
 
@@ -50,10 +65,10 @@ class AppErrorBoundary extends Component<{ children: React.ReactNode }, EBState>
             <RotateCcw size={24} color="var(--c-belum)" strokeWidth={1.5} />
           </div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:17, color:'var(--txt)' }}>
-            Oops, ada yang error
+            {tStatic('app.errorTitle')}
           </div>
           <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:'var(--txt2)', maxWidth:280, lineHeight:1.55 }}>
-            Aplikasi mengalami error tidak terduga. Coba muat ulang halaman.
+            {tStatic('app.errorDesc')}
           </div>
           {this.state.error && (
             <div style={{
@@ -74,7 +89,7 @@ class AppErrorBoundary extends Component<{ children: React.ReactNode }, EBState>
               fontSize:13, cursor:'pointer',
             }}
           >
-            Muat Ulang
+            {tStatic('app.reload')}
           </button>
         </div>
       );
@@ -88,6 +103,7 @@ class AppErrorBoundary extends Component<{ children: React.ReactNode }, EBState>
 function OfflineBanner() {
   const [offline, setOffline] = useState(false);
   const [show, setShow]       = useState(false);
+  const t = useT();
 
   useEffect(() => {
     function onOnline()  { setOffline(false); setTimeout(() => setShow(false), 1200); }
@@ -116,7 +132,7 @@ function OfflineBanner() {
       }}
       role="status"
       aria-live="polite"
-      aria-label={offline ? 'Tidak terhubung ke internet' : 'Kembali online'}
+      aria-label={offline ? t('app.offline') : t('app.backOnline')}
     >
       <WifiOff size={13} strokeWidth={1.5} color={offline ? 'var(--c-belum)' : 'var(--c-lunas)'} />
       <span style={{
@@ -124,7 +140,7 @@ function OfflineBanner() {
         color: offline ? 'var(--c-belum)' : 'var(--c-lunas)',
         fontWeight:500,
       }}>
-        {offline ? 'Offline — data tersimpan lokal' : 'Kembali online'}
+        {offline ? t('app.offline') : t('app.backOnline')}
       </span>
     </div>
   );
@@ -140,6 +156,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setDeferredPrompt, setUpdateBanner, showUpdateBanner,
     settings,
   } = useAppStore();
+  const t = useT();
 
   useIdleTimeout(settings.pinTimeoutMinutes);
 
@@ -198,7 +215,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {showUpdateBanner && (
         <div className="update-banner">
-          <span style={{ fontSize:12, color:'var(--c-lunas)' }}>Ada versi terbaru WiFi Pay!</span>
+          <span style={{ fontSize:12, color:'var(--c-lunas)' }}>{t('app.updateAvailable')}</span>
           <button
             onClick={() => navigator.serviceWorker.getRegistration().then(r => {
               r?.waiting?.postMessage({ type:'SKIP_WAITING' }); window.location.reload();
@@ -209,7 +226,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               cursor:'pointer', flexShrink:0,
             }}
           >
-            Update Sekarang
+            {t('app.updateNow')}
           </button>
         </div>
       )}
