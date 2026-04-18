@@ -418,6 +418,44 @@ const id: Record<string, string> = {
   'rekap.batchHint': 'tap sel untuk pilih/batal',
   'rekap.searchPlaceholder': 'Cari member...',
 
+
+  // ─── Session 4 keys ───
+  'globalsearch.placeholder': 'Cari nama member...',
+  'globalsearch.title': 'Cari Member',
+  'globalsearch.hint': 'Ketik nama member untuk mencari di semua zona',
+  'globalsearch.notFound': 'Tidak ada member dengan nama',
+  'riwayat.monthsPaid': 'bulan lunas',
+  'riwayat.noHistory': 'Belum ada riwayat pembayaran tahun',
+  'riwayat.prevYear': 'Tahun sebelumnya',
+  'riwayat.nextYear': 'Tahun berikutnya',
+  'log.action.deletePay': 'Hapus bayar',
+  'log.action.quickPay': 'Quick Pay',
+  'log.action.pay': 'Bayar',
+  'log.action.batchPay': 'Batch Pay',
+  'log.action.updateDate': 'Update tanggal',
+  'log.action.addMember': 'Tambah member',
+  'log.action.editMember': 'Edit member',
+  'log.action.deleteMember': 'Hapus member',
+  'log.action.restoreMember': 'Restore member',
+  'log.action.permDelete': 'Hapus permanen',
+  'log.action.updateOps': 'Update operasional',
+  'log.detail.deleted': 'dihapus',
+  'lang': 'id',
+
+
+  // ─── FreeMemberModal keys ───
+  'freemodal.dateError': 'Tanggal selesai harus setelah tanggal mulai',
+  'freemodal.setFree': 'dijadikan free member',
+  'freemodal.removed': 'dikembalikan ke berbayar',
+  'freemodal.removeConfirm': 'Kembalikan ke berbayar',
+  'freemodal.removeNote': 'Status free member akan dihapus. Riwayat bayar tetap aman.',
+  'freemodal.removeYes': 'Ya, Kembalikan Berbayar',
+  'freemodal.startFrom': 'Mulai gratis dari',
+  'freemodal.forever': 'Gratis selamanya (tanpa tanggal selesai)',
+  'freemodal.until': 'Sampai dengan',
+  'freemodal.save': 'Simpan Free Member',
+  'freemodal.remove': 'Kembalikan Berbayar',
+
 };
 
 export default id;

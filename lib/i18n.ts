@@ -39,3 +39,16 @@ export function createTranslator(lang: Language) {
 
 // ── Ekspor ulang tipe ──
 export type { Language };
+
+// ── tLog: translator untuk log actions (bisa dipakai di luar React) ──
+// Import store secara lazy untuk hindari circular dependency
+export function tLog(key: string): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { useAppStore } = require('@/store/useAppStore');
+    const lang: Language = (useAppStore.getState()?.settings as any)?.language ?? 'id';
+    return createTranslator(lang)(key);
+  } catch {
+    return t(key, 'id');
+  }
+}

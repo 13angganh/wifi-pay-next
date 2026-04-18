@@ -3,7 +3,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { showToast } from '@/components/ui/Toast';
 import { getZoneTotal, isLunas, isFree, getPay, getArrears, rp } from '@/lib/helpers'
 import { useT } from '@/hooks/useT';;
@@ -22,6 +22,8 @@ export default function DashboardView() {
   const { appData, selYear, selMonth, setSelYear, setSelMonth, setView } = useAppStore();
   const dy = selYear; const dm = selMonth;
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   // ── Income ──
   const krsTotal    = getZoneTotal(appData, 'KRS', dy, dm);
@@ -67,7 +69,7 @@ export default function DashboardView() {
   // ── Misc ──
   const lastBackup = typeof window !== 'undefined' ? localStorage.getItem('wp_last_backup') : null;
   const backupLbl  = lastBackup ? new Date(+lastBackup).toLocaleDateString('id-ID') : t('common.noData');
-  const bulanLbl   = `${MONTHS[dm]} ${dy}`;
+  const bulanLbl   = `${MONTH_NAMES[dm]} ${dy}`;
 
   function nav(v: ViewName) { setView(v); router.push('/' + v); }
 
@@ -77,7 +79,7 @@ export default function DashboardView() {
     return (
       <span style={{ fontSize:9, fontWeight:600, color: up ? 'var(--c-lunas)' : 'var(--c-belum)', marginLeft:4, display:'inline-flex', alignItems:'center', gap:2 }}>
         {up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-        {Math.abs(pct)}% vs {MONTHS[prevDm]}
+        {Math.abs(pct)}% vs {MONTH_NAMES[prevDm]}
       </span>
     );
   }
@@ -101,7 +103,7 @@ export default function DashboardView() {
         </div>
         <div style={{ display:'flex', gap:5 }}>
           <select className="cs" style={{ fontSize:11, padding:'5px 8px' }} value={dm} onChange={e => setSelMonth(+e.target.value)}>
-            {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+            {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
           </select>
           <select className="cs" style={{ fontSize:11, padding:'5px 8px' }} value={dy} onChange={e => setSelYear(+e.target.value)}>
             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -195,7 +197,7 @@ export default function DashboardView() {
           {([
             ['KRS', krsBelum, 'var(--c-belum)'],
             ['SLK', slkBelum, 'var(--c-belum)'],
-            ['Lunas', krsLunas + slkLunas, 'var(--c-lunas)'],
+            [t('status.lunas'), krsLunas + slkLunas, 'var(--c-lunas)'],
           ] as const).map(([label, val, color]) => (
             <div key={label} style={{ flex:1, background:'var(--bg3)', borderRadius:'var(--r-sm)', padding:'8px 6px', textAlign:'center' }}>
               <div style={{ fontSize:9, color:'var(--txt4)' }}>{label}</div>

@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { fuzzyMatch } from '@/lib/helpers'
 import { useT } from '@/hooks/useT';
 import { ScrollText, Search, User, X, RotateCcw } from 'lucide-react';
@@ -14,6 +14,8 @@ export default function LogView() {
   const [logMonth, setLogMonth] = useState('');
   const [logName,  setLogName]  = useState('');
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   const logs = appData.activityLog || [];
 
@@ -75,7 +77,7 @@ export default function LogView() {
         </select>
         <select className="cs" style={{ flex:1 }} value={logMonth} onChange={e => setLogMonth(e.target.value)}>
           <option value="">{t('log.allMonths')}</option>
-          {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+          {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
         <button onClick={reset} aria-label={`${t('action.reset')} filter`} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, transition:'all var(--t-fast)' }}>
           <RotateCcw size={12} /> {t('action.reset')}

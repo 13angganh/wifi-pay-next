@@ -3,7 +3,7 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getPay, isFree, isLunas, rp } from '@/lib/helpers';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
@@ -16,6 +16,7 @@ import {
   Trash2, Clock, Lock, History, Zap, Check,
 } from 'lucide-react';
 import { useT } from '@/hooks/useT';
+import { tLog } from '@/lib/i18n';
 
 interface Props {
   name: string;
@@ -40,6 +41,8 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
 
   const [riwOpen, setRiwOpen] = useState(false);
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const inputDirty   = useRef(false);
   const isCollapsing = useRef(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -99,13 +102,13 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
 
     if (rawVal === '' || rawVal === null) {
       delete newData.payments[k];
-      await persist(newData, `🗑️ Hapus bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: dihapus`);
+      await persist(newData, `🗑️ ${tLog('log.action.deletePay')} ${activeZone} - ${name}`, `${MONTH_NAMES[cardMonth]} ${cardYear}: ${tLog('log.detail.deleted')}`);
       showToast(`${name} ${t('common.deleted')}`, 'err');
     } else {
       const amt = +rawVal;
       if (isNaN(amt)) { showToast('Nominal tidak valid', 'err'); return; }
       newData.payments[k] = amt;
-      await persist(newData, `💰 Bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
+      await persist(newData, `💰 ${tLog('log.action.pay')} ${activeZone} - ${name}`, `${MONTH_NAMES[cardMonth]} ${cardYear}: ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
       showToast(`${name} → ${amt === 0 ? 'Akumulasi' : rp(amt)}`);
     }
     inputDirty.current = false;
@@ -123,7 +126,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
         [infoKey]: { ...(newData.memberInfo?.[infoKey] || {}), [dateKey]: today },
       };
     }
-    persist(newData, `💰 Quick Pay ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: ${rp(amt)}`);
+    persist(newData, `💰 ${tLog('log.action.quickPay')} ${activeZone} - ${name}`, `${MONTH_NAMES[cardMonth]} ${cardYear}: ${rp(amt)}`);
     showToast(`${name} → ${rp(amt)}`);
     inputDirty.current = false;
     setExpandedCard(null);
@@ -150,13 +153,13 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
     if (entryVal === null) return;
     showConfirm(
       '🗑️',
-      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[cardMonth]} ${cardYear} · ${entryVal > 0 ? rp(entryVal) : t('rekap.accumulation')}</span>`,
+      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTH_NAMES[cardMonth]} ${cardYear} · ${entryVal > 0 ? rp(entryVal) : t('rekap.accumulation')}</span>`,
       t('membercard.deleteYes'),
       async () => {
         const k = `${activeZone}__${name}__${cardYear}__${cardMonth}`;
         const newData = { ...appData, payments: { ...appData.payments } };
         delete newData.payments[k];
-        await persist(newData, `🗑️ Hapus bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: dihapus`);
+        await persist(newData, `🗑️ ${tLog('log.action.deletePay')} ${activeZone} - ${name}`, `${MONTH_NAMES[cardMonth]} ${cardYear}: ${tLog('log.detail.deleted')}`);
         showToast(`${name} dihapus`, 'err');
       }
     );
@@ -170,7 +173,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
       ...(appData.memberInfo || {}),
       [infoKey]: { ...(appData.memberInfo?.[infoKey] || {}), [k2]: dateVal },
     };
-    await persist({ ...appData, memberInfo: newInfo }, `📅 Update tanggal ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: ${dateVal}`);
+    await persist({ ...appData, memberInfo: newInfo }, `📅 ${tLog('log.action.updateDate')} ${activeZone} - ${name}`, `${MONTH_NAMES[cardMonth]} ${cardYear}: ${dateVal}`);
   }
 
   function handleToggle() {
@@ -293,7 +296,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
               </select>
               <select className="cs" style={{ fontSize:11, padding:'4px 8px' }} value={cardMonth}
                 onChange={e => setEntryCard(name, cardYear, +e.target.value)}>
-                {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             </div>
 

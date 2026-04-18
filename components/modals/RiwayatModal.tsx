@@ -6,15 +6,20 @@ import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { getPay, isFree, rp } from '@/lib/helpers';
 import { ChevronLeft, ChevronRight, X, Gift, CheckCircle2, XCircle, Calendar } from 'lucide-react';
+import { useT } from '@/hooks/useT';
+import { MONTHS_EN, MONTHS_ID } from '@/lib/constants';
 
 interface Props { open: boolean; onClose: () => void; }
 
 export default function RiwayatModal({ open, onClose }: Props) {
   const router = useRouter();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
   const {
     appData, riwayatZone, riwayatName, riwayatYear,
     setRiwayatYear, setView, setZone, setEntryCard, setExpandedCard,
   } = useAppStore();
+
+  const t = useT();
 
   if (!open || !riwayatName) return null;
 
@@ -27,9 +32,10 @@ export default function RiwayatModal({ open, onClose }: Props) {
   let lunas = 0; let totalVal = 0;
 
   const rows = MONTHS.map((mName, mi) => {
-    if (riwayatYear === nowYear && mi > nowMonth) return null;
-    const v    = getPay(appData, riwayatZone, riwayatName, riwayatYear, mi);
-    const free = isFree(appData, riwayatZone, riwayatName, riwayatYear, mi);
+    const isFuture = riwayatYear === nowYear && mi > nowMonth;
+    const displayName = (lang === 'en' ? MONTHS_EN : MONTHS_ID)[mi] || mName;
+    const v    = isFuture ? null : getPay(appData, riwayatZone, riwayatName, riwayatYear, mi);
+    const free = isFuture ? false : isFree(appData, riwayatZone, riwayatName, riwayatYear, mi);
     const tgl  = (info[`date_${riwayatYear}_${mi}`] as string) || '';
 
     let statusEl: React.ReactNode;
@@ -50,21 +56,26 @@ export default function RiwayatModal({ open, onClose }: Props) {
     } else if (v === 0) {
       statusEl = (
         <span style={{ color:'var(--c-lunas)', fontSize:11, display:'flex', alignItems:'center', gap:4 }}>
-          <CheckCircle2 size={12} /> Akumulasi
+          <CheckCircle2 size={12} /> {t('rekap.accumulation')}
         </span>
       );
       lunas++;
+    } else if (isFuture) {
+      statusEl = (
+        <span style={{ color:'var(--txt5)', fontSize:11 }}>—</span>
+      );
     } else {
       statusEl = (
         <span style={{ color:'var(--c-belum)', fontSize:11, display:'flex', alignItems:'center', gap:4 }}>
-          <XCircle size={12} /> Belum
+          <XCircle size={12} /> {t('status.belum')}
         </span>
       );
     }
 
     return (
-      <div key={mi} className="rw-month-row" style={{ cursor:'pointer' }}
+      <div key={mi} className="rw-month-row" style={{ cursor: isFuture ? 'default' : 'pointer', opacity: isFuture ? 0.35 : 1 }}
         onClick={() => {
+          if (isFuture) return;
           setZone(riwayatZone);
           setView('entry');
           setEntryCard(riwayatName, riwayatYear, mi);
@@ -73,15 +84,15 @@ export default function RiwayatModal({ open, onClose }: Props) {
           onClose();
         }}>
         <div>
-          <div style={{ fontSize:12, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{mName} {riwayatYear}</div>
+          <div style={{ fontSize:12, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{displayName} {riwayatYear}</div>
           {tgl && <div style={{ fontSize:9, color:'var(--txt4)', marginTop:1 }}>{tgl}</div>}
         </div>
         {statusEl}
       </div>
     );
-  }).filter(Boolean);
+  });
 
-  const totalMonths = rows.length;
+  const totalMonths = 12;
 
   return (
     <div
@@ -114,7 +125,7 @@ export default function RiwayatModal({ open, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            aria-label="Tutup riwayat"
+            aria-label={t("action.close")}
             style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all var(--t-fast)' }}
           >
             <X size={14} />
@@ -133,7 +144,7 @@ export default function RiwayatModal({ open, onClose }: Props) {
           <button
             onClick={() => riwayatYear > minYear && setRiwayatYear(riwayatYear - 1)}
             disabled={riwayatYear <= minYear}
-            aria-label="Tahun sebelumnya"
+            aria-label={t("riwayat.prevYear")}
             style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt2)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: riwayatYear <= minYear ? 0.4 : 1, transition:'all var(--t-fast)' }}
           >
             <ChevronLeft size={14} />
@@ -142,7 +153,7 @@ export default function RiwayatModal({ open, onClose }: Props) {
           <button
             onClick={() => riwayatYear < maxYear && setRiwayatYear(riwayatYear + 1)}
             disabled={riwayatYear >= maxYear}
-            aria-label="Tahun berikutnya"
+            aria-label={t("riwayat.nextYear")}
             style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt2)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', opacity: riwayatYear >= maxYear ? 0.4 : 1, transition:'all var(--t-fast)' }}
           >
             <ChevronRight size={14} />
@@ -151,7 +162,7 @@ export default function RiwayatModal({ open, onClose }: Props) {
 
         {/* Summary bar */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(255,255,255,0.04)', borderRadius:'var(--r-sm)', padding:'8px 12px', marginBottom:10, marginLeft:16, marginRight:16 }}>
-          <span style={{ fontSize:11, color:'var(--txt3)', fontFamily:"'DM Sans',sans-serif" }}>{lunas}/{totalMonths} bulan lunas</span>
+          <span style={{ fontSize:11, color:'var(--txt3)', fontFamily:"'DM Sans',sans-serif" }}>{lunas}/{totalMonths} {t('riwayat.monthsPaid')}</span>
           <span style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, color:'var(--zc)' }}>{rp(totalVal)}</span>
         </div>
 
@@ -160,8 +171,8 @@ export default function RiwayatModal({ open, onClose }: Props) {
           {rows.length === 0 ? (
             <div className="empty-state" style={{ padding:'32px 24px' }}>
               <div className="empty-icon"><Calendar size={28} color="var(--txt5)" /></div>
-              <div className="empty-title">Tidak Ada Data</div>
-              <div className="empty-sub">Belum ada riwayat pembayaran tahun {riwayatYear}</div>
+              <div className="empty-title">{t("common.noData")}</div>
+              <div className="empty-sub">{t('riwayat.noHistory')} {riwayatYear}</div>
             </div>
           ) : rows}
         </div>

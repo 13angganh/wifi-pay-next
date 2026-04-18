@@ -2,9 +2,10 @@
 'use client';
 
 import { useT } from '@/hooks/useT';
+import { tLog } from '@/lib/i18n';
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { isFree, rp } from '@/lib/helpers';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
@@ -38,6 +39,8 @@ export default function MembersView() {
   const [riwOpen,  setRiwOpen]  = useState(false);
 
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const zone = newMemberZone;
   const zc   = zone === 'KRS' ? 'var(--zc-krs)' : 'var(--zc-slk)';
 
@@ -74,7 +77,7 @@ export default function MembersView() {
     const infoKey = `${zone}__${name}`;
     const newInfo = { ...(appData.memberInfo||{}), [infoKey]: { id, ip, ...(tarif ? { tarif:+tarif } : {}) } };
     const newData = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']: list, memberInfo: newInfo };
-    await persist(newData, `➕ Tambah member ${zone} - ${name}`, `ID:${id} IP:${ip}`);
+    await persist(newData, `➕ ${tLog('log.action.addMember')} ${zone} - ${name}`, `ID:${id} IP:${ip}`);
     showToast(`${name} ${t('members.added')}`);
     ['name','id','ip','tarif'].forEach(f => { const el = addRef[f as keyof typeof addRef].current; if(el) el.value=''; });
   }
@@ -110,7 +113,7 @@ export default function MembersView() {
       if (!tarif) delete newMemberInfo[`${zone}__${origName}`].tarif;
     }
     const newData = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']:list, payments:newPayments, memberInfo:newMemberInfo };
-    await persist(newData, `✏️ Edit member ${zone}`, `${origName} → ${newName}`);
+    await persist(newData, `✏️ ${tLog('log.action.editMember')} ${zone}`, `${origName} → ${newName}`);
     showToast(`${newName} ${t('members.updated')}`); setEditOpen(false);
   }
 
@@ -124,7 +127,7 @@ export default function MembersView() {
       const nd = { ...appData, [zone==='KRS'?'krsMembers':'slkMembers']:filtered,
         payments:Object.fromEntries(Object.entries(appData.payments||{}).filter(([k])=>!k.startsWith(mk+'__'))),
         deletedMembers:{ ...(appData.deletedMembers||{}), [mk]:{ zone,name,deletedAt:Date.now(),payments:mp } } };
-      await persist(nd, `🗑️ Hapus member ${zone} - ${name}`);
+      await persist(nd, `🗑️ ${tLog('log.action.deleteMember')} ${zone} - ${name}`);
       showToast(`${name} ${t('common.deleted')}`,'err');
     });
   }
@@ -136,7 +139,7 @@ export default function MembersView() {
     const nd = { ...appData, [d.zone==='KRS'?'krsMembers':'slkMembers']:list,
       payments:{ ...(appData.payments||{}), ...(d.payments||{}) },
       deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
-    await persist(nd, `♻️ Restore member ${d.zone} - ${d.name}`);
+    await persist(nd, `♻️ ${tLog('log.action.restoreMember')} ${d.zone} - ${d.name}`);
     showToast(`✅ ${d.name} ${t('members.restored')}`);
   }
 
@@ -144,7 +147,7 @@ export default function MembersView() {
     const d = appData.deletedMembers?.[key]; if(!d) return;
     showConfirm('💀',`${t('members.permDelete')} <b>${d.name}</b>?<br><span style="font-size:11px;color:#e05c5c">${t('members.permDeleteNote')}</span>`,t('members.permDeleteYes'),async()=>{
       const nd = { ...appData, deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
-      await persist(nd, `💀 Hapus permanen ${d.zone} - ${d.name}`);
+      await persist(nd, `💀 ${tLog('log.action.permDelete')} ${d.zone} - ${d.name}`);
       showToast(`${d.name} ${t('members.deleted')}`,'err');
     });
   }

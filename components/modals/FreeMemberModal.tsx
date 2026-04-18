@@ -3,11 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
 import { Gift, CreditCard, X, Check } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 import type { Zone } from '@/types';
 
 interface Props {
@@ -19,6 +20,9 @@ interface Props {
 
 export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
   const { appData, setAppData, uid, userEmail, setSyncStatus } = useAppStore();
+  const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   const existing = appData.freeMembers?.[zone+'__'+name];
   const now = new Date();
@@ -51,7 +55,7 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
 
   async function handleSave() {
     if (!noEnd && (toYear * 12 + toMonth) < (fromYear * 12 + fromMonth)) {
-      showToast('Tanggal selesai harus setelah tanggal mulai', 'err');
+      showToast(t('freemodal.dateError'), 'err');
       return;
     }
     const key      = zone + '__' + name;
@@ -63,23 +67,23 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
       ...appData,
       freeMembers: { ...(appData.freeMembers || {}), [key]: freeData },
     };
-    const detail = `Dari ${MONTHS[fromMonth]} ${fromYear}${noEnd ? ' (selamanya)' : ' s/d ' + MONTHS[toMonth] + ' ' + toYear}`;
+    const detail = `${lang === 'en' ? 'From' : 'Dari'} ${MONTH_NAMES[fromMonth]} ${fromYear}${noEnd ? (lang === 'en' ? ' (forever)' : ' (selamanya)') : (lang === 'en' ? ' to ' : ' s/d ') + MONTH_NAMES[toMonth] + ' ' + toYear}`;
     await persist(newData, `🆓 Set Free Member ${zone} - ${name}`, detail);
-    showToast(`${name} dijadikan free member`);
+    showToast(`${name} ${t('freemodal.setFree')}`);
     onClose();
   }
 
   function handleRemove() {
     showConfirm(
       '💳',
-      `Kembalikan <b>${name}</b> ke berbayar?<br><span style="font-size:11px;color:var(--txt3)">Status free member akan dihapus. Riwayat bayar tetap aman.</span>`,
-      'Ya, Kembalikan Berbayar',
+      `${t('freemodal.removeConfirm')} <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${t('freemodal.removeNote')}</span>`,
+      t('freemodal.removeYes'),
       async () => {
         const key     = zone + '__' + name;
         const newFree = { ...(appData.freeMembers || {}) };
         delete newFree[key];
         await persist({ ...appData, freeMembers: newFree }, `💳 Kembalikan ke Berbayar ${zone} - ${name}`, 'Free member dihapus');
-        showToast(`${name} dikembalikan ke berbayar`);
+        showToast(`${name} ${t('freemodal.removed')}`);
         onClose();
       }
     );
@@ -119,7 +123,7 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            aria-label="Tutup"
+            aria-label={t("action.close")}
             style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}
           >
             <X size={14} />
@@ -128,13 +132,13 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
 
         {/* Dari */}
         <div style={{ marginBottom:12 }}>
-          <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:6, letterSpacing:'.06em', fontFamily:"'DM Sans',sans-serif" }}>MULAI GRATIS DARI</div>
+          <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:6, letterSpacing:'.06em', fontFamily:"'DM Sans',sans-serif" }}>{t("freemodal.startFrom").toUpperCase()}</div>
           <div style={{ display:'flex', gap:6 }}>
             <select style={cs} value={fromYear}  onChange={e => setFromYear(+e.target.value)}>
               {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
             <select style={cs} value={fromMonth} onChange={e => setFromMonth(+e.target.value)}>
-              {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+              {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
             </select>
           </div>
         </div>
@@ -146,19 +150,19 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
             onChange={e => setNoEnd(e.target.checked)}
             style={{ accentColor:'var(--c-free)', width:14, height:14 }}
           />
-          Gratis selamanya (tanpa tanggal selesai)
+          {t("freemodal.forever")}
         </label>
 
         {/* Sampai */}
         {!noEnd && (
           <div style={{ marginBottom:12 }}>
-            <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:6, letterSpacing:'.06em', fontFamily:"'DM Sans',sans-serif" }}>SAMPAI DENGAN</div>
+            <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:6, letterSpacing:'.06em', fontFamily:"'DM Sans',sans-serif" }}>{t("freemodal.until").toUpperCase()}</div>
             <div style={{ display:'flex', gap:6 }}>
               <select style={cs} value={toYear}  onChange={e => setToYear(+e.target.value)}>
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
               <select style={cs} value={toMonth} onChange={e => setToMonth(+e.target.value)}>
-                {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             </div>
           </div>
@@ -170,21 +174,21 @@ export default function FreeMemberModal({ open, zone, name, onClose }: Props) {
             onClick={handleSave}
             style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', background:'rgba(34,197,94,0.15)', border:'1px solid rgba(34,197,94,0.3)', color:'var(--c-lunas)', padding:'11px', borderRadius:'var(--r-sm)', cursor:'pointer', fontWeight:600, fontSize:13, transition:'all var(--t-fast)' }}
           >
-            <Check size={14} /> Simpan Free Member
+            <Check size={14} /> {t("freemodal.save")}
           </button>
           {existing && (
             <button
               onClick={handleRemove}
               style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.25)', color:'var(--c-belum)', padding:'11px', borderRadius:'var(--r-sm)', cursor:'pointer', fontWeight:600, fontSize:13, transition:'all var(--t-fast)' }}
             >
-              <CreditCard size={14} /> Kembalikan Berbayar
+              <CreditCard size={14} /> {t("freemodal.remove")}
             </button>
           )}
           <button
             onClick={onClose}
             style={{ width:'100%', background:'none', border:'1px solid var(--border)', color:'var(--txt4)', padding:'9px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:12, transition:'all var(--t-fast)' }}
           >
-            Batal
+            {t('action.cancel')}
           </button>
         </div>
       </div>

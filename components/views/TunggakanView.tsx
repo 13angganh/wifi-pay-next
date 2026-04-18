@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getArrears, isFree } from '@/lib/helpers'
 import { useT } from '@/hooks/useT';;
 import {
@@ -21,6 +21,8 @@ export default function TunggakanView() {
   const [mode, setMode] = useState<TMode>('nakal');
   const [agingFilter, setAgingFilter] = useState<AgingFilter>('total');
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   const mems = activeZone === 'KRS' ? appData.krsMembers : appData.slkMembers;
 
@@ -61,7 +63,7 @@ export default function TunggakanView() {
       {/* Period selector */}
       <div className="ctrl-row">
         <select className="cs" value={selMonth} onChange={e => setSelMonth(+e.target.value)}>
-          {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+          {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
         <select className="cs" value={selYear} onChange={e => setSelYear(+e.target.value)}>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -136,7 +138,7 @@ export default function TunggakanView() {
 
       {/* Summary bar */}
       <div className="sum-bar" style={{ marginBottom:10 }}>
-        <div className="sum-lbl">{sumLabel} {MONTHS[selMonth].toUpperCase()} {selYear} · {activeZone}</div>
+        <div className="sum-lbl">{sumLabel} {MONTH_NAMES[selMonth].toUpperCase()} {selYear} · {activeZone}</div>
         <div className="sum-val" style={{ color: sumColor }}>{count} {t('common.members')}</div>
       </div>
 
@@ -223,7 +225,7 @@ export default function TunggakanView() {
           freeList.map((name, i) => {
             const fm = appData.freeMembers?.[activeZone + '__' + name];
             const toStr = fm?.toYear !== undefined
-              ? ` s/d ${MONTHS[fm.toMonth!]} ${fm.toYear}` : `(${t('tunggakan.forever')})`;
+              ? ` s/d ${MONTH_NAMES[fm.toMonth!]} ${fm.toYear}` : `(${t('tunggakan.forever')})`;
             return (
               <div key={name} className="tcard" style={{
                 borderLeft:'3px solid var(--c-free)',
@@ -239,7 +241,7 @@ export default function TunggakanView() {
                 </div>
                 {fm && (
                   <div style={{ fontSize:10, color:'var(--txt4)', marginTop:3 }}>
-                    Dari {MONTHS[fm.fromMonth]} {fm.fromYear}{toStr}
+                    Dari {MONTH_NAMES[fm.fromMonth]} {fm.fromYear}{toStr}
                   </div>
                 )}
               </div>

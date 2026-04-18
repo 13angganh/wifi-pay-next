@@ -3,9 +3,10 @@
 
 import { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getPay, isFree, rp, getKey, fuzzyMatch } from '@/lib/helpers';
 import { useT } from '@/hooks/useT';
+import { tLog } from '@/lib/i18n';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
@@ -23,6 +24,8 @@ export default function RekapView() {
   } = useAppStore();
 
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   const inputDirty   = useRef(false);
   const modalClosing = useRef(false);
@@ -74,8 +77,8 @@ export default function RekapView() {
         [infoKey]: { ...(newData.memberInfo?.[infoKey] || {}), [dateKey]: today },
       };
     }
-    await persist(newData, `💰 Quick Pay Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear} → ${rp(amt)}`);
-    showToast(`${name} ${MONTHS[month]} → ${rp(amt)}`);
+    await persist(newData, `💰 ${tLog('log.action.quickPay')} Rekap ${activeZone} - ${name}`, `${MONTH_NAMES[month]} ${selYear} → ${rp(amt)}`);
+    showToast(`${name} ${MONTH_NAMES[month]} → ${rp(amt)}`);
     closeModal();
   }
 
@@ -88,14 +91,14 @@ export default function RekapView() {
     const newData = { ...appData, payments: { ...appData.payments } };
     if (val === '') {
       delete newData.payments[k];
-      await persist(newData, `🗑️ Hapus bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear}`);
-      showToast(`${name} ${MONTHS[month]} dihapus`, 'err');
+      await persist(newData, `🗑️ ${tLog('log.action.deletePay')} Rekap ${activeZone} - ${name}`, `${MONTH_NAMES[month]} ${selYear}`);
+      showToast(`${name} ${MONTH_NAMES[month]} ${t('common.deleted')}`, 'err');
     } else {
       const amt = +val;
       if (isNaN(amt)) { showToast('Nominal tidak valid', 'err'); return; }
       newData.payments[k] = amt;
-      await persist(newData, `💰 Bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear} → ${rp(amt)}`);
-      showToast(`${name} ${MONTHS[month]} → ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
+      await persist(newData, `💰 ${tLog('log.action.pay')} Rekap ${activeZone} - ${name}`, `${MONTH_NAMES[month]} ${selYear} → ${rp(amt)}`);
+      showToast(`${name} ${MONTH_NAMES[month]} → ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
     }
     closeModal();
   }
@@ -107,14 +110,14 @@ export default function RekapView() {
     if (curVal === null) return;
     showConfirm(
       '🗑️',
-      `${t('rekap.deletePayment')} <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : t('rekap.accumulation')}</span>`,
+      `${t('rekap.deletePayment')} <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTH_NAMES[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : t('rekap.accumulation')}</span>`,
       t('membercard.deleteYes'),
       async () => {
         const k       = getKey(activeZone, name, selYear, month);
         const newData = { ...appData, payments: { ...appData.payments } };
         delete newData.payments[k];
-        await persist(newData, `🗑️ Hapus bayar Rekap ${activeZone} - ${name}`, `${MONTHS[month]} ${selYear}`);
-        showToast(`${name} ${MONTHS[month]} dihapus`, 'err');
+        await persist(newData, `🗑️ ${tLog('log.action.deletePay')} Rekap ${activeZone} - ${name}`, `${MONTH_NAMES[month]} ${selYear}`);
+        showToast(`${name} ${MONTH_NAMES[month]} ${t('common.deleted')}`, 'err');
         closeModal();
       }
     );
@@ -181,8 +184,8 @@ export default function RekapView() {
       }
     }
     await persist(newData,
-      `💰 Batch Pay Rekap ${activeZone} - ${entries.length} member`,
-      `${MONTHS[mi]} ${selYear}`
+      `💰 ${tLog('log.action.batchPay')} Rekap ${activeZone} - ${entries.length} ${tLog('common.members')}`,
+      `${MONTH_NAMES[mi]} ${selYear}`
     );
     showToast(`${entries.length} ${t('rekap.batchSuccess')}`);
     exitBatch();
@@ -218,7 +221,7 @@ export default function RekapView() {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px 12px', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
             <div>
               <div style={{ fontSize:14, fontWeight:700, color:'var(--txt)', fontFamily:"'DM Mono',monospace" }}>{name}</div>
-              <div style={{ fontSize:10, color:'var(--zc)', marginTop:2 }}>{activeZone} · {MONTHS[month]} {selYear}</div>
+              <div style={{ fontSize:10, color:'var(--zc)', marginTop:2 }}>{activeZone} · {MONTH_NAMES[month]} {selYear}</div>
             </div>
             <button onClick={closeModal} aria-label="Tutup" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
               <X size={14} />
@@ -315,7 +318,7 @@ export default function RekapView() {
               <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:14, color:'var(--txt)' }}>
                 {batchSelected.length} {t('rekap.batchSelected')}
               </div>
-              <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>{MONTHS[mi]} {selYear} · {activeZone}</div>
+              <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>{MONTH_NAMES[mi]} {selYear} · {activeZone}</div>
             </div>
             <button onClick={exitBatch} aria-label="Tutup" style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt3)', width:32, height:32, borderRadius:'var(--r-sm)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
               <X size={14} />
@@ -390,7 +393,7 @@ export default function RekapView() {
       {batchColIdx !== null && (
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.25)', borderRadius:'var(--r-sm)', padding:'8px 12px', marginBottom:10 }}>
           <div style={{ fontSize:12, color:'var(--zc)' }}>
-            <strong>{MONTHS[batchColIdx]}</strong> — {t('rekap.batchHint')}
+            <strong>{MONTH_NAMES[batchColIdx]}</strong> — {t('rekap.batchHint')}
           </div>
           <button onClick={exitBatch} style={{ background:'none', border:'none', color:'var(--txt3)', cursor:'pointer', padding:4, display:'flex' }}>
             <X size={14} />
@@ -405,7 +408,7 @@ export default function RekapView() {
             <tr>
               <th className="stk" style={{ left:0, minWidth:22 }}>#</th>
               <th className="stk" style={{ left:22, textAlign:'left', minWidth:95, maxWidth:95, overflow:'hidden' }}>NAMA</th>
-              {MONTHS.map((m, mi) => (
+              {MONTH_NAMES.map((m, mi) => (
                 <th key={m} style={{
                   minWidth:38,
                   color: batchColIdx === mi ? 'var(--zc)' : undefined,
@@ -459,7 +462,7 @@ export default function RekapView() {
                     onPointerUp={onCellPointerUp}
                     onPointerCancel={onCellPointerUp}
                     onClick={() => onCellClick(name, mi)}
-                    title={free ? 'Free Member' : `${MONTHS[mi]} ${selYear}`}
+                    title={free ? 'Free Member' : `${MONTH_NAMES[mi]} ${selYear}`}
                   >
                     {isSelected && (
                       <span style={{ position:'absolute', top:2, right:2, color:'var(--zc)', lineHeight:1 }}>

@@ -3,13 +3,15 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { generatePDF, generateExcel } from '@/lib/export';
 import { showToast } from '@/components/ui/Toast';
 
 interface Props { open: boolean; onClose: () => void; }
 
 export default function ShareModal({ open, onClose }: Props) {
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const { appData, activeZone, selYear, selMonth, shareType, setShareType, shareFmt, setShareFmt } = useAppStore();
   const [zone, setZone] = useState<string>(activeZone);
   const [year,  setYear]  = useState(selYear);
@@ -32,7 +34,7 @@ export default function ShareModal({ open, onClose }: Props) {
       const url = URL.createObjectURL(blob);
       const a   = document.createElement('a'); a.href = url; a.download = filename; a.click();
       setTimeout(() => {
-        const txt = encodeURIComponent(`Rekap WiFi Pay ${zone} ${shareType==='monthly'?MONTHS[month]+' ':''}${year}\nFile: ${filename}`);
+        const txt = encodeURIComponent(`Rekap WiFi Pay ${zone} ${shareType==='monthly'?MONTH_NAMES[month]+' ':''}${year}\nFile: ${filename}`);
         window.open(`https://wa.me/?text=${txt}`, '_blank');
       }, 1000);
       showToast('File siap, WhatsApp dibuka!');

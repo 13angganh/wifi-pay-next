@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getPay, getZoneTotal, isLunas, isFree, rp } from '@/lib/helpers';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useT } from '@/hooks/useT';
@@ -14,6 +14,8 @@ export default function GrafikView() {
   const { appData, activeZone, selYear, setSelYear, darkMode } = useAppStore();
 
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const [donutMonth, setDonutMonth] = useState(new Date().getMonth());
   const [p1Year,  setP1Year]  = useState(new Date().getFullYear());
   const [p1Month, setP1Month] = useState(new Date().getMonth() === 0 ? 11 : new Date().getMonth() - 1);
@@ -59,7 +61,7 @@ export default function GrafikView() {
   const last3       = mData.slice(0, new Date().getMonth() + 1).filter(v => v > 0).slice(-3);
   const proyeksi    = last3.length ? Math.round(last3.reduce((a, b) => a + b, 0) / last3.length) : 0;
   const nextMonthIdx   = (new Date().getMonth() + 1) % 12;
-  const nextMonthLabel = MONTHS[nextMonthIdx];
+  const nextMonthLabel = MONTH_NAMES[nextMonthIdx];
 
   function getDonutData(zone: string, year: number, month: number) {
     const zoneMems = zone === 'KRS' ? appData.krsMembers : appData.slkMembers;
@@ -112,7 +114,7 @@ export default function GrafikView() {
 
     // Chart 1: Bulanan + proyeksi
     if (chartRefs.monthly.current) {
-      const labelsM = [...MONTHS.map(m => m.slice(0,3)), `${nextMonthLabel.slice(0,3)}*`];
+      const labelsM = [...MONTH_NAMES.map(m => m.slice(0,3)), `${nextMonthLabel.slice(0,3)}*`];
       const dataM   = [...mData, proyeksi];
       const bgColors = [
         ...mData.map(() => zc + '80'),
@@ -152,7 +154,7 @@ export default function GrafikView() {
     if (chartRefs.compare.current)
       instances.current.compare = new Chart(chartRefs.compare.current, {
         type: 'line',
-        data: { labels: MONTHS.map(m => m.slice(0,3)), datasets: [
+        data: { labels: MONTH_NAMES.map(m => m.slice(0,3)), datasets: [
           { label: 'KRS',   data: kData, borderColor: zcKRS, backgroundColor: zcKRS + '15', borderWidth: 2, tension: 0.4, fill: false, pointBackgroundColor: zcKRS, pointRadius: 3, pointBorderColor: 'transparent' },
           { label: 'SLK',   data: sData, borderColor: zcSLK, backgroundColor: zcSLK + '15', borderWidth: 2, tension: 0.4, fill: false, pointBackgroundColor: zcSLK, pointRadius: 3, pointBorderColor: 'transparent' },
           { label: 'TOTAL', data: tData, borderColor: zcTOT, backgroundColor: zcTOT + '15', borderWidth: 2, tension: 0.4, fill: false, pointBackgroundColor: zcTOT, pointRadius: 3, pointBorderColor: 'transparent', borderDash: [4, 3] },
@@ -215,8 +217,8 @@ export default function GrafikView() {
     const tickColor = darkMode ? '#6B7494' : '#9CA3AF';
     const gridColor = darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
     const tooltipBg = darkMode ? '#181C27' : '#FFFFFF';
-    const lbl1 = `${MONTHS[p1Month].slice(0,3)} ${p1Year}`;
-    const lbl2 = `${MONTHS[p2Month].slice(0,3)} ${p2Year}`;
+    const lbl1 = `${MONTH_NAMES[p1Month].slice(0,3)} ${p1Year}`;
+    const lbl2 = `${MONTH_NAMES[p2Month].slice(0,3)} ${p2Year}`;
 
     instances.current.mperiod = new Chart(chartRefs.mperiod.current, {
       type: 'bar',
@@ -313,7 +315,7 @@ export default function GrafikView() {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
           <div className="chart-title" style={{ margin:0 }}>{t('grafik.composition').toUpperCase()} {donutZone}</div>
           <select style={{ ...selStyle, flex:'none', width:'auto', fontSize:10 }} value={donutMonth} onChange={e => setDonutMonth(+e.target.value)}>
-            {MONTHS.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
+            {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
           </select>
         </div>
         <div style={{ display:'flex', gap:8, marginBottom:10 }}>
@@ -365,7 +367,7 @@ export default function GrafikView() {
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
               <select style={selStyle} value={p1Month} onChange={e => setP1Month(+e.target.value)}>
-                {MONTHS.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
               </select>
             </div>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:800, color:'var(--zc)', marginTop:6 }}>{rp(p1Total)}</div>
@@ -377,7 +379,7 @@ export default function GrafikView() {
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
               <select style={selStyle} value={p2Month} onChange={e => setP2Month(+e.target.value)}>
-                {MONTHS.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
+                {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m.slice(0,3)}</option>)}
               </select>
             </div>
             <div style={{ fontFamily:"'Syne',sans-serif", fontSize:14, fontWeight:800, color:'var(--txt3)', marginTop:6 }}>{rp(p2Total)}</div>

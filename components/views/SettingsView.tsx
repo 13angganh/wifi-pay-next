@@ -9,7 +9,7 @@ import { doJSONBackup, doWASummary, generatePDF, generateExcel } from '@/lib/exp
 import { saveDB } from '@/lib/db';
 import type { CustomZone } from '@/types';
 import { useT } from '@/hooks/useT';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import {
   Shield, Settings, Globe, Download, Calendar, Zap, Info,
   ChevronDown, ChevronUp, Check, X, Plus, Edit2, Eye, EyeOff,
@@ -66,6 +66,8 @@ export default function SettingsView() {
   const [newZonaKey,  setNewZonaKey]  = useState('');
   const [newZonaColor, setNewZonaColor] = useState('#8B5CF6');
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
 
   async function persistData(newData: typeof appData, action: string, detail: string) {
     setAppData(newData);
@@ -367,7 +369,7 @@ export default function SettingsView() {
         </select>
         {type === 'monthly' && (
           <select style={{ ...selStyle, flex:'none', minWidth:80 }} value={month} onChange={e => setMonth(+e.target.value)}>
-            {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+            {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
           </select>
         )}
         <select style={{ ...selStyle, flex:'none', minWidth:68 }} value={year} onChange={e => setYear(+e.target.value)}>
@@ -689,7 +691,7 @@ export default function SettingsView() {
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
               <select style={selStyle} value={waMonth} onChange={e => setWaMonth(+e.target.value)}>
-                {MONTHS.map((m,i) => <option key={i} value={i}>{m}</option>)}
+                {MONTH_NAMES.map((m,i) => <option key={i} value={i}>{m}</option>)}
               </select>
             </div>
             <button onClick={handleWASummary} style={{ width:'100%', marginTop:10, padding:'9px', borderRadius:'var(--r-sm)', border:'none', background:'#25D366', color:'#fff', fontWeight:600, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>

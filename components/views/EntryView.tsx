@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getPay, isLunas, isFree, rp, fuzzyMatch } from '@/lib/helpers';
 import { useT } from '@/hooks/useT';;
 import { saveDB } from '@/lib/db';
@@ -61,6 +61,8 @@ export default function EntryView() {
   }, [setEntryScrollTop]);
 
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const chips: { key: FilterType; icon: React.ReactNode; label: string; count?: number }[] = [
     { key: 'all',    icon: <ClipboardList size={12} />, label: t('common.all') },
     { key: 'paid',   icon: <CheckCircle2  size={12} />, label: t('status.lunas'),  count: paid },
@@ -106,7 +108,7 @@ export default function EntryView() {
       setSyncStatus('loading');
       try {
         await saveDB(uid, newData, {
-          action: `💰 Batch Pay Entry ${activeZone} - ${details.length} member - ${MONTHS[batchMonth]} ${batchYear}`,
+          action: `💰 Batch Pay Entry ${activeZone} - ${details.length} member - ${MONTH_NAMES[batchMonth]} ${batchYear}`,
           detail: details.join(', '),
         }, userEmail || '');
         setSyncStatus('ok');
@@ -165,7 +167,7 @@ export default function EntryView() {
                 {batchSelected.length} {t('nav.members')}
               </div>
               <div style={{ fontSize:10, color:'var(--txt3)' }}>
-                {MONTHS[batchMonth]} {batchYear} · {activeZone}
+                {MONTH_NAMES[batchMonth]} {batchYear} · {activeZone}
               </div>
             </div>
           </div>
@@ -189,7 +191,7 @@ export default function EntryView() {
         /* Summary bar */
         <div className="sum-bar">
           <div>
-            <div className="sum-lbl">{MONTHS[selMonth]} {selYear} · {activeZone}</div>
+            <div className="sum-lbl">{MONTH_NAMES[selMonth]} {selYear} · {activeZone}</div>
             <div className="sum-val">{rp(total)}</div>
           </div>
           <div style={{ display:'flex', gap:10, fontSize:11, alignItems:'center' }}>
@@ -235,9 +237,9 @@ export default function EntryView() {
             {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
           <select className="cs" value={selMonth} onChange={e => setSelMonth(+e.target.value)}>
-            {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
+            {MONTH_NAMES.map((m, i) => <option key={i} value={i}>{m}</option>)}
           </select>
-          <span style={{ fontSize:11, color:'var(--txt3)', alignSelf:'center' }}>{MONTHS[selMonth]} {selYear}</span>
+          <span style={{ fontSize:11, color:'var(--txt3)', alignSelf:'center' }}>{MONTH_NAMES[selMonth]} {selYear}</span>
         </div>
       )}
 
@@ -323,7 +325,7 @@ export default function EntryView() {
         }}>
           <div style={{ width:36, height:4, borderRadius:2, background:'var(--bg4)', margin:'0 auto 16px' }} />
           <div style={{ fontSize:11, color:'var(--txt3)', marginBottom:10, fontWeight:600, letterSpacing:'.05em', textTransform:'uppercase' }}>
-            Preview · {MONTHS[batchMonth]} {batchYear}
+            Preview · {MONTH_NAMES[batchMonth]} {batchYear}
           </div>
           <div style={{ maxHeight:180, overflowY:'auto', marginBottom:14 }}>
             {batchPreview.map(({ name, tarif }) => (

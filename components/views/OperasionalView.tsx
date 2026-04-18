@@ -2,9 +2,10 @@
 'use client';
 
 import { useAppStore } from '@/store/useAppStore';
-import { MONTHS, YEARS } from '@/lib/constants';
+import { MONTHS, MONTHS_EN, MONTHS_ID, YEARS } from '@/lib/constants';
 import { getZoneTotal, rp } from '@/lib/helpers'
-import { useT } from '@/hooks/useT';;
+import { useT } from '@/hooks/useT';
+import { tLog } from '@/lib/i18n';
 import { saveDB } from '@/lib/db';
 import { showToast } from '@/components/ui/Toast';
 import { showConfirm } from '@/components/ui/Confirm';
@@ -22,6 +23,8 @@ export default function OperasionalView() {
 
   const opsKey  = `${opsYear}_${opsMonth}`;
   const t = useT();
+  const lang = (useAppStore(s => s.settings) as any).language ?? 'id';
+  const MONTH_NAMES = lang === 'en' ? MONTHS_EN : MONTHS_ID;
   const opsData = appData.operasional?.[opsKey] || { items: [] };
   const items   = opsData.items || [];
 
@@ -36,7 +39,7 @@ export default function OperasionalView() {
     if (!uid) return;
     setSyncStatus('loading');
     try {
-      await saveDB(uid, newData, { action:'💼 Update operasional', detail:`${MONTHS[opsMonth]} ${opsYear}` }, userEmail || '');
+      await saveDB(uid, newData, { action:`💼 ${tLog('log.action.updateOps')}`, detail:`${MONTH_NAMES[opsMonth]} ${opsYear}` }, userEmail || '');
       setSyncStatus('ok');
     } catch { setSyncStatus('err'); }
   }
@@ -103,7 +106,7 @@ export default function OperasionalView() {
         <select className="cs" value={opsMonth} onChange={e => setOpsMonth(+e.target.value)}>
           {MONTHS.map((m, i) => <option key={i} value={i} disabled={opsYear===minYear&&i<0}>{m}</option>)}
         </select>
-        <span style={{ fontSize:11, color:'var(--txt3)', alignSelf:'center', fontFamily:FONT }}>{MONTHS[opsMonth]} {opsYear}</span>
+        <span style={{ fontSize:11, color:'var(--txt3)', alignSelf:'center', fontFamily:FONT }}>{MONTH_NAMES[opsMonth]} {opsYear}</span>
       </div>
 
       {/* Items */}

@@ -418,6 +418,44 @@ const en: Record<string, string> = {
   'rekap.batchHint': 'tap cell to select/deselect',
   'rekap.searchPlaceholder': 'Search member...',
 
+
+  // ─── Session 4 keys ───
+  'globalsearch.placeholder': 'Search member name...',
+  'globalsearch.title': 'Search Members',
+  'globalsearch.hint': 'Type a member name to search across all zones',
+  'globalsearch.notFound': 'No member found with name',
+  'riwayat.monthsPaid': 'months paid',
+  'riwayat.noHistory': 'No payment history for',
+  'riwayat.prevYear': 'Previous year',
+  'riwayat.nextYear': 'Next year',
+  'log.action.deletePay': 'Delete payment',
+  'log.action.quickPay': 'Quick Pay',
+  'log.action.pay': 'Pay',
+  'log.action.batchPay': 'Batch Pay',
+  'log.action.updateDate': 'Update date',
+  'log.action.addMember': 'Add member',
+  'log.action.editMember': 'Edit member',
+  'log.action.deleteMember': 'Delete member',
+  'log.action.restoreMember': 'Restore member',
+  'log.action.permDelete': 'Permanently delete',
+  'log.action.updateOps': 'Update operational',
+  'log.detail.deleted': 'deleted',
+  'lang': 'en',
+
+
+  // ─── FreeMemberModal keys ───
+  'freemodal.dateError': 'End date must be after start date',
+  'freemodal.setFree': 'set as free member',
+  'freemodal.removed': 'returned to paid',
+  'freemodal.removeConfirm': 'Return to paid',
+  'freemodal.removeNote': 'Free member status will be removed. Payment history stays safe.',
+  'freemodal.removeYes': 'Yes, Return to Paid',
+  'freemodal.startFrom': 'Free from',
+  'freemodal.forever': 'Free forever (no end date)',
+  'freemodal.until': 'Until',
+  'freemodal.save': 'Save Free Member',
+  'freemodal.remove': 'Return to Paid',
+
 };
 
 export default en;

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { getPay, isFree, rp, fuzzyMatch } from '@/lib/helpers';
 import { Search, X, Gift, CheckCircle2, XCircle } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Props { open: boolean; onClose: () => void; }
 
@@ -14,6 +15,7 @@ export default function GlobalSearch({ open, onClose }: Props) {
   const { appData, selYear, selMonth, setView, setZone, setExpandedCard } = useAppStore();
   const [q, setQ] = useState('');
   const inputRef   = useRef<HTMLInputElement>(null);
+  const t = useT();
 
   useEffect(() => {
     if (open) { setQ(''); setTimeout(() => inputRef.current?.focus(), 50); }
@@ -61,7 +63,7 @@ export default function GlobalSearch({ open, onClose }: Props) {
               fontSize:14, fontFamily:"'DM Mono',monospace", outline:'none',
               transition:'border-color var(--t-fast)', boxShadow:'var(--shadow-md)',
             }}
-            placeholder="Cari nama member..."
+            placeholder={t("globalsearch.placeholder")}
             value={q}
             onChange={e => setQ(e.target.value)}
             onFocus={e => (e.target as HTMLInputElement).style.borderColor = 'var(--zc)'}
@@ -70,7 +72,7 @@ export default function GlobalSearch({ open, onClose }: Props) {
           {q && (
             <button
               onClick={() => setQ('')}
-              aria-label="Hapus pencarian"
+              aria-label={t("action.search")}
               style={{ position:'absolute', right:10, background:'none', border:'none', color:'var(--txt3)', cursor:'pointer', padding:4, display:'flex' }}
             >
               <X size={14} />
@@ -79,10 +81,10 @@ export default function GlobalSearch({ open, onClose }: Props) {
         </div>
         <button
           onClick={onClose}
-          aria-label="Tutup pencarian"
+          aria-label={t("action.close")}
           style={{ background:'rgba(24,28,39,0.9)', border:'1px solid rgba(255,255,255,0.08)', color:'var(--txt2)', padding:'10px 14px', borderRadius:'var(--r-md)', cursor:'pointer', fontSize:13, flexShrink:0, transition:'all var(--t-fast)', display:'flex', alignItems:'center' }}
         >
-          Tutup
+          {t('action.close')}
         </button>
       </div>
 
@@ -91,14 +93,14 @@ export default function GlobalSearch({ open, onClose }: Props) {
         {!q.trim() ? (
           <div className="empty-state">
             <div className="empty-icon"><Search size={28} color="var(--txt5)" /></div>
-            <div className="empty-title">Cari Member</div>
-            <div className="empty-sub">Ketik nama member untuk mencari di semua zona</div>
+            <div className="empty-title">{t("globalsearch.title")}</div>
+            <div className="empty-sub">{t("globalsearch.hint")}</div>
           </div>
         ) : results.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon"><XCircle size={28} color="var(--txt5)" /></div>
-            <div className="empty-title">Tidak Ditemukan</div>
-            <div className="empty-sub">Tidak ada member dengan nama &ldquo;{q}&rdquo;</div>
+            <div className="empty-title">{t("common.noResult")}</div>
+            <div className="empty-sub">{t("globalsearch.notFound")} &ldquo;{q}&rdquo;</div>
           </div>
         ) : results.map(r => {
           // Left border status
@@ -136,7 +138,7 @@ export default function GlobalSearch({ open, onClose }: Props) {
                   </span>
                 ) : r.paid && r.val === 0 ? (
                   <span style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:4 }}>
-                    <CheckCircle2 size={11} /> Akumulasi
+                    <CheckCircle2 size={11} /> {t("rekap.accumulation")}
                   </span>
                 ) : r.paid ? (
                   <span style={{ color:'var(--c-lunas)', display:'flex', alignItems:'center', gap:4 }}>
@@ -144,10 +146,10 @@ export default function GlobalSearch({ open, onClose }: Props) {
                   </span>
                 ) : (
                   <span style={{ color:'var(--c-belum)', display:'flex', alignItems:'center', gap:4 }}>
-                    <XCircle size={11} /> Belum
+                    <XCircle size={11} /> {t("status.belum")}
                   </span>
                 )}
-                {r.tarif && <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>Tarif: {rp(r.tarif)}</div>}
+                {r.tarif && <div style={{ fontSize:9, color:'var(--txt4)', marginTop:2 }}>{t("members.tarifShort")}: {rp(r.tarif)}</div>}
               </div>
             </div>
           );
