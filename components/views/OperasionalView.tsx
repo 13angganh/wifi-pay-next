@@ -56,9 +56,9 @@ export default function OperasionalView() {
 
   function deleteItem(i: number) {
     const item = items[i];
-    showConfirm('🗑️', `Hapus <b>${item?.label || 'item ini'}</b>?`, 'Ya, Hapus', async () => {
+    showConfirm('🗑️', `${t('action.delete')} <b>${item?.label || 'item'}</b>?`, t('action.confirm'), async () => {
       await persist(updatedData(items.filter((_, idx) => idx !== i)));
-      showToast('Item dihapus', 'err');
+      showToast(t('common.deleted'), 'err');
     });
   }
 

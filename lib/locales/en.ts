@@ -245,6 +245,78 @@ const en: Record<string, string> = {
   // Action tambahan
   'action.reset'  : 'Reset',
 
+  // Settings PIN steps
+  'settings.pinStatus.active'   : 'Active',
+  'settings.pinStatus.inactive' : 'Inactive',
+  'settings.pin.newTitle'       : 'Create New PIN',
+  'settings.pin.enterNew'       : 'Enter 4-digit PIN',
+  'settings.pin.reenterNew'     : 'Re-enter the same PIN',
+  'settings.pin.enterCurrent'   : 'Enter current PIN to confirm',
+  'settings.pin.enterOld'       : 'Enter old PIN',
+
+  // Settings Auto-lock
+  'settings.autoLock'           : 'AUTO-LOCK PIN',
+  'settings.autoLockDesc'       : 'Auto-lock screen when idle. Firebase stays active.',
+  'settings.timeout.never'      : 'Never',
+  'settings.timeout.5m'         : '5 minutes',
+  'settings.timeout.10m'        : '10 minutes',
+  'settings.timeout.30m'        : '30 minutes',
+  'settings.timeout.1h'         : '1 hour',
+
+  // Settings Zona
+  'settings.zona.hidden'        : 'Hidden',
+  'settings.zona.namePlaceholder': 'Zone name (max 6 chars)',
+  'settings.zona.color'         : 'Color',
+
+  // Settings WA
+  'settings.waPeriod'           : 'SUMMARY PERIOD',
+  'settings.sendToWA'           : 'Send to WhatsApp',
+
+  // Settings Tanggal Bayar
+  'settings.autoDate.descAuto'   : 'Auto — today\'s date on payment entry',
+  'settings.autoDate.descManual' : 'Manual — enter date yourself each time',
+  'settings.autoDate.auto'       : 'Auto',
+  'settings.autoDate.manual'     : 'Manual',
+  'settings.autoDate.toastAuto'  : 'Payment date: Auto',
+  'settings.autoDate.toastManual': 'Payment date: Manual',
+  'settings.autoDate.noteAuto'   : 'On quick pay, date is automatically set to today.',
+  'settings.autoDate.noteManual' : 'Date is not auto-filled — useful when entering late.',
+
+  // Settings Quick Pay
+  'settings.quickPayDesc'  : 'Quick pay amount for members without a custom rate.',
+  'settings.quickPayLabel' : 'AMOUNT (×1000) — separate with commas',
+  'settings.quickPaySave'  : 'Save Default Amount',
+  'settings.quickPayNote'  : 'Per-member rate is set in Members → Edit → Rate.',
+
+  // Settings Export
+  'settings.export.monthly' : 'Monthly',
+  'settings.export.yearly'  : 'Yearly',
+
+  // Common deleted
+  'common.deleted' : 'deleted',
+
+  // Settings PIN toast & confirm
+  'settings.pin.toastEnabled'  : 'PIN enabled successfully',
+  'settings.pin.toastDisabled' : 'PIN disabled',
+  'settings.pin.toastChanged'  : 'PIN changed successfully',
+  'settings.pin.disableConfirm': 'Disable PIN?<br><span style="font-size:11px;color:var(--txt3)">App will open immediately without PIN</span>',
+
+  // Settings Quick Pay toast
+  'settings.quickPay.minError' : 'Minimum 2 amounts required',
+  'settings.quickPay.maxError' : 'Maximum 8 amounts allowed',
+  'settings.quickPay.saved'    : 'Quick pay amounts saved',
+
+  // Settings Export toast
+  'settings.export.makingPDF'    : 'Generating PDF...',
+  'settings.export.pdfDone'      : 'PDF downloaded successfully',
+  'settings.export.pdfError'     : 'Failed to generate PDF',
+  'settings.export.makingExcel'  : 'Generating Excel...',
+  'settings.export.excelDone'    : 'Excel downloaded successfully',
+  'settings.export.excelError'   : 'Failed to generate Excel',
+  'settings.export.makingFile'   : 'Generating file...',
+  'settings.export.fileDownloaded': 'File downloaded (share not supported)',
+  'settings.export.fileError'    : 'Failed to generate file',
+
 };
 
 export default en;

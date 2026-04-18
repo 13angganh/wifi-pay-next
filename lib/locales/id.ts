@@ -245,6 +245,78 @@ const id: Record<string, string> = {
   // Action tambahan
   'action.reset'  : 'Reset',
 
+  // Settings PIN steps
+  'settings.pinStatus.active'   : 'Aktif',
+  'settings.pinStatus.inactive' : 'Nonaktif',
+  'settings.pin.newTitle'       : 'Buat PIN Baru',
+  'settings.pin.enterNew'       : 'Masukkan 4 digit PIN',
+  'settings.pin.reenterNew'     : 'Masukkan PIN yang sama lagi',
+  'settings.pin.enterCurrent'   : 'Masukkan PIN saat ini untuk konfirmasi',
+  'settings.pin.enterOld'       : 'Masukkan PIN lama',
+
+  // Settings Auto-lock
+  'settings.autoLock'           : 'AUTO-LOCK PIN',
+  'settings.autoLockDesc'       : 'Kunci layar otomatis jika tidak ada aktivitas. Firebase tetap aktif.',
+  'settings.timeout.never'      : 'Tidak pernah',
+  'settings.timeout.5m'         : '5 menit',
+  'settings.timeout.10m'        : '10 menit',
+  'settings.timeout.30m'        : '30 menit',
+  'settings.timeout.1h'         : '1 jam',
+
+  // Settings Zona
+  'settings.zona.hidden'        : 'Tersembunyi',
+  'settings.zona.namePlaceholder': 'Nama zona (maks 6 huruf)',
+  'settings.zona.color'         : 'Warna',
+
+  // Settings WA
+  'settings.waPeriod'           : 'PERIODE RINGKASAN',
+  'settings.sendToWA'           : 'Kirim ke WhatsApp',
+
+  // Settings Tanggal Bayar
+  'settings.autoDate.descAuto'   : 'Otomatis — tanggal hari ini saat entry bayar',
+  'settings.autoDate.descManual' : 'Manual — isi tanggal sendiri setiap entry',
+  'settings.autoDate.auto'       : 'Otomatis',
+  'settings.autoDate.manual'     : 'Manual',
+  'settings.autoDate.toastAuto'  : 'Tanggal bayar: Otomatis',
+  'settings.autoDate.toastManual': 'Tanggal bayar: Manual',
+  'settings.autoDate.noteAuto'   : 'Saat quick pay, tanggal otomatis terisi dengan hari ini.',
+  'settings.autoDate.noteManual' : 'Tanggal tidak otomatis terisi — berguna saat rekap telat.',
+
+  // Settings Quick Pay
+  'settings.quickPayDesc'  : 'Nominal quick pay untuk member tanpa tarif khusus.',
+  'settings.quickPayLabel' : 'NOMINAL (×1000) — pisahkan dengan koma',
+  'settings.quickPaySave'  : 'Simpan Nominal Default',
+  'settings.quickPayNote'  : 'Tarif per member diatur di menu Member → Edit → Tarif.',
+
+  // Settings Export
+  'settings.export.monthly' : 'Bulanan',
+  'settings.export.yearly'  : 'Tahunan',
+
+  // Common deleted
+  'common.deleted' : 'dihapus',
+
+  // Settings PIN toast & confirm
+  'settings.pin.toastEnabled'  : 'PIN berhasil diaktifkan',
+  'settings.pin.toastDisabled' : 'PIN dinonaktifkan',
+  'settings.pin.toastChanged'  : 'PIN berhasil diubah',
+  'settings.pin.disableConfirm': 'Nonaktifkan PIN?<br><span style="font-size:11px;color:var(--txt3)">App tidak akan terkunci saat dibuka</span>',
+
+  // Settings Quick Pay toast
+  'settings.quickPay.minError' : 'Minimal 2 nominal',
+  'settings.quickPay.maxError' : 'Maksimal 8 nominal',
+  'settings.quickPay.saved'    : 'Nominal quick pay disimpan',
+
+  // Settings Export toast
+  'settings.export.makingPDF'    : 'Membuat PDF...',
+  'settings.export.pdfDone'      : 'PDF berhasil didownload',
+  'settings.export.pdfError'     : 'Gagal buat PDF',
+  'settings.export.makingExcel'  : 'Membuat Excel...',
+  'settings.export.excelDone'    : 'Excel berhasil didownload',
+  'settings.export.excelError'   : 'Gagal buat Excel',
+  'settings.export.makingFile'   : 'Membuat file...',
+  'settings.export.fileDownloaded': 'File didownload (share tidak didukung)',
+  'settings.export.fileError'    : 'Gagal membuat file',
+
 };
 
 export default id;

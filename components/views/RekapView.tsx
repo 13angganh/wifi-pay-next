@@ -402,7 +402,7 @@ export default function RekapView() {
           <thead>
             <tr>
               <th className="stk" style={{ left:0, minWidth:22 }}>#</th>
-              <th className="stk" style={{ left:22, textAlign:'left', minWidth:95 }}>NAMA</th>
+              <th className="stk" style={{ left:22, textAlign:'left', minWidth:95, maxWidth:95, overflow:'hidden' }}>NAMA</th>
               {MONTHS.map((m, mi) => (
                 <th key={m} style={{
                   minWidth:38,
@@ -471,7 +471,7 @@ export default function RekapView() {
               return (
                 <tr key={name} data-name={name}>
                   <td className="stk" style={{ left:0, fontSize:10, color:'var(--txt5)', paddingLeft:8, minWidth:22 }}>{i + 1}</td>
-                  <td className="stk" style={{ left:22, minWidth:95, fontSize:12, textAlign:'left', paddingLeft:6 }}>{name}</td>
+                  <td className="stk" style={{ left:22, minWidth:95, maxWidth:95, fontSize:12, textAlign:'left', paddingLeft:6, overflow:'hidden', whiteSpace:'nowrap', textOverflow:'ellipsis' }}>{name}</td>
                   {cells}
                   <td style={{ color:'var(--zc)', fontFamily:"'Syne',sans-serif", fontWeight:700 }}>{rowTotal.toLocaleString('id-ID')}</td>
                 </tr>
@@ -480,7 +480,7 @@ export default function RekapView() {
           </tbody>
           <tfoot>
             <tr style={{ background:'var(--bg3)', borderTop:'2px solid var(--border)' }}>
-              <td colSpan={2} className="stk" style={{ left:0, fontSize:10, color:'var(--txt4)', paddingLeft:8, background:'var(--bg3)' }}>TOTAL</td>
+              <td colSpan={2} className="stk" style={{ left:0, fontSize:10, color:'var(--txt4)', paddingLeft:8, background:'var(--bg3)', maxWidth:117 }}>TOTAL</td>
               {MONTHS.map((_, mi) => {
                 const t = mems.reduce((s, m) => s + (getPay(appData, activeZone, m, selYear, mi) || 0), 0);
                 return (

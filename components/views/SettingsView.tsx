@@ -18,12 +18,12 @@ import {
 
 type PinStep = 'menu' | 'enable-new' | 'enable-confirm' | 'disable-verify' | 'change-old' | 'change-new' | 'change-confirm';
 
-const TIMEOUT_OPTIONS = [
-  { label: 'Tidak pernah', value: 0 },
-  { label: '5 menit',      value: 5 },
-  { label: '10 menit',     value: 10 },
-  { label: '30 menit',     value: 30 },
-  { label: '1 jam',        value: 60 },
+const TIMEOUT_KEYS = [
+  { key: 'settings.timeout.never', value: 0 },
+  { key: 'settings.timeout.5m',    value: 5 },
+  { key: 'settings.timeout.10m',   value: 10 },
+  { key: 'settings.timeout.30m',   value: 30 },
+  { key: 'settings.timeout.1h',    value: 60 },
 ];
 
 export default function SettingsView() {
@@ -83,66 +83,66 @@ export default function SettingsView() {
   }
   function verifyPin(input: string) { return simpleHash(input) === settings.pin; }
   function validatePin(p: string): boolean {
-    if (p.length !== 4 || !/^\d{4}$/.test(p)) { setPinErr('PIN harus 4 digit angka'); return false; }
+    if (p.length !== 4 || !/^\d{4}$/.test(p)) { setPinErr(t('pin.notMatch')); return false; }
     return true;
   }
   function startEnable() { setPinStep('enable-new'); setPin1(''); setPin2(''); setPinErr(''); }
   function handleEnableNew() { if (!validatePin(pin1)) return; setPinStep('enable-confirm'); setPin2(''); setPinErr(''); }
   function handleEnableConfirm() {
-    if (pin2 !== pin1) { setPinErr('PIN tidak cocok'); setPin2(''); return; }
+    if (pin2 !== pin1) { setPinErr(t('pin.notMatch')); setPin2(''); return; }
     updateSettings({ pinEnabled: true, pin: simpleHash(pin1) });
-    showToast('PIN berhasil diaktifkan'); setPinStep('menu'); setPin1(''); setPin2('');
+    showToast(t('settings.pin.toastEnabled')); setPinStep('menu'); setPin1(''); setPin2('');
   }
   function startDisable() { setPinStep('disable-verify'); setPin1(''); setPinErr(''); }
   function handleDisableVerify() {
-    if (!verifyPin(pin1)) { setPinErr('PIN salah'); setPin1(''); return; }
-    showConfirm('🔓', 'Nonaktifkan PIN?<br><span style="font-size:11px;color:var(--txt3)">App tidak akan terkunci saat dibuka</span>', 'Ya, Nonaktifkan', () => {
+    if (!verifyPin(pin1)) { setPinErr(t('pin.wrong')); setPin1(''); return; }
+    showConfirm('🔓', t('settings.pin.disableConfirm'), t('action.confirm'), () => {
       updateSettings({ pinEnabled: false, pin: '' });
-      showToast('PIN dinonaktifkan'); setPinStep('menu'); setPin1('');
+      showToast(t('settings.pin.toastDisabled')); setPinStep('menu'); setPin1('');
     });
   }
   function startChange() { setPinStep('change-old'); setPin1(''); setPin2(''); setPinErr(''); }
-  function handleChangeOld() { if (!verifyPin(pin1)) { setPinErr('PIN lama salah'); setPin1(''); return; } setPinStep('change-new'); setPin1(''); setPinErr(''); }
+  function handleChangeOld() { if (!verifyPin(pin1)) { setPinErr(t('pin.wrong')); setPin1(''); return; } setPinStep('change-new'); setPin1(''); setPinErr(''); }
   function handleChangeNew() { if (!validatePin(pin1)) return; setPinStep('change-confirm'); setPin2(''); setPinErr(''); }
   function handleChangeConfirm() {
-    if (pin2 !== pin1) { setPinErr('PIN tidak cocok'); setPin2(''); return; }
-    updateSettings({ pin: simpleHash(pin1) }); showToast('PIN berhasil diubah'); setPinStep('menu'); setPin1(''); setPin2('');
+    if (pin2 !== pin1) { setPinErr(t('pin.notMatch')); setPin2(''); return; }
+    updateSettings({ pin: simpleHash(pin1) }); showToast(t('settings.pin.toastChanged')); setPinStep('menu'); setPin1(''); setPin2('');
   }
 
   function saveAmounts() {
     const parsed = newAmounts.split(/[,\s]+/).map(s => +s.trim()).filter(n => n > 0 && !isNaN(n));
-    if (parsed.length < 2) { showToast('Minimal 2 nominal', 'err'); return; }
-    if (parsed.length > 8) { showToast('Maksimal 8 nominal', 'err'); return; }
-    updateSettings({ quickAmounts: parsed }); showToast('Nominal quick pay disimpan');
+    if (parsed.length < 2) { showToast(t('settings.quickPay.minError'), 'err'); return; }
+    if (parsed.length > 8) { showToast(t('settings.quickPay.maxError'), 'err'); return; }
+    updateSettings({ quickAmounts: parsed }); showToast(t('settings.quickPay.saved'));
   }
 
   // Export handlers
   async function handleDownloadPDF() {
     try {
-      showToast('Membuat PDF...', 'info');
+      showToast(t('settings.export.makingPDF'), 'info');
       const month = expType === 'yearly' ? null : expMonth;
       const { blob, filename } = await generatePDF(appData, expZone, expYear, month);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('PDF berhasil didownload');
-    } catch { showToast('Gagal buat PDF', 'err'); }
+      showToast(t('settings.export.pdfDone'));
+    } catch { showToast(t('settings.export.pdfError'), 'err'); }
   }
   function handleDownloadExcel() {
     try {
-      showToast('Membuat Excel...', 'info');
+      showToast(t('settings.export.makingExcel'), 'info');
       const month = expType === 'yearly' ? null : expMonth;
       const { blob, filename } = generateExcel(appData, expZone, expYear, month);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('Excel berhasil didownload');
-    } catch { showToast('Gagal buat Excel', 'err'); }
+      showToast(t('settings.export.excelDone'));
+    } catch { showToast(t('settings.export.excelError'), 'err'); }
   }
   function handleWASummary() { doWASummary(appData, waYear, waMonth); }
   async function handleShareFile() {
     try {
-      showToast('Membuat file...', 'info');
+      showToast(t('settings.export.makingFile'), 'info');
       const month = sfType === 'yearly' ? null : sfMonth;
       if (sfFmt === 'pdf') {
         const { blob, filename } = await generatePDF(appData, sfZone, sfYear, month);
@@ -153,7 +153,7 @@ export default function SettingsView() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          showToast('File didownload (share tidak didukung)');
+          showToast(t('settings.export.fileDownloaded'));
         }
       } else {
         const { blob, filename } = generateExcel(appData, sfZone, sfYear, month);
@@ -164,11 +164,11 @@ export default function SettingsView() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          showToast('File didownload (share tidak didukung)');
+          showToast(t('settings.export.fileDownloaded'));
         }
       }
     } catch (e: any) {
-      if (e?.name !== 'AbortError') showToast('Gagal membuat file', 'err');
+      if (e?.name !== 'AbortError') showToast(t('settings.export.fileError'), 'err');
     }
   }
 
@@ -362,8 +362,8 @@ export default function SettingsView() {
           {showAll && <option value="ALL">ALL</option>}
         </select>
         <select style={{ ...selStyle, flex:'none', minWidth:90 }} value={type} onChange={e => setType(e.target.value as any)}>
-          <option value="monthly">Bulanan</option>
-          <option value="yearly">Tahunan</option>
+          <option value="monthly">{t('settings.export.monthly')}</option>
+          <option value="yearly">{t('settings.export.yearly')}</option>
         </select>
         {type === 'monthly' && (
           <select style={{ ...selStyle, flex:'none', minWidth:80 }} value={month} onChange={e => setMonth(+e.target.value)}>
@@ -396,25 +396,25 @@ export default function SettingsView() {
           <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:12, marginTop:-8 }}>
             <span style={{ fontSize:11, fontWeight:700, color: settings.pinEnabled ? 'var(--c-lunas)' : 'var(--txt4)', display:'flex', alignItems:'center', gap:4 }}>
               {settings.pinEnabled ? <Check size={12} /> : null}
-              {settings.pinEnabled ? 'Aktif' : 'Nonaktif'}
+              {settings.pinEnabled ? t('settings.pinStatus.active') : t('settings.pinStatus.inactive')}
             </span>
           </div>
           {!settings.pinEnabled
-            ? <Btn label="Aktifkan PIN" onClick={startEnable} icon={<Shield size={13} />} />
+            ? <Btn label={t('settings.pinEnable')} onClick={startEnable} icon={<Shield size={13} />} />
             : <>
-                <Btn label="Ubah PIN" onClick={startChange} secondary />
-                <Btn label="Nonaktifkan PIN" onClick={startDisable} danger />
+                <Btn label={t('settings.pinChange')} onClick={startChange} secondary />
+                <Btn label={t('settings.pinDisable')} onClick={startDisable} danger />
               </>
           }
           {settings.pinEnabled && (
             <div style={{ marginTop:14, paddingTop:12, borderTop:'1px solid var(--border2)' }}>
-              <div style={{ ...labelStyle, marginBottom:10 }}>AUTO-LOCK PIN</div>
+              <div style={{ ...labelStyle, marginBottom:10 }}>{t('settings.autoLock')}</div>
               <div style={{ fontSize:11, color:'var(--txt4)', marginBottom:8, lineHeight:1.5 }}>
-                Kunci layar otomatis jika tidak ada aktivitas. Firebase tetap aktif.
+                {t('settings.autoLockDesc')}
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
-                {TIMEOUT_OPTIONS.map(opt => (
-                  <button key={opt.value} onClick={() => { updateSettings({ pinTimeoutMinutes: opt.value }); showToast(`Auto-lock: ${opt.label}`); }}
+                {TIMEOUT_KEYS.map(opt => (
+                  <button key={opt.value} onClick={() => { updateSettings({ pinTimeoutMinutes: opt.value }); showToast(`Auto-lock: ${t(opt.key)}`); }}
                     style={{
                       display:'flex', alignItems:'center', justifyContent:'space-between',
                       padding:'8px 12px', borderRadius:'var(--r-sm)',
@@ -423,7 +423,7 @@ export default function SettingsView() {
                       color: settings.pinTimeoutMinutes===opt.value ? 'var(--zc)' : 'var(--txt2)',
                       cursor:'pointer', fontSize:12, transition:'all var(--t-fast)',
                     }}>
-                    <span>{opt.label}</span>
+                    <span>{t(opt.key)}</span>
                     {settings.pinTimeoutMinutes===opt.value && <Check size={12} />}
                   </button>
                 ))}
@@ -434,45 +434,45 @@ export default function SettingsView() {
       )}
 
       {pinStep === 'enable-new' && (
-        <PinCard title="Buat PIN Baru" desc="Masukkan 4 digit PIN">
+        <PinCard title={t('settings.pin.newTitle')} desc={t('settings.pin.enterNew')}>
           <PinInput value={pin1} onChange={setPin1} />
-          <Btn label="Lanjut" onClick={handleEnableNew} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('action.confirm')} onClick={handleEnableNew} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
       {pinStep === 'enable-confirm' && (
-        <PinCard title="Konfirmasi PIN" desc="Masukkan PIN yang sama lagi">
+        <PinCard title={t('pin.confirm')} desc={t('settings.pin.reenterNew')}>
           <PinInput value={pin2} onChange={setPin2} />
-          <Btn label="Aktifkan" onClick={handleEnableConfirm} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('settings.pinSave')} onClick={handleEnableConfirm} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
       {pinStep === 'disable-verify' && (
-        <PinCard title="Nonaktifkan PIN" desc="Masukkan PIN saat ini untuk konfirmasi">
+        <PinCard title={t('settings.pinDisable')} desc={t('settings.pin.enterCurrent')}>
           <PinInput value={pin1} onChange={setPin1} />
-          <Btn label="Verifikasi" onClick={handleDisableVerify} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('action.confirm')} onClick={handleDisableVerify} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
       {pinStep === 'change-old' && (
-        <PinCard title="Ubah PIN" desc="Masukkan PIN lama">
+        <PinCard title={t('settings.pinChange')} desc={t('settings.pin.enterOld')}>
           <PinInput value={pin1} onChange={setPin1} />
-          <Btn label="Lanjut" onClick={handleChangeOld} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('action.confirm')} onClick={handleChangeOld} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
       {pinStep === 'change-new' && (
-        <PinCard title="PIN Baru" desc="Masukkan PIN baru">
+        <PinCard title={t('settings.pin.newTitle')} desc={t('settings.pin.enterNew')}>
           <PinInput value={pin1} onChange={setPin1} />
-          <Btn label="Lanjut" onClick={handleChangeNew} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('action.confirm')} onClick={handleChangeNew} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
       {pinStep === 'change-confirm' && (
-        <PinCard title="Konfirmasi PIN Baru" desc="Masukkan PIN baru lagi">
+        <PinCard title={t('pin.confirm')} desc={t('settings.pin.reenterNew')}>
           <PinInput value={pin2} onChange={setPin2} />
-          <Btn label="Simpan PIN Baru" onClick={handleChangeConfirm} />
-          <Btn label="Batal" onClick={() => setPinStep('menu')} secondary />
+          <Btn label={t('settings.pinSave')} onClick={handleChangeConfirm} />
+          <Btn label={t('action.cancel')} onClick={() => setPinStep('menu')} secondary />
         </PinCard>
       )}
 
@@ -487,8 +487,8 @@ export default function SettingsView() {
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <div style={{ color:'var(--zc)' }}><Settings size={16} strokeWidth={1.5} /></div>
             <div style={{ textAlign:'left' }}>
-              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13 }}>Manajemen Zona</div>
-              <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>Edit nama, sembunyikan zona</div>
+              <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:700, fontSize:13 }}>{t('settings.zones')}</div>
+              <div style={{ fontSize:11, color:'var(--txt3)', marginTop:2 }}>{t('settings.zonesNote').split('.')[0]}</div>
             </div>
           </div>
           {zonaOpen ? <ChevronUp size={16} color="var(--txt3)" /> : <ChevronDown size={16} color="var(--txt3)" />}
@@ -528,9 +528,9 @@ export default function SettingsView() {
                       <div style={{ fontFamily:"'DM Mono',monospace", fontSize:13, color:'var(--txt)', display:'flex', alignItems:'center', gap:6 }}>
                         {z}
                         {isCustom && <span style={{ fontSize:9, background:'rgba(139,92,246,0.15)', color:'#A78BFA', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>Custom</span>}
-                        {isHidden && <span style={{ fontSize:9, background:'rgba(255,255,255,0.06)', color:'var(--txt4)', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>Tersembunyi</span>}
+                        {isHidden && <span style={{ fontSize:9, background:'rgba(255,255,255,0.06)', color:'var(--txt4)', padding:'1px 6px', borderRadius:'var(--r-xs)' }}>{t('settings.zona.hidden')}</span>}
                       </div>
-                      <div style={{ fontSize:10, color:'var(--txt4)', marginTop:1 }}>{memCount} member</div>
+                      <div style={{ fontSize:10, color:'var(--txt4)', marginTop:1 }}>{memCount} {t('common.members')}</div>
                     </div>
                   )}
 
@@ -538,10 +538,10 @@ export default function SettingsView() {
                   <div style={{ display:'flex', gap:4 }}>
                     {isEditing ? (
                       <>
-                        <button onClick={() => saveEditZona(z)} aria-label="Simpan" style={{ background:'var(--zc)', border:'none', color:'#fff', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <button onClick={() => saveEditZona(z)} aria-label={t('action.save')} style={{ background:'var(--zc)', border:'none', color:'#fff', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                           <Check size={12} />
                         </button>
-                        <button onClick={() => setEditingZona(null)} aria-label="Batal" style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <button onClick={() => setEditingZona(null)} aria-label={t('action.cancel')} style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', width:28, height:28, borderRadius:'var(--r-xs)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                           <X size={12} />
                         </button>
                       </>
@@ -568,19 +568,19 @@ export default function SettingsView() {
             {/* Form tambah zona baru */}
             {addZonaOpen ? (
               <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'var(--r-sm)', padding:'12px', marginTop:8 }}>
-                <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10 }}>TAMBAH ZONA BARU</div>
+                <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.06em', marginBottom:10 }}>{t('settings.addZone').toUpperCase()}</div>
                 <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:10 }}>
                   <input
                     autoFocus
                     value={newZonaKey}
                     onChange={e => setNewZonaKey(e.target.value.toUpperCase())}
                     onKeyDown={e => { if (e.key === 'Enter') addZona(); if (e.key === 'Escape') setAddZonaOpen(false); }}
-                    placeholder="Nama zona (maks 6 huruf)"
+                    placeholder={t('settings.zona.namePlaceholder')}
                     maxLength={6}
                     style={{ flex:1, background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt)', padding:'8px 10px', borderRadius:'var(--r-xs)', fontSize:13, fontFamily:"'DM Mono',monospace", outline:'none' }}
                   />
                   <div style={{ display:'flex', alignItems:'center', gap:6, flexShrink:0 }}>
-                    <label style={{ fontSize:10, color:'var(--txt3)' }}>Warna:</label>
+                    <label style={{ fontSize:10, color:'var(--txt3)' }}>{t('settings.zona.color')}:</label>
                     <input
                       type="color"
                       value={newZonaColor}
@@ -592,23 +592,23 @@ export default function SettingsView() {
                 <div style={{ display:'flex', gap:6 }}>
                   <button onClick={addZona}
                     style={{ flex:1, background:'var(--zc)', color:'#fff', border:'none', borderRadius:'var(--r-sm)', padding:'8px', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:5 }}>
-                    <Check size={13} /> Tambah Zona
+                    <Check size={13} /> {t('settings.addZone')}
                   </button>
                   <button onClick={() => { setAddZonaOpen(false); setNewZonaKey(''); }}
                     style={{ background:'var(--bg4)', border:'1px solid var(--border)', color:'var(--txt3)', borderRadius:'var(--r-sm)', padding:'8px 14px', fontSize:12, cursor:'pointer' }}>
-                    Batal
+                    {t('action.cancel')}
                   </button>
                 </div>
               </div>
             ) : (
               <button onClick={() => setAddZonaOpen(true)}
                 style={{ width:'100%', background:'var(--bg3)', border:'1px dashed rgba(139,92,246,0.4)', color:'#A78BFA', borderRadius:'var(--r-sm)', padding:'9px', fontSize:12, cursor:'pointer', marginTop:8, display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <Plus size={13} strokeWidth={1.5} /> Tambah Zona Baru
+                <Plus size={13} strokeWidth={1.5} /> {t('settings.addZone')}
               </button>
             )}
 
             <div style={{ fontSize:10, color:'var(--txt4)', marginTop:8, lineHeight:1.6, padding:'8px 10px', background:'rgba(255,255,255,0.02)', borderRadius:'var(--r-xs)' }}>
-              Zona baru dapat digunakan di menu Member, Entry, dan Rekap. Menyembunyikan zona tidak menghapus data.
+              {t('settings.zonesNote')}
             </div>
           </div>
         )}
@@ -674,16 +674,16 @@ export default function SettingsView() {
           PREFERENSI: SHARE & REKAP
       ═══════════════════════════════ */}
       <div style={cardStyle}>
-        <SectionHeader icon={<Share2 size={16} strokeWidth={1.5} />} title="Share & Rekap" />
+        <SectionHeader icon={<Share2 size={16} strokeWidth={1.5} />} title={t('dashboard.waSummary')} />
 
         {/* WA Summary */}
         <button onClick={() => setWaOpen(v => !v)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', padding:'10px 12px', borderRadius:'var(--r-sm)', border:`1px solid ${waOpen ? 'var(--zc)' : 'var(--border)'}`, background: waOpen ? 'var(--zcdim)' : 'var(--bg3)', color: waOpen ? 'var(--zc)' : 'var(--txt2)', cursor:'pointer', fontSize:12, marginBottom:6, transition:'all var(--t-fast)' }}>
-          <span style={{ display:'flex', alignItems:'center', gap:8 }}><MessageCircle size={13} /> Kirim Ringkasan WA</span>
+          <span style={{ display:'flex', alignItems:'center', gap:8 }}><MessageCircle size={13} /> {t('dashboard.sendWA')}</span>
           {waOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
         {waOpen && (
           <div style={{ background:'var(--bg3)', border:'1px solid var(--border)', borderRadius:'var(--r-sm)', padding:12, marginBottom:6 }}>
-            <div style={{ ...labelStyle, marginBottom:8 }}>PERIODE RINGKASAN</div>
+            <div style={{ ...labelStyle, marginBottom:8 }}>{t('settings.waPeriod')}</div>
             <div style={{ display:'flex', gap:6 }}>
               <select style={selStyle} value={waYear} onChange={e => setWaYear(+e.target.value)}>
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -693,7 +693,7 @@ export default function SettingsView() {
               </select>
             </div>
             <button onClick={handleWASummary} style={{ width:'100%', marginTop:10, padding:'9px', borderRadius:'var(--r-sm)', border:'none', background:'#25D366', color:'#fff', fontWeight:600, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-              <MessageCircle size={13} /> Kirim ke WhatsApp
+              <MessageCircle size={13} /> {t('settings.sendToWA')}
             </button>
           </div>
         )}
@@ -724,15 +724,15 @@ export default function SettingsView() {
       <div style={cardStyle}>
         <SectionHeader
           icon={<Calendar size={16} strokeWidth={1.5} />}
-          title="Tanggal Bayar"
-          desc={settings.autoDate ? 'Otomatis — tanggal hari ini saat entry bayar' : 'Manual — isi tanggal sendiri setiap entry'}
+          title={t('settings.autoDate')}
+          desc={settings.autoDate ? t('settings.autoDate.descAuto') : t('settings.autoDate.descManual')}
         />
         <div style={{ display:'flex', gap:8 }}>
-          <ToggleChip label="Otomatis" active={settings.autoDate === true} onClick={() => { updateSettings({ autoDate: true }); showToast('Tanggal bayar: Otomatis'); }} />
-          <ToggleChip label="Manual" active={settings.autoDate !== true} onClick={() => { updateSettings({ autoDate: false }); showToast('Tanggal bayar: Manual'); }} />
+          <ToggleChip label={t('settings.autoDate.auto')} active={settings.autoDate === true} onClick={() => { updateSettings({ autoDate: true }); showToast(t('settings.autoDate.toastAuto')); }} />
+          <ToggleChip label={t('settings.autoDate.manual')} active={settings.autoDate !== true} onClick={() => { updateSettings({ autoDate: false }); showToast(t('settings.autoDate.toastManual')); }} />
         </div>
         <div style={{ fontSize:10, color:'var(--txt4)', marginTop:8, lineHeight:1.5 }}>
-          {settings.autoDate ? 'Saat quick pay, tanggal otomatis terisi dengan hari ini.' : 'Tanggal tidak otomatis terisi — berguna saat rekap telat.'}
+          {settings.autoDate ? t('settings.autoDate.noteAuto') : t('settings.autoDate.noteManual')}
         </div>
       </div>
 
@@ -742,10 +742,10 @@ export default function SettingsView() {
       <div style={cardStyle}>
         <SectionHeader
           icon={<Zap size={16} strokeWidth={1.5} />}
-          title="Nominal Quick Pay Default"
-          desc="Nominal quick pay untuk member tanpa tarif khusus."
+          title={t('settings.quickPay')}
+          desc={t('settings.quickPayDesc')}
         />
-        <div style={{ ...labelStyle, marginBottom:8 }}>NOMINAL (×1000) — pisahkan dengan koma</div>
+        <div style={{ ...labelStyle, marginBottom:8 }}>{t('settings.quickPayLabel')}</div>
         <input
           className="lf-input"
           style={{ marginBottom:0, textAlign:'left', letterSpacing:'normal', fontFamily:"'DM Mono',monospace" }}
@@ -758,9 +758,9 @@ export default function SettingsView() {
             <span key={a} style={{ background:'var(--bg3)', border:'1px solid var(--zc)', color:'var(--zc)', padding:'3px 10px', borderRadius:'var(--r-xs)', fontSize:11, fontFamily:"'DM Mono',monospace" }}>{a}</span>
           ))}
         </div>
-        <Btn label="Simpan Nominal Default" onClick={saveAmounts} icon={<Check size={13} />} />
+        <Btn label={t('settings.quickPaySave')} onClick={saveAmounts} icon={<Check size={13} />} />
         <div style={{ fontSize:10, color:'var(--txt4)', marginTop:8, lineHeight:1.6, padding:'8px', background:'var(--bg3)', borderRadius:'var(--r-xs)' }}>
-          Tarif per member (tombol ★ biru) diatur di menu <strong>Member → Edit → Tarif</strong>.
+          {t('settings.quickPayNote')}
         </div>
       </div>
 
@@ -772,7 +772,7 @@ export default function SettingsView() {
           <div style={{ color:'var(--zc)', marginBottom:6 }}><Wifi size={22} strokeWidth={1.5} /></div>
           <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:800, fontSize:15, color:'var(--txt)' }}>WiFi Pay</div>
           <div style={{ fontSize:11, color:'var(--txt4)', lineHeight:2 }}>
-            <div>Versi v11.2 Next</div>
+            <div>{t('settings.version')} v11.2 Next</div>
             <div>Firebase: wifi-pay-online</div>
             <div>Server: Singapore</div>
           </div>
