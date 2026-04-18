@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { MONTHS, YEARS } from '@/lib/constants';
 import { fuzzyMatch } from '@/lib/helpers'
-import { useT } from '@/hooks/useT';;
+import { useT } from '@/hooks/useT';
 import { ScrollText, Search, User, X, RotateCcw } from 'lucide-react';
 
 export default function LogView() {
@@ -70,11 +70,11 @@ export default function LogView() {
       {/* Date filter */}
       <div style={{ display:'flex', gap:6 }}>
         <select className="cs" style={{ flex:1 }} value={logYear} onChange={e => setLogYear(e.target.value)}>
-          <option value="">{t('common.all')} Tahun</option>
+          <option value="">{t('log.allYears')}</option>
           {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
         <select className="cs" style={{ flex:1 }} value={logMonth} onChange={e => setLogMonth(e.target.value)}>
-          <option value="">{t('common.all')} Bulan</option>
+          <option value="">{t('log.allMonths')}</option>
           {MONTHS.map((m, i) => <option key={i} value={i}>{m}</option>)}
         </select>
         <button onClick={reset} aria-label={`${t('action.reset')} filter`} style={{ background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--txt3)', padding:'6px 10px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', gap:4, transition:'all var(--t-fast)' }}>
@@ -98,7 +98,7 @@ export default function LogView() {
           )
           : filtered.slice(0, 150).map((l, i) => {
             const d  = new Date(l.ts);
-            const dt = `${d.toLocaleDateString('id-ID')} ${d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' })}`;
+            const dt = `${d.toLocaleDateString()} ${d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' })}`;
             const isPay = isPayLog(l.action);
             return (
               <div key={i} className="log-item" style={{ borderLeft: `2px solid ${isPay ? 'rgba(34,197,94,0.4)' : 'var(--border)'}` }}>

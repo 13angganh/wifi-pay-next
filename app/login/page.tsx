@@ -7,12 +7,14 @@ import { useAppStore } from '@/store/useAppStore';
 import { doLogin, doRegister, loginRemembered } from '@/hooks/useAuth';
 import { getSavedCred } from '@/lib/helpers';
 import { Wifi, User } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 type LoginState = 'remembered' | 'form' | 'register';
 
 export default function LoginPage() {
   const router = useRouter();
   const { uid } = useAppStore();
+  const t = useT();
 
   useEffect(() => {
     if (uid) router.replace('/dashboard');
@@ -42,7 +44,7 @@ export default function LoginPage() {
   }
 
   async function handleLogin() {
-    if (!email || !pass) { setErr('Email dan password wajib diisi'); return; }
+    if (!email || !pass) { setErr(t('login.requiredFields')); return; }
     setLoading(true); setErr('');
     const res = await doLogin(email, pass);
     setLoading(false);
@@ -51,8 +53,8 @@ export default function LoginPage() {
   }
 
   async function handleRegister() {
-    if (!rEmail || !rPass || !rName) { setRErr('Semua field wajib diisi'); return; }
-    if (rPass.length < 6) { setRErr('Password minimal 6 karakter'); return; }
+    if (!rEmail || !rPass || !rName) { setRErr(t('login.requiredFields')); return; }
+    if (rPass.length < 6) { setRErr(t('login.passwordMin')); return; }
     setRLoading(true); setRErr('');
     const res = await doRegister(rEmail, rPass, rName);
     setRLoading(false);
@@ -136,8 +138,8 @@ export default function LoginPage() {
                 marginBottom:6,
               }}>
                 {greeterName
-                  ? <>Selamat datang kembali, {greeterName} 👋</>
-                  : <>Selamat datang 👋</>
+                  ? <>{t('login.greeting')}, {greeterName} 👋</>
+                  : <>{t('login.greetingNew')} 👋</>
                 }
               </div>
             </div>
@@ -151,15 +153,15 @@ export default function LoginPage() {
                 boxShadow:'0 4px 16px rgba(59,130,246,0.3)',
               }}
             >
-              {loading ? 'Memuat...' : 'Lanjutkan'}
+              {loading ? t('common.loading') : t('login.continue')}
             </button>
-            <div style={{ textAlign:'center', margin:'12px 0', fontSize:11, color:'var(--txt4)' }}>atau</div>
+            <div style={{ textAlign:'center', margin:'12px 0', fontSize:11, color:'var(--txt4)' }}>{t('login.or')}</div>
             <button
               className="lf-btn secondary"
               onClick={handleSwitchAccount}
               style={{ fontSize:12 }}
             >
-              Ganti Akun
+              {t('login.changeAccount')}
             </button>
             {err && <div className="lf-err">{err}</div>}
           </div>
@@ -175,10 +177,10 @@ export default function LoginPage() {
                 fontSize:20, color:'var(--txt)',
                 letterSpacing:'-0.02em', lineHeight:1.2, marginBottom:4,
               }}>
-                Selamat datang 👋
+                {t('login.greetingNew')} 👋
               </div>
               <div style={{ fontSize:12, color:'var(--txt3)' }}>
-                Masuk untuk melanjutkan
+                {t('login.continuePrompt')}
               </div>
             </div>
 
@@ -190,7 +192,7 @@ export default function LoginPage() {
                   fontSize:11, cursor:'pointer', marginBottom:12, display:'block',
                 }}
               >
-                ← Kembali
+                ← {t('action.back')}
               </button>
             )}
 
@@ -219,19 +221,19 @@ export default function LoginPage() {
                 boxShadow:'0 4px 16px rgba(59,130,246,0.3)',
               }}
             >
-              {loading ? 'Masuk...' : 'Masuk'}
+              {loading ? t('common.loading') : t('login.submit')}
             </button>
             <div style={{ textAlign:'center', margin:'12px 0', fontSize:10, color:'var(--txt5)', position:'relative' }}>
               <div style={{ position:'absolute', left:0, top:'50%', right:0, height:1, background:'var(--border)' }} />
-              <span style={{ background:'var(--bg2)', padding:'0 10px', position:'relative' }}>atau</span>
+              <span style={{ background:'var(--bg2)', padding:'0 10px', position:'relative' }}>{t('login.or')}</span>
             </div>
             <div style={{ fontSize:11, color:'var(--txt3)', textAlign:'center' }}>
-              Belum punya akun?{' '}
+              {t('login.noAccount')}{' '}
               <span
                 style={{ color:'#3B82F6', cursor:'pointer' }}
                 onClick={() => { setState('register'); setErr(''); }}
               >
-                Daftar di sini
+                {t('login.registerHere')}
               </span>
             </div>
           </div>
@@ -245,11 +247,11 @@ export default function LoginPage() {
                 fontFamily:"'Syne',sans-serif", fontWeight:800,
                 fontSize:20, color:'var(--txt)', letterSpacing:'-0.02em',
               }}>
-                Buat Akun Baru
+                {t('login.createAccount')}
               </div>
             </div>
 
-            {(['EMAIL','PASSWORD (min 6 karakter)','NAMA PENGGUNA'] as const).map((label, i) => {
+            {([t('login.email').toUpperCase(), t('login.passwordMin6').toUpperCase(), t('login.username').toUpperCase()] as const).map((label, i) => {
               const vals  = [rEmail, rPass, rName];
               const types = ['email','password','text'] as const;
               const modes = ['email','current-password','name'] as const;
@@ -259,7 +261,7 @@ export default function LoginPage() {
                   <div style={{ fontSize:10, color:'var(--txt3)', letterSpacing:'.07em', marginBottom:6 }}>{label}</div>
                   <input
                     style={inputStyle} type={types[i]} autoComplete={modes[i]}
-                    placeholder={i===0?'email@gmail.com':i===1?'••••••••':'Nama kamu'}
+                    placeholder={i===0?'email@gmail.com':i===1?'••••••••':t('login.namePlaceholder')}
                     value={vals[i]} onChange={e => sets[i](e.target.value)}
                     onFocus={e => (e.target as HTMLInputElement).style.borderColor='var(--zc)'}
                     onBlur={e  => (e.target as HTMLInputElement).style.borderColor='var(--border)'}
@@ -277,19 +279,19 @@ export default function LoginPage() {
                 boxShadow:'0 4px 16px rgba(59,130,246,0.3)',
               }}
             >
-              {rLoading ? 'Mendaftar...' : 'Daftar & Masuk'}
+              {rLoading ? t('common.loading') : t('login.registerSubmit')}
             </button>
             <div style={{ textAlign:'center', margin:'12px 0', fontSize:10, color:'var(--txt5)', position:'relative' }}>
               <div style={{ position:'absolute', left:0, top:'50%', right:0, height:1, background:'var(--border)' }} />
-              <span style={{ background:'var(--bg2)', padding:'0 10px', position:'relative' }}>atau</span>
+              <span style={{ background:'var(--bg2)', padding:'0 10px', position:'relative' }}>{t('login.or')}</span>
             </div>
             <div style={{ fontSize:11, color:'var(--txt3)', textAlign:'center' }}>
-              Sudah punya akun?{' '}
+              {t('login.hasAccount')}{' '}
               <span
                 style={{ color:'#3B82F6', cursor:'pointer' }}
                 onClick={() => { setState('form'); setRErr(''); }}
               >
-                Masuk di sini
+                {t('login.loginHere')}
               </span>
             </div>
           </div>

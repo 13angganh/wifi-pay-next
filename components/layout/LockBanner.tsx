@@ -1,11 +1,13 @@
-// components/layout/LockBanner.tsx — Sesi 5B: Lucide Lock, sistem baru
+// components/layout/LockBanner.tsx
 'use client';
 
 import { useAppStore } from '@/store/useAppStore';
+import { useT } from '@/hooks/useT';
 import { Lock } from 'lucide-react';
 
 export default function LockBanner() {
   const { globalLocked, setGlobalLocked } = useAppStore();
+  const t = useT();
   if (!globalLocked) return null;
 
   return (
@@ -17,11 +19,11 @@ export default function LockBanner() {
     }}>
       <Lock size={13} strokeWidth={1.5} style={{ color:'var(--c-belum)', flexShrink:0 }} />
       <span style={{ fontSize:12, color:'var(--c-belum)', flex:1, fontFamily:"'DM Sans',sans-serif" }}>
-        Entry terkunci — ketuk untuk membuka
+        {t('lockbanner.message')}
       </span>
       <button
         onClick={() => setGlobalLocked(false)}
-        aria-label="Buka kunci entry"
+        aria-label={t('lockbanner.unlock')}
         style={{
           background:'var(--c-belum)', border:'none',
           color:'#fff', padding:'4px 12px',
@@ -34,7 +36,7 @@ export default function LockBanner() {
           transition:'opacity var(--t-fast) var(--ease-smooth)',
         }}
       >
-        Buka
+        {t('lockbanner.unlock')}
       </button>
     </div>
   );

@@ -15,6 +15,7 @@ import {
   ChevronUp, ChevronDown, CheckCircle2, XCircle, Gift,
   Trash2, Clock, Lock, History, Zap, Check,
 } from 'lucide-react';
+import { useT } from '@/hooks/useT';
 
 interface Props {
   name: string;
@@ -38,6 +39,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
   } = useAppStore();
 
   const [riwOpen, setRiwOpen] = useState(false);
+  const t = useT();
   const inputDirty   = useRef(false);
   const isCollapsing = useRef(false);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,7 +92,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
   async function saveEntryPay(rawVal: string) {
     if (!inputDirty.current) return;
     if (isCollapsing.current) return;
-    if (isLocked) { showToast('Data terkunci! Unlock dulu', 'err'); return; }
+    if (isLocked) { showToast(t('lockbanner.message'), 'err'); return; }
 
     const k = `${activeZone}__${name}__${cardYear}__${cardMonth}`;
     const newData = { ...appData, payments: { ...appData.payments } };
@@ -98,12 +100,12 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
     if (rawVal === '' || rawVal === null) {
       delete newData.payments[k];
       await persist(newData, `🗑️ Hapus bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: dihapus`);
-      showToast(`${name} dihapus`, 'err');
+      showToast(`${name} ${t('common.deleted')}`, 'err');
     } else {
       const amt = +rawVal;
       if (isNaN(amt)) { showToast('Nominal tidak valid', 'err'); return; }
       newData.payments[k] = amt;
-      await persist(newData, `💰 Bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: ${amt === 0 ? 'Akumulasi' : rp(amt)}`);
+      await persist(newData, `💰 Bayar ${activeZone} - ${name}`, `${MONTHS[cardMonth]} ${cardYear}: ${amt === 0 ? t('rekap.accumulation') : rp(amt)}`);
       showToast(`${name} → ${amt === 0 ? 'Akumulasi' : rp(amt)}`);
     }
     inputDirty.current = false;
@@ -134,10 +136,8 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
     if (tarifMember && amt > tarifMember) {
       showConfirm(
         '⚠️',
-        `Nominal lebih tinggi dari tarif <b>${name}</b><br>
-         Tarif: ${rp(tarifMember)} → Bayar: ${rp(amt)}<br>
-         Lanjutkan?`,
-        'Ya, Lanjutkan',
+        `${t('entry.confirmHighNominal')}<br><span style="font-size:11px;color:var(--txt3)">${name} · ${rp(tarifMember)} → ${rp(amt)}</span>`,
+        t('action.confirm'),
         () => doQuickPay(amt),
       );
       return;
@@ -150,8 +150,8 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
     if (entryVal === null) return;
     showConfirm(
       '🗑️',
-      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[cardMonth]} ${cardYear} · ${entryVal > 0 ? rp(entryVal) : 'Akumulasi'}</span>`,
-      'Ya, Hapus',
+      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[cardMonth]} ${cardYear} · ${entryVal > 0 ? rp(entryVal) : t('rekap.accumulation')}</span>`,
+      t('membercard.deleteYes'),
       async () => {
         const k = `${activeZone}__${name}__${cardYear}__${cardMonth}`;
         const newData = { ...appData, payments: { ...appData.payments } };
@@ -270,7 +270,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
           <span className="mc-name">{name}</span>
           {val !== null && (
             val === 0
-              ? <span style={{ fontSize:10, color:'var(--c-lunas)' }}>Akm</span>
+              ? <span style={{ fontSize:10, color:'var(--c-lunas)' }}>{t('membercard.acm')}</span>
               : <span style={{ fontSize:11, color:'var(--c-lunas)' }}>{val.toLocaleString('id-ID')}</span>
           )}
           {tagEl}
@@ -286,7 +286,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
           <div className="mc-body">
             {/* Bulan selector */}
             <div className="mc-row" style={{ marginBottom:6 }}>
-              <span className="mc-label">BULAN</span>
+              <span className="mc-label">{t('common.month').toUpperCase()}</span>
               <select className="cs" style={{ fontSize:11, padding:'4px 8px' }} value={cardYear}
                 onChange={e => setEntryCard(name, +e.target.value, cardMonth)}>
                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
@@ -299,17 +299,17 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
 
             {freeEntry ? (
               <div style={{ background:'rgba(34,197,94,0.06)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:'var(--r-sm)', padding:8, fontSize:11, color:'var(--c-lunas)', textAlign:'center', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <Gift size={13} /> Member Gratis periode ini
+                <Gift size={13} /> {t('rekap.freeMember')}
               </div>
             ) : isLocked ? (
               <div style={{ background:'rgba(239,68,68,0.06)', border:'1px solid rgba(239,68,68,0.2)', borderRadius:'var(--r-sm)', padding:8, fontSize:11, color:'var(--c-belum)', textAlign:'center', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <Lock size={13} /> Data terkunci
+                <Lock size={13} /> {t('rekap.dataLocked')}
               </div>
             ) : (
               <>
                 {/* Input nominal */}
                 <div className="mc-row">
-                  <span className="mc-label">JUMLAH</span>
+                  <span className="mc-label">{t('common.amount').toUpperCase()}</span>
                   <input
                     ref={inputRef}
                     className="mc-input"
@@ -340,7 +340,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
                 {/* Tanggal */}
                 <div className="mc-row">
                   <span className="mc-label" style={{ display:'flex', alignItems:'center', gap:4 }}>
-                    <Clock size={10} />TGL BAYAR
+                    <Clock size={10} />{t('membercard.payDate').toUpperCase()}
                   </span>
                   <input
                     className="mc-date"
@@ -385,7 +385,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
                           {info.tarif as number} ★
                         </button>
                       )
-                      : <span style={{ fontSize:9, color:'var(--txt4)', alignSelf:'center' }}>Belum ada tarif</span>}
+                      : <span style={{ fontSize:9, color:'var(--txt4)', alignSelf:'center' }}>{t('entry.noTarifShort')}</span>}
                     {(settings?.quickAmounts || DEFAULT_SETTINGS.quickAmounts).filter(a => a !== info.tarif).map(a => (
                       <button key={a} className="qb" onClick={() => quickPay(a)}>{a}</button>
                     ))}
@@ -395,7 +395,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
                 {/* Hint tarif */}
                 {!info.tarif && (
                   <div style={{ fontSize:9, color:'var(--txt4)', marginTop:-4, marginBottom:4 }}>
-                    Set tarif di menu <b style={{ color:'var(--txt3)' }}>Member → Edit</b>
+                    {t('membercard.setTarifHint')}
                   </div>
                 )}
               </>
@@ -411,7 +411,7 @@ export default function MemberCard({ name, index, batchMode = false, batchSelect
                   padding:'4px 0', minHeight:32,
                 }}
               >
-                <History size={13} /> Riwayat
+                <History size={13} /> {t('membercard.history')}
               </button>
             </div>
           </div>

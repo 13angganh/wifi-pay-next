@@ -115,7 +115,7 @@ export default function MembersView() {
   }
 
   async function deleteMember(name: string) {
-    showConfirm('🗑️',`Hapus member <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">Data bayar disimpan di recycle bin</span>`,'Ya, Hapus',async()=>{
+    showConfirm('🗑️',`${t('members.delete')} <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${t('members.deleteNote')}</span>`,t('membercard.deleteYes'),async()=>{
       const list     = zone==='KRS' ? [...appData.krsMembers] : [...appData.slkMembers];
       const filtered = list.filter(m => m !== name);
       const mk       = `${zone}__${name}`;
@@ -125,7 +125,7 @@ export default function MembersView() {
         payments:Object.fromEntries(Object.entries(appData.payments||{}).filter(([k])=>!k.startsWith(mk+'__'))),
         deletedMembers:{ ...(appData.deletedMembers||{}), [mk]:{ zone,name,deletedAt:Date.now(),payments:mp } } };
       await persist(nd, `🗑️ Hapus member ${zone} - ${name}`);
-      showToast(`${name} dihapus`,'err');
+      showToast(`${name} ${t('common.deleted')}`,'err');
     });
   }
 
@@ -137,15 +137,15 @@ export default function MembersView() {
       payments:{ ...(appData.payments||{}), ...(d.payments||{}) },
       deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
     await persist(nd, `♻️ Restore member ${d.zone} - ${d.name}`);
-    showToast(`✅ ${d.name} berhasil dikembalikan!`);
+    showToast(`✅ ${d.name} ${t('members.restored')}`);
   }
 
   async function permanentDelete(key: string) {
     const d = appData.deletedMembers?.[key]; if(!d) return;
-    showConfirm('💀',`Hapus permanen <b>${d.name}</b>?<br><span style="font-size:11px;color:#e05c5c">Tidak bisa dikembalikan!</span>`,'Ya, Hapus Permanen',async()=>{
+    showConfirm('💀',`${t('members.permDelete')} <b>${d.name}</b>?<br><span style="font-size:11px;color:#e05c5c">${t('members.permDeleteNote')}</span>`,t('members.permDeleteYes'),async()=>{
       const nd = { ...appData, deletedMembers:Object.fromEntries(Object.entries(appData.deletedMembers||{}).filter(([k])=>k!==key)) };
       await persist(nd, `💀 Hapus permanen ${d.zone} - ${d.name}`);
-      showToast(`${d.name} dihapus permanen`,'err');
+      showToast(`${d.name} ${t('members.deleted')}`,'err');
     });
   }
 
@@ -197,7 +197,7 @@ export default function MembersView() {
             });
           })()}
         </div>
-        <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked?'Dibuka':'Dikunci'); }}
+        <button onClick={() => { setMembersLocked(!membersLocked); showToast(membersLocked ? t('header.entryUnlocked') : t('header.entryLocked')); }}
           aria-label={membersLocked ? 'Buka kunci daftar member' : 'Kunci daftar member'}
           style={{ background:membersLocked?'rgba(34,197,94,0.06)':'rgba(239,68,68,0.06)', border:`1px solid ${membersLocked?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'}`, color:membersLocked?'var(--c-lunas)':'var(--c-belum)', padding:'6px 14px', borderRadius:'var(--r-sm)', cursor:'pointer', fontSize:11, minHeight:34, display:'flex', alignItems:'center', gap:5 }}>
           {membersLocked ? <><Lock size={12} strokeWidth={1.5} /> {t('header.lock')}</> : <><LockOpen size={12} strokeWidth={1.5} /> {t('header.unlock')}</>}
@@ -224,7 +224,7 @@ export default function MembersView() {
                 <div className="del-card-name" style={{ display:'flex', alignItems:'center', gap:5 }}>
                   <Trash2 size={12} strokeWidth={1.5} color="var(--c-belum)" /> {d.name}
                 </div>
-                <div style={{ fontSize:10, color:'var(--txt4)' }}>{t('action.delete')}: {new Date(d.deletedAt).toLocaleDateString('id-ID')} · {Object.keys(d.payments||{}).length} data</div>
+                <div style={{ fontSize:10, color:'var(--txt4)' }}>{t('action.delete')}: {new Date(d.deletedAt).toLocaleDateString()} · {Object.keys(d.payments||{}).length} data</div>
               </div>
               <div style={{ display:'flex', gap:6, flexShrink:0 }}>
                 <button className="restore-btn" onClick={() => restoreMember(k)}>{t('members.restore')}</button>
@@ -257,7 +257,7 @@ export default function MembersView() {
                 </div>
                 <div>
                   <div style={{ fontSize:10, color:'var(--txt3)', marginBottom:4 }}>{t('members.tarifShort').toUpperCase()}</div>
-                  <input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="Contoh: 100" autoComplete="off" />
+                  <input ref={addRef.tarif} type="number" inputMode="numeric" className="af-input" placeholder="100" autoComplete="off" />
                 </div>
               </div>
               <button style={{ width:'100%', background:zc, color:'#fff', border:'none', padding:10, borderRadius:'var(--r-sm)', fontSize:13, fontWeight:600, cursor:'pointer', minHeight:40 }} onClick={addMember}>

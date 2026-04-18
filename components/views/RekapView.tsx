@@ -107,8 +107,8 @@ export default function RekapView() {
     if (curVal === null) return;
     showConfirm(
       '🗑️',
-      `Hapus pembayaran <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : t('rekap.accumulation')}</span>`,
-      'Ya, Hapus',
+      `${t('rekap.deletePayment')} <b>${name}</b>?<br><span style="font-size:11px;color:var(--txt3)">${MONTHS[month]} ${selYear} · ${curVal > 0 ? rp(curVal) : t('rekap.accumulation')}</span>`,
+      t('membercard.deleteYes'),
       async () => {
         const k       = getKey(activeZone, name, selYear, month);
         const newData = { ...appData, payments: { ...appData.payments } };
@@ -237,7 +237,7 @@ export default function RekapView() {
             ) : (
               <>
                 <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:10 }}>
-                  <span style={{ fontSize:10, color:'var(--txt4)', flexShrink:0, minWidth:60 }}>NOMINAL</span>
+                  <span style={{ fontSize:10, color:'var(--txt4)', flexShrink:0, minWidth:60 }}>{t('common.amount').toUpperCase()}</span>
                   <input
                     className="mc-input"
                     type="number"
@@ -256,7 +256,7 @@ export default function RekapView() {
                     autoFocus
                   />
                   {entryVal !== null && (
-                    <button className="delbtn" onClick={e => clearPay(name, month, e)} aria-label="Hapus">
+                    <button className="delbtn" onClick={e => clearPay(name, month, e)} aria-label={t('action.delete')}>
                       <X size={12} />
                     </button>
                   )}
@@ -368,7 +368,7 @@ export default function RekapView() {
           <input
             className="search-box"
             style={{ margin:0, paddingLeft:30 }}
-            placeholder={t("common.search") + " member..."}
+            placeholder={t("rekap.searchPlaceholder")}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -390,7 +390,7 @@ export default function RekapView() {
       {batchColIdx !== null && (
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'rgba(59,130,246,0.1)', border:'1px solid rgba(59,130,246,0.25)', borderRadius:'var(--r-sm)', padding:'8px 12px', marginBottom:10 }}>
           <div style={{ fontSize:12, color:'var(--zc)' }}>
-            Kolom <strong>{MONTHS[batchColIdx]}</strong> — tap sel untuk pilih/batal
+            <strong>{MONTHS[batchColIdx]}</strong> — {t('rekap.batchHint')}
           </div>
           <button onClick={exitBatch} style={{ background:'none', border:'none', color:'var(--txt3)', cursor:'pointer', padding:4, display:'flex' }}>
             <X size={14} />

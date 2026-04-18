@@ -53,8 +53,6 @@ export default function Sidebar({ onNavigate }: Props) {
   }
 
   async function handleLogout() {
-    const { clearCred } = await import('@/lib/helpers');
-    clearCred();
     await doLogout();
     router.replace('/login');
     setSidebar(false);
