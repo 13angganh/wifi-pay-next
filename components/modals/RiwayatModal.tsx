@@ -24,18 +24,15 @@ export default function RiwayatModal({ open, onClose }: Props) {
   if (!open || !riwayatName) return null;
 
   const info     = appData.memberInfo?.[riwayatZone+'__'+riwayatName] || {};
-  const nowYear  = new Date().getFullYear();
-  const nowMonth = new Date().getMonth();
   const minYear  = YEARS[0];
   const maxYear  = YEARS[YEARS.length - 1];
 
   let lunas = 0; let totalVal = 0;
 
   const rows = MONTHS.map((mName, mi) => {
-    const isFuture = riwayatYear === nowYear && mi > nowMonth;
     const displayName = (lang === 'en' ? MONTHS_EN : MONTHS_ID)[mi] || mName;
-    const v    = isFuture ? null : getPay(appData, riwayatZone, riwayatName, riwayatYear, mi);
-    const free = isFuture ? false : isFree(appData, riwayatZone, riwayatName, riwayatYear, mi);
+    const v    = getPay(appData, riwayatZone, riwayatName, riwayatYear, mi);
+    const free = isFree(appData, riwayatZone, riwayatName, riwayatYear, mi);
     const tgl  = (info[`date_${riwayatYear}_${mi}`] as string) || '';
 
     let statusEl: React.ReactNode;
@@ -60,10 +57,6 @@ export default function RiwayatModal({ open, onClose }: Props) {
         </span>
       );
       lunas++;
-    } else if (isFuture) {
-      statusEl = (
-        <span style={{ color:'var(--txt5)', fontSize:11 }}>—</span>
-      );
     } else {
       statusEl = (
         <span style={{ color:'var(--c-belum)', fontSize:11, display:'flex', alignItems:'center', gap:4 }}>
@@ -73,9 +66,8 @@ export default function RiwayatModal({ open, onClose }: Props) {
     }
 
     return (
-      <div key={mi} className="rw-month-row" style={{ cursor: isFuture ? 'default' : 'pointer', opacity: isFuture ? 0.35 : 1 }}
+      <div key={mi} className="rw-month-row" style={{ cursor:'pointer' }}
         onClick={() => {
-          if (isFuture) return;
           setZone(riwayatZone);
           setView('entry');
           setEntryCard(riwayatName, riwayatYear, mi);
